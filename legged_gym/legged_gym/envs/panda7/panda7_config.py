@@ -3,9 +3,9 @@ import numpy as np
 
 
 dance_traj = "opti_traj/output/keep_the_beat/keep_the_beat_ref_simp.txt"
-class GO2RoughCfg( LeggedRobotCfg ):
+class panda7RoughCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ):
-        pos = [0.0, 0.0, 0.42] # x,y,z [m]
+        pos = [0.0, 0.0, 0.55] # x,y,z [m]
         default_joint_angles = { # = target angles [rad] when action = 0.0
             'FL_hip_joint': 0.1,   # [rad]
             'RL_hip_joint': 0.1,   # [rad]
@@ -63,7 +63,7 @@ class GO2RoughCfg( LeggedRobotCfg ):
         motion_files = dance_traj
         frame_duration = 1/36
 
-class GO2RoughCfgPPO( LeggedRobotCfgPPO ):
+class panda7RoughCfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):
         entropy_coef = 0.01
     class runner( LeggedRobotCfgPPO.runner ):

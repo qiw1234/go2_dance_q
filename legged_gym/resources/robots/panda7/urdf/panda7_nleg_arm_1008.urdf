@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<robot name="robot">
+<robot name="panda7">
   <material name="black">
     <color rgba="0.0 0.0 0.0 1.0"/>
   </material>
@@ -31,7 +31,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://legged_unitree_description/meshes/panda_arx/trunk.dae" scale="1 1 1"/>
+        <mesh filename="../meshes/trunk.dae" scale="1 1 1"/>
       </geometry>
     </visual>
     <collision>
@@ -69,7 +69,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link0.dae" />
+          filename="../meshes/link0.dae" />
       </geometry>
       <material
         name="">
@@ -83,7 +83,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link0.dae" />
+          filename="../meshes/link0.dae" />
       </geometry>
     </collision>
   </link>
@@ -120,7 +120,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link1.dae" />
+          filename="../meshes/link1.dae" />
       </geometry>
       <material
         name="">
@@ -134,7 +134,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link1.dae" />
+          filename="../meshes/link1.dae" />
       </geometry>
     </collision>
   </link>
@@ -178,7 +178,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link2.dae" />
+          filename="../meshes/link2.dae" />
       </geometry>
       <material
         name="">
@@ -192,7 +192,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link2.dae" />
+          filename="../meshes/link2.dae" />
       </geometry>
     </collision>
   </link>
@@ -236,7 +236,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link3.dae" />
+          filename="../meshes/link3.dae" />
       </geometry>
       <material
         name="">
@@ -250,7 +250,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link3.dae" />
+          filename="../meshes/link3.dae" />
       </geometry>
     </collision>
   </link>
@@ -294,7 +294,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link4.dae" />
+          filename="../meshes/link4.dae" />
       </geometry>
       <material
         name="">
@@ -308,7 +308,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link4.dae" />
+          filename="../meshes/link4.dae" />
       </geometry>
     </collision>
   </link>
@@ -352,7 +352,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link5.dae" />
+          filename="../meshes/link5.dae" />
       </geometry>
       <material
         name="">
@@ -366,7 +366,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link5.dae" />
+          filename="../meshes/link5.dae" />
       </geometry>
     </collision>
   </link>
@@ -410,7 +410,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link6.dae" />
+          filename="../meshes/link6.dae" />
       </geometry>
       <material
         name="">
@@ -424,7 +424,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/link6.dae" />
+          filename="../meshes/link6.dae" />
       </geometry>
     </collision>
   </link>
@@ -468,7 +468,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/gripper1.dae" />
+          filename="../meshes/gripper1.dae" />
       </geometry>
       <material
         name="">
@@ -482,7 +482,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/gripper1.dae" />
+          filename="../meshes/gripper1.dae" />
       </geometry>
     </collision>
   </link>
@@ -526,7 +526,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/gripper2.dae" />
+          filename="../meshes/gripper2.dae" />
       </geometry>
       <material
         name="">
@@ -540,7 +540,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://legged_unitree_description/meshes/panda_arx/gripper2.dae" />
+          filename="../meshes/gripper2.dae" />
       </geometry>
     </collision>
   </link>
@@ -575,7 +575,7 @@
     <visual>
       <origin rpy="3.141592653589793 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://legged_unitree_description/meshes/panda_arx/hip.dae" scale="1 1 1"/>
+        <mesh filename="../meshes/hip.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -597,7 +597,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://legged_unitree_description/meshes/panda_arx/thigh_mirror.dae" scale="1 1 1"/>
+        <mesh filename="../meshes/thigh_mirror.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -619,7 +619,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://legged_unitree_description/meshes/panda_arx/calf.dae" scale="1 1 1"/>
+        <mesh filename="../meshes/calf.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -664,7 +664,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://legged_unitree_description/meshes/panda_arx/hip.dae" scale="1 1 1"/>
+        <mesh filename="../meshes/hip.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -686,7 +686,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://legged_unitree_description/meshes/panda_arx/thigh.dae" scale="1 1 1"/>
+        <mesh filename="../meshes/thigh.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -708,7 +708,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://legged_unitree_description/meshes/panda_arx/calf.dae" scale="1 1 1"/>
+        <mesh filename="../meshes/calf.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -753,7 +753,7 @@
     <visual>
       <origin rpy="3.141592653589793 3.141592653589793 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://legged_unitree_description/meshes/panda_arx/hip.dae" scale="1 1 1"/>
+        <mesh filename="../meshes/hip.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -775,7 +775,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://legged_unitree_description/meshes/panda_arx/thigh_mirror.dae" scale="1 1 1"/>
+        <mesh filename="../meshes/thigh_mirror.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -797,7 +797,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://legged_unitree_description/meshes/panda_arx/calf.dae" scale="1 1 1"/>
+        <mesh filename="../meshes/calf.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -842,7 +842,7 @@
     <visual>
       <origin rpy="0 3.141592653589793 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://legged_unitree_description/meshes/panda_arx/hip.dae" scale="1 1 1"/>
+        <mesh filename="../meshes/hip.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -864,7 +864,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://legged_unitree_description/meshes/panda_arx/thigh.dae" scale="1 1 1"/>
+        <mesh filename="../meshes/thigh.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -886,7 +886,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://legged_unitree_description/meshes/panda_arx/calf.dae" scale="1 1 1"/>
+        <mesh filename="../meshes/calf.dae" scale="1 1 1"/>
       </geometry>
       <material name="orange"/>
     </visual>
