@@ -39,6 +39,7 @@ from .cassie.cassie import Cassie
 from .cassie.cassie_config import CassieRoughCfg, CassieRoughCfgPPO
 from .a1.a1_config import A1RoughCfg, A1RoughCfgPPO
 from .go2.go2_config import GO2RoughCfg, GO2RoughCfgPPO
+from .panda7.panda7_config import panda7RoughCfg, panda7RoughCfgPPO
 
 
 import os
@@ -51,3 +52,4 @@ task_registry.register( "anymal_b", Anymal, AnymalBRoughCfg(), AnymalBRoughCfgPP
 task_registry.register( "a1", LeggedRobot, A1RoughCfg(), A1RoughCfgPPO() )
 task_registry.register( "cassie", Cassie, CassieRoughCfg(), CassieRoughCfgPPO() )
 task_registry.register( "go2_dance", LeggedRobot, GO2RoughCfg(), GO2RoughCfgPPO() )
+task_registry.register( "panda7_dance", LeggedRobot, panda7RoughCfg(), panda7RoughCfgPPO() )

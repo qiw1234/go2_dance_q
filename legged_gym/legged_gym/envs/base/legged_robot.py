@@ -180,11 +180,13 @@ class LeggedRobot(BaseTask):
             self.update_command_curriculum(env_ids)
 
         # reset robot states
-        # self._reset_dofs(env_ids)
-        # self._reset_root_states(env_ids)
-        frames = self.motion_loader.get_full_frame_batch(len(env_ids))
-        self._reset_dofs_amp(env_ids, frames)
-        self._reset_root_states_amp(env_ids, frames)
+        if not self.cfg.env.RSI:
+            self._reset_dofs(env_ids)
+            self._reset_root_states(env_ids)
+        else:
+            frames = self.motion_loader.get_full_frame_batch(len(env_ids))
+            self._reset_dofs_amp(env_ids, frames)
+            self._reset_root_states_amp(env_ids, frames)
 
         self._resample_commands(env_ids)
 

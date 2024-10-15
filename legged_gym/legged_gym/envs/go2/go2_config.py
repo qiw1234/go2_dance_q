@@ -2,7 +2,6 @@ from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobot
 import numpy as np
 
 
-dance_traj = "opti_traj/output/keep_the_beat/keep_the_beat_ref_simp.txt"
 class GO2RoughCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ):
         pos = [0.0, 0.0, 0.42] # x,y,z [m]
@@ -60,8 +59,13 @@ class GO2RoughCfg( LeggedRobotCfg ):
             track_toe_pos = 5
 
     class env(LeggedRobotCfg.env):
-        motion_files = dance_traj
-        frame_duration = 1/36
+        # 打拍子参考动作
+        # motion_files = "opti_traj/output/keep_the_beat/keep_the_beat_ref_simp.txt"
+        # frame_duration = 1 / 36
+        # 旋转跳跃参考动作
+        motion_files = "opti_traj/output/turn_and_jump.txt"
+        frame_duration = 1/50
+        RSI = 0 # 参考状态初始化
 
 class GO2RoughCfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):
