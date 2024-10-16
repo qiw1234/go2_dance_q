@@ -50,13 +50,13 @@ class GO2RoughCfg( LeggedRobotCfg ):
             tracking_lin_vel = 0
             tracking_ang_vel = 0
             feet_air_time = 0
-            track_root_pos = 0
-            track_root_rot = 0
+            track_root_pos = 0.5
+            track_root_rot = 1.
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
             track_dof_pos = 0
             track_dof_vel = 0
-            track_toe_pos = 5
+            track_toe_pos = 1.
 
     class env(LeggedRobotCfg.env):
         # 打拍子参考动作
