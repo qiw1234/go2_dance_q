@@ -104,6 +104,7 @@ for i in range(3):
 
 toe_pos_world = np.zeros_like(toe_pos)
 # 计算世界系下的足端轨迹
+# 然后减去世界系下的质心位置，也就是世界系或者质心定向系的足端相对root的坐标，所以没加root坐标
 for i in range(toe_pos.shape[0]):
     toe_pos_world[i, :3] = utils.quaternion2rotm(root_rot[i,:]) @ toe_pos[i, :3]
     toe_pos_world[i, 3:6] = utils.quaternion2rotm(root_rot[i,:]) @ toe_pos[i, 3:6]

@@ -194,8 +194,8 @@ class GO2DanceCfg_turn_and_jump(LeggedRobotCfg):
             tracking_lin_vel = 0
             tracking_ang_vel = 0
             feet_air_time = 0
-            track_root_pos = 0
-            track_root_rot = 0
+            track_root_pos = 1
+            track_root_rot = 1
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
             track_dof_pos = 0
@@ -204,8 +204,8 @@ class GO2DanceCfg_turn_and_jump(LeggedRobotCfg):
 
     class env(LeggedRobotCfg.env):
         # 打拍子参考动作
-        motion_files = "opti_traj/output/keep_the_beat/turn_and_jump.txt"
-        frame_duration = 1 / 36
+        motion_files = "opti_traj/output/turn_and_jump.txt"
+        frame_duration = 1 / 50
         RSI = 1  # 参考状态初始化
 
 
