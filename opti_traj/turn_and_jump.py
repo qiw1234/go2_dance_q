@@ -1,4 +1,3 @@
-import casadi
 import numpy as np
 from scipy.constants import g
 from pybullet_utils.transformations import quaternion_slerp, quaternion_multiply, quaternion_conjugate

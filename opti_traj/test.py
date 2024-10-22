@@ -9,7 +9,7 @@ pos = [1, 2, 3]
 # 3by3旋转矩阵变成4by4变换矩阵
 
 temp = ca.SX.zeros(4,4)
-a = rot_matrix
+
 print(temp[2, 2])
 print(rot_matrix)
 temp[:3, :3] = rot_matrix
@@ -19,4 +19,7 @@ temp[3,:] = ca.SX([0, 0, 0, 1])
 
 pos1 = [2, 3, 4]
 print(ca.dot(pos1,pos1))
-
+a = ca.DM(pos1)
+b = ca.DM([[1, 2],[3, 4]])
+c = ca.DM(temp).full()
+print(a, b, c)

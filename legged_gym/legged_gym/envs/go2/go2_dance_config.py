@@ -187,6 +187,7 @@ class GO2DanceCfg_turn_and_jump(LeggedRobotCfg):
     class rewards(LeggedRobotCfg.rewards):
         soft_dof_pos_limit = 0.9
         base_height_target = 0.25
+        base_height_jump = 0.496
 
         class scales(LeggedRobotCfg.rewards.scales):
             torques = -0.0002
@@ -194,13 +195,16 @@ class GO2DanceCfg_turn_and_jump(LeggedRobotCfg):
             tracking_lin_vel = 0
             tracking_ang_vel = 0
             feet_air_time = 0
-            track_root_pos = 1
+
+            lin_vel_z = -0
+            track_root_pos = 2.5
             track_root_rot = 1
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
             track_dof_pos = 0
             track_dof_vel = 0
             track_toe_pos = 1.
+            jump = 0
 
     class env(LeggedRobotCfg.env):
         # 打拍子参考动作
@@ -216,3 +220,4 @@ class GO2DanceCfg_turn_and_jumpPPO(LeggedRobotCfgPPO):
     class runner(LeggedRobotCfgPPO.runner):
         run_name = ''
         experiment_name = 'go2_dance_turn_and_jump'
+        resume_path = 'legged_gym/logs/go2_dance_turn_and_jump/Oct21_18-54-13_/model_1500.pt'

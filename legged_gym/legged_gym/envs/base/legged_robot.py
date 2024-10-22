@@ -1080,3 +1080,7 @@ class LeggedRobot(BaseTask):
 
     def _reward_track_dof_vel(self):
         return torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, 37:49] - self.dof_vel), dim=1))
+
+    def _reward_jump(self):
+        # a =torch.exp( -10 * torch.square(self.base_pos[:, 2] - self.cfg.rewards.base_height_jump))
+        return torch.exp( -10 * torch.square(self.base_pos[:, 2] - self.cfg.rewards.base_height_jump))
