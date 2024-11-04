@@ -33,6 +33,7 @@ from .base_config import BaseConfig
 class LeggedRobotCfg(BaseConfig):
     class env:
         num_envs = 5000
+        simp_obs = 0
         num_observations = 284
         num_privileged_obs = None # if not None a priviledge_obs_buf will be returned by step() (critic obs for assymetric training). None is returned otherwise 
         num_actions = 12
@@ -178,7 +179,7 @@ class LeggedRobotCfg(BaseConfig):
     # viewer camera:
     class viewer:
         ref_env = 0
-        pos = [10, 0, 6]  # [m]
+        pos = [10, 0, 2]  # [m]
         lookat = [11., 5, 3.]  # [m]
 
     class sim:

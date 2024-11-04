@@ -9,19 +9,21 @@ go2 = utils.QuadrupedRobot()
 lb = [-0.8378,-np.pi/2,-2.7227,-0.8378,-np.pi/2,-2.7227,-0.8378,-np.pi/6,-2.7227,-0.8378,-np.pi/6,-2.7227]
 ub = [0.8378,3.4907,-0.8378,0.8378,3.4907,-0.8378,0.8378,4.5379,-0.8378,0.8378,4.5379,-0.8378]
 q0 = np.linspace(lb[0], ub[0], 20)
-q1 = np.linspace(lb[1], ub[1], 10)
+q1 = np.linspace(lb[1], ub[1], 20)
 q2 = np.linspace(lb[2], ub[2], 10)
 x, y, z = [], [], []
-
+toe_pos_r = [0.1934, -0.142, -0.3]
 for i in q0:
     for j in q1:
         for k in q2:
             pos = go2.transrpy([i, j, k], 0, [0, 0, 0], [0, 0, 0]) @ go2.toe
             # a = ca.DM(pos)
             # b = a.full()
-            x.append(ca.DM(pos[0]).full()[0][0])# 这里是因为数据是个列向量
-            y.append(ca.DM(pos[1]).full()[0][0])
-            z.append(ca.DM(pos[2]).full()[0][0])
+            x.append(ca.DM(pos[0]).full()[0][0] - toe_pos_r[0])# 这里是因为数据是个列向量
+            y.append(ca.DM(pos[1]).full()[0][0] - toe_pos_r[1])
+            z.append(ca.DM(pos[2]).full()[0][0] - toe_pos_r[2])
+
+
 
 
 def scatter_3d(x, y, z):
@@ -33,7 +35,8 @@ def scatter_3d(x, y, z):
     # c: 颜色  可为单个，可为序列
     # depthshade: 是否为散点标记着色以呈现深度外观。对 scatter() 的每次调用都将独立执行其深度着色。
     # marker：样式
-    ax.scatter(xs=x, ys=y, zs=z, zdir='z', s=30, c="g", depthshade=True, cmap="jet", marker="^")
+    ax.scatter(xs=x, ys=y, zs=z,
+               zdir='z', s=30, c="g", depthshade=True, cmap="jet", marker="^")
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_zlabel('z')

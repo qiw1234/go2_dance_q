@@ -42,6 +42,8 @@ from .go2.go2_dance_config import GO2DanceCfg_swing, GO2DanceCfg_swingPPO
 from .panda7.panda7_config import panda7RoughCfg, panda7RoughCfgPPO
 from .go2.go2_dance_config import GO2DanceCfg_beat, GO2DanceCfg_beatPPO
 from .go2.go2_dance_config import GO2DanceCfg_turn_and_jump, GO2DanceCfg_turn_and_jumpPPO
+from .go2.go2_dance_config import GO2DanceCfg_wave, GO2DanceCfg_wavePPO
+from .go2.go2_dance_config import GO2DanceCfg_gait, GO2DanceCfg_gaitPPO
 
 import os
 
@@ -57,3 +59,5 @@ task_registry.register( "go2_dance_swing", LeggedRobot, GO2DanceCfg_swing(), GO2
 task_registry.register( "go2_dance_beat", LeggedRobot, GO2DanceCfg_beat(), GO2DanceCfg_beatPPO() )
 task_registry.register( "go2_dance_turn_and_jump", LeggedRobot, GO2DanceCfg_turn_and_jump(),
                         GO2DanceCfg_turn_and_jumpPPO() )
+task_registry.register( "go2_dance_wave", LeggedRobot, GO2DanceCfg_wave(), GO2DanceCfg_wavePPO() )
+task_registry.register( "go2_dance_gait", LeggedRobot, GO2DanceCfg_gait(), GO2DanceCfg_gaitPPO() )

@@ -45,6 +45,7 @@ for i in range(num_row-1):
 
 
 # 姿态
+# 计算姿态有点小问题，但是影响不大
 q1 = [0, 0, 0, 1]  # [x,y,z,w]
 q2 = [0, 0, np.sin(-np.pi / 12), np.cos(-np.pi / 12)]
 q3 = [0, 0, np.sin(np.pi / 12), np.cos(np.pi / 12)]

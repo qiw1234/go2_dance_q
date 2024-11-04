@@ -272,25 +272,27 @@ class LeggedRobot(BaseTask):
     def compute_observations(self):
         """ Computes observations
         """
-        # self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel,
-        #                           self.base_ang_vel * self.obs_scales.ang_vel,
-        #                           self.projected_gravity,
-        #                           self.commands[:, :3] * self.commands_scale,
-        #                           (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
-        #                           self.dof_vel * self.obs_scales.dof_vel,
-        #                           self.actions,
-        #                           self.frames[:,0:3],
-        #                           self.frames[:,13:25]
-        #                           ), dim=-1)
-        self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel,
-                                  self.base_ang_vel * self.obs_scales.ang_vel,
-                                  self.projected_gravity,
-                                  self.commands[:, :3] * self.commands_scale,
-                                  (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
-                                  self.dof_vel * self.obs_scales.dof_vel,
-                                  self.actions,
-                                  self.frames
-                                  ), dim=-1)
+        if self.cfg.env.simp_obs:
+            self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel,
+                                      self.base_ang_vel * self.obs_scales.ang_vel,
+                                      self.projected_gravity,
+                                      self.commands[:, :3] * self.commands_scale,
+                                      (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
+                                      self.dof_vel * self.obs_scales.dof_vel,
+                                      self.actions,
+                                      self.frames[:,0:3],
+                                      self.frames[:,13:25]
+                                      ), dim=-1)
+        else:
+            self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel,
+                                      self.base_ang_vel * self.obs_scales.ang_vel,
+                                      self.projected_gravity,
+                                      self.commands[:, :3] * self.commands_scale,
+                                      (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
+                                      self.dof_vel * self.obs_scales.dof_vel,
+                                      self.actions,
+                                      self.frames
+                                      ), dim=-1)
         # add perceptive inputs if not blind
         if self.cfg.terrain.measure_heights:
             heights = torch.clip(self.root_states[:, 2].unsqueeze(1) - 0.5 - self.measured_heights, -1,
@@ -1073,7 +1075,8 @@ class LeggedRobot(BaseTask):
         # rb_states里面装的是绝对坐标
         # rb_states里的数据滞后于base_pos,还没弄清楚：post_physics_step中一进去就会更新函数()，保证数据最新
         toe_pos = self.rb_states[:, self.feet_indices, 0:3].view(self.num_envs,-1) - self.base_pos.repeat(1,4)
-        return torch.exp(-100 * torch.sum(torch.square(self.frames[:, 13:25] - toe_pos), dim=1))
+        temp = torch.exp(-100 * torch.sum(torch.square(self.frames[:, 13:25] - toe_pos), dim=1))
+        return temp
 
     def _reward_track_dof_pos(self):
         return torch.exp(-5 * torch.sum(torch.square(self.frames[:, 25:37] - self.dof_pos), dim=1))
@@ -1082,5 +1085,7 @@ class LeggedRobot(BaseTask):
         return torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, 37:49] - self.dof_vel), dim=1))
 
     def _reward_jump(self):
-        # a =torch.exp( -10 * torch.square(self.base_pos[:, 2] - self.cfg.rewards.base_height_jump))
-        return torch.exp( -10 * torch.square(self.base_pos[:, 2] - self.cfg.rewards.base_height_jump))
+        ref_jump_buf = self.frames[:, 15] > -self.frames[:, 2] #足端位置是相对
+        sim_jump_buf = self.rb_states[:, self.feet_indices, 2].view(self.num_envs,-1) > 0.04
+        jump_buf = ref_jump_buf & sim_jump_buf[:, 0] & sim_jump_buf[:, 1] & sim_jump_buf[:, 2] & sim_jump_buf[:, 3]
+        return jump_buf
