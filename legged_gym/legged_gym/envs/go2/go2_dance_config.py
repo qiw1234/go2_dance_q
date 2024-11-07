@@ -63,6 +63,8 @@ class GO2DanceCfg_swing( LeggedRobotCfg ):
         motion_files = "opti_traj/output/swing.txt"
         frame_duration = 1/50
         RSI = 0 # 参考状态初始化
+        num_observations = 250
+        simp_obs = 1
 
 class GO2DanceCfg_swingPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):
@@ -147,6 +149,8 @@ class GO2DanceCfg_beatPPO(LeggedRobotCfgPPO):
         run_name = ''
         experiment_name = 'go2_dance_beat'
         resume_path = '/home/pcpc/robot_dance/legged_gym/logs/rough_go2/Oct12_14-53-43_/model_150.pt'
+        # resume_path = '/home/pcpc/robot_dance/legged_gym/logs/rough_go2/Oct11_21-53-45_/model_500.pt'
+
 
 
 class GO2DanceCfg_turn_and_jump(LeggedRobotCfg):
@@ -223,7 +227,7 @@ class GO2DanceCfg_turn_and_jumpPPO(LeggedRobotCfgPPO):
     class runner(LeggedRobotCfgPPO.runner):
         run_name = ''
         experiment_name = 'go2_dance_turn_and_jump'
-        # resume_path = 'legged_gym/logs/go2_dance_turn_and_jump/Oct23_11-30-09_/model_1200.pt'
+        resume_path = 'legged_gym/logs/go2_dance_turn_and_jump/Oct22_20-26-38_/model_500.pt'
         # resume_path = 'legged_gym/logs/go2_dance_turn_and_jump/Oct21_21-22-39_/model_3000.pt'  # 找类似芭蕾的动作
 
 
@@ -365,7 +369,7 @@ class GO2DanceCfg_gait(LeggedRobotCfg):
 
     class env(LeggedRobotCfg.env):
         # 打拍子参考动作
-        motion_files = "opti_traj/output/pace.txt"
+        motion_files = "opti_traj/output/trot.txt"
         frame_duration = 1 / 100
         RSI = 1  # 参考状态初始化
 

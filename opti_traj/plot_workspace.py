@@ -28,8 +28,10 @@ for i in q0:
 
 def scatter_3d(x, y, z):
     # 散点图
+    plt.rcParams.update({'font.size': 15})
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
+
 
     # s：marker标记的大小
     # c: 颜色  可为单个，可为序列
@@ -37,10 +39,18 @@ def scatter_3d(x, y, z):
     # marker：样式
     ax.scatter(xs=x, ys=y, zs=z,
                zdir='z', s=30, c="g", depthshade=True, cmap="jet", marker="^")
-    ax.set_xlabel('x')
-    ax.set_ylabel('y')
-    ax.set_zlabel('z')
+    ax.set_xlabel('x_label')
+    ax.set_ylabel('y_label')
+    ax.set_zlabel('z_label')
+    ax.set_title('work space')
+
+    plt.tight_layout()
     plt.show()
 
 
 scatter_3d(x, y, z)
+
+
+
+
+

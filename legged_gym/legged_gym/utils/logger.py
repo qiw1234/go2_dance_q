@@ -65,6 +65,7 @@ class Logger:
     def _plot(self):
         nb_rows = 3
         nb_cols = 3
+        plt.rcParams['font.size'] = 20
         fig, axs = plt.subplots(nb_rows, nb_cols)
         for key, value in self.state_log.items():
             time = np.linspace(0, len(value)*self.dt, len(value))
@@ -74,6 +75,7 @@ class Logger:
         a = axs[1, 0]
         if log["dof_pos"]: a.plot(time, log["dof_pos"], label='measured')
         if log["dof_pos_target"]: a.plot(time, log["dof_pos_target"], label='target')
+        plt.rcParams['xtick.labelsize'] = 20
         a.set(xlabel='time [s]', ylabel='Position [rad]', title='DOF Position')
         a.legend()
         # plot joint velocity
@@ -123,6 +125,7 @@ class Logger:
         if log["dof_torque"]!=[]: a.plot(time, log["dof_torque"], label='measured')
         a.set(xlabel='time [s]', ylabel='Joint Torque [Nm]', title='Torque')
         a.legend()
+        plt.tight_layout()
         plt.show()
 
     def print_rewards(self):
@@ -132,6 +135,6 @@ class Logger:
             print(f" - {key}: {mean}")
         print(f"Total number of episodes: {self.num_episodes}")
     
-    def __del__(self):
-        if self.plot_process is not None:
-            self.plot_process.kill()
+    # def __del__(self):
+    #     if self.plot_process is not None:
+    #         self.plot_process.kill()

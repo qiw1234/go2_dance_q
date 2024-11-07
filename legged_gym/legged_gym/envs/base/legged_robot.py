@@ -94,7 +94,6 @@ class LeggedRobot(BaseTask):
         clip_actions = self.cfg.normalization.clip_actions
         self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
         # step physics and render each frame
-        # 这个函数会更新所有的变量
         self.render()
         for _ in range(self.cfg.control.decimation):
             self.torques = self._compute_torques(self.actions).view(self.torques.shape)
@@ -284,14 +283,14 @@ class LeggedRobot(BaseTask):
                                       self.frames[:,13:25]
                                       ), dim=-1)
         else:
-            self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel,
-                                      self.base_ang_vel * self.obs_scales.ang_vel,
-                                      self.projected_gravity,
-                                      self.commands[:, :3] * self.commands_scale,
-                                      (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
-                                      self.dof_vel * self.obs_scales.dof_vel,
-                                      self.actions,
-                                      self.frames
+            self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel, #3
+                                      self.base_ang_vel * self.obs_scales.ang_vel,        #3
+                                      self.projected_gravity,                             #3
+                                      self.commands[:, :3] * self.commands_scale,         #3
+                                      (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos, #12
+                                      self.dof_vel * self.obs_scales.dof_vel,             #12
+                                      self.actions,                                       #12
+                                      self.frames                                         #49
                                       ), dim=-1)
         # add perceptive inputs if not blind
         if self.cfg.terrain.measure_heights:

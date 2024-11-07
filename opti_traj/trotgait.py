@@ -48,12 +48,12 @@ phase = np.arctan2(hopf_signal[:,4:8], hopf_signal[:,0:4])
 #
 # plt.show()
 
-# plt.figure()
-# plt.plot(t, phase[:,0], linewidth=5)
-# plt.plot(t, phase[:,1], linewidth=5)
-# plt.plot(t, phase[:,2], linewidth=5)
-# plt.plot(t, phase[:,3], linewidth=5)
-# plt.show()
+plt.figure()
+plt.plot(t, phase[:,0], linewidth=6)
+plt.plot(t, phase[:,1], linewidth=6)
+plt.plot(t, phase[:,2], linewidth=2)
+plt.plot(t, phase[:,3], linewidth=2)
+plt.show()
 
 # 足端位置
 vx = 1
