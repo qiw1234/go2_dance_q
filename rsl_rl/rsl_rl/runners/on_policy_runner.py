@@ -32,6 +32,7 @@ import time
 import os
 from collections import deque
 import statistics
+import numpy as np
 
 from torch.utils.tensorboard import SummaryWriter
 import torch
@@ -54,6 +55,8 @@ class OnPolicyRunner:
         self.policy_cfg = train_cfg["policy"]
         self.device = device
         self.env = env
+        if self.cfg["dance_task_list"] is not None:
+            self.dance_task_name_list = self.cfg["dance_task_list"]  # 舞蹈动作清单列出来
         if self.env.num_privileged_obs is not None:
             num_critic_obs = self.env.num_privileged_obs 
         else:
@@ -140,6 +143,99 @@ class OnPolicyRunner:
         
         self.current_learning_iteration += num_learning_iterations
         self.save(os.path.join(self.log_dir, 'model_{}.pt'.format(self.current_learning_iteration)))
+
+    def learn_trans(self, dance_task:dict, num_learning_iterations, init_at_random_ep_len=False):
+        # initialize writer
+        if self.log_dir is not None and self.writer is None:
+            self.writer = SummaryWriter(log_dir=self.log_dir, flush_secs=10)
+
+
+        dance_actions = torch.zeros(self.env.num_envs, self.env.num_actions, dtype=torch.float, device=self.device,
+                                        requires_grad=False)
+
+        if init_at_random_ep_len:
+            self.env.episode_length_buf = torch.randint_like(self.env.episode_length_buf,
+                                                             high=int(self.env.max_episode_length))
+        obs = self.env.get_observations()
+        privileged_obs = self.env.get_privileged_observations()
+        critic_obs = privileged_obs if privileged_obs is not None else obs
+        obs, critic_obs = obs.to(self.device), critic_obs.to(self.device)
+        self.alg.actor_critic.train()  # switch to train mode (for dropout for example)
+
+        ep_infos = []
+        rewbuffer = deque(maxlen=100)
+        lenbuffer = deque(maxlen=100)
+        cur_reward_sum = torch.zeros(self.env.num_envs, dtype=torch.float, device=self.device)
+        cur_episode_length = torch.zeros(self.env.num_envs, dtype=torch.float, device=self.device)
+        save_obs = obs
+
+        tot_iter = self.current_learning_iteration + num_learning_iterations
+        for it in range(self.current_learning_iteration, tot_iter):
+            start = time.time()
+            # Rollout
+            with torch.inference_mode():
+                for i in range(self.num_steps_per_env):
+                    # todo: 更新self.dance_task_id
+                    # 每一个环境使用不同的神经网络输出舞蹈动作
+                    for task_id in range(len(self.dance_task_name_list)):
+                        # 创建掩码张量，就是[true, False, ...]这样的，表示要为哪些地方赋值，那些位置不赋值
+                        # 使用torch.where找到要赋值的哪些位置的索引也是可以的
+                        task_buf = self.env.traj_idxs == task_id
+                        if task_id == 0 or task_id == 5:
+                            # 这里是因为go2_dance_swing和go2_dance_beat两个动作的obs是250维，所以如果是这两个动作，
+                            # 需要把obs的维度裁剪一下
+                            obs_dance = torch.cat((obs[:,:51], obs[:,61:73], obs[:,97:284]),dim=1)
+                        else:
+                            obs_dance = obs
+                        # 索引不能是list，但可以是tensor？
+                        dance_actions[task_buf] = dance_task[self.dance_task_name_list[task_id]](obs_dance[task_buf].detach())
+
+                    actions = self.alg.act(obs, critic_obs) + dance_actions
+                    actions = dance_actions
+                    # 已解决读取数据索引越界的问题
+                    obs, privileged_obs, rewards, dones, infos = self.env.step(actions)
+
+                    # save_obs = torch.cat((save_obs, obs), dim=0) #used in debug
+                    critic_obs = privileged_obs if privileged_obs is not None else obs
+                    obs, critic_obs, rewards, dones = obs.to(self.device), critic_obs.to(self.device), rewards.to(
+                        self.device), dones.to(self.device)
+                    self.alg.process_env_step(rewards, dones, infos)
+
+                    if self.log_dir is not None:
+                        # Book keeping
+                        if 'episode' in infos:
+                            ep_infos.append(infos['episode'])
+                        cur_reward_sum += rewards
+                        cur_episode_length += 1
+                        new_ids = (dones > 0).nonzero(as_tuple=False)
+                        rewbuffer.extend(cur_reward_sum[new_ids][:, 0].cpu().numpy().tolist())
+                        lenbuffer.extend(cur_episode_length[new_ids][:, 0].cpu().numpy().tolist())
+                        cur_reward_sum[new_ids] = 0
+                        cur_episode_length[new_ids] = 0
+
+                stop = time.time()
+                collection_time = stop - start
+
+                # Learning step
+                start = stop
+                self.alg.compute_returns(critic_obs)
+
+            mean_value_loss, mean_surrogate_loss = self.alg.update()
+            stop = time.time()
+            learn_time = stop - start
+            if self.log_dir is not None:
+                self.log(locals())
+            if it % self.save_interval == 0:
+                self.save(os.path.join(self.log_dir, 'model_{}.pt'.format(it)))
+            ep_infos.clear()
+            # np.savetxt("trans_obs.txt", save_obs.to("cpu").numpy(), delimiter=",") #used in debug
+
+        self.current_learning_iteration += num_learning_iterations
+        self.save(os.path.join(self.log_dir, 'model_{}.pt'.format(self.current_learning_iteration)))
+
+
+
+
 
     def log(self, locs, width=80, pad=35):
         self.tot_timesteps += self.num_steps_per_env * self.env.num_envs

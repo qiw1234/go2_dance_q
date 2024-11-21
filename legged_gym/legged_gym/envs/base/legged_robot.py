@@ -85,6 +85,7 @@ class LeggedRobot(BaseTask):
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
 
+
     def step(self, actions):
         """ Apply actions, simulate, call self.post_physics_step()
 
@@ -194,6 +195,7 @@ class LeggedRobot(BaseTask):
         self.feet_air_time[env_ids] = 0.
         self.episode_length_buf[env_ids] = 0
         self.reset_buf[env_ids] = 1
+
         # fill extras
         self.extras["episode"] = {}
         for key in self.episode_sums.keys():
@@ -300,6 +302,7 @@ class LeggedRobot(BaseTask):
         # add noise if needed
         if self.add_noise:
             self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
+        # print(self.obs_buf) #use in debug
 
     def create_sim(self):
         """ Creates simulation, terrain and evironments
@@ -1073,8 +1076,8 @@ class LeggedRobot(BaseTask):
         # 跟踪末端执行器的相对位置
         # rb_states里面装的是绝对坐标
         # rb_states里的数据滞后于base_pos,还没弄清楚：post_physics_step中一进去就会更新函数()，保证数据最新
-        toe_pos = self.rb_states[:, self.feet_indices, 0:3].view(self.num_envs,-1) - self.base_pos.repeat(1,4)
-        temp = torch.exp(-100 * torch.sum(torch.square(self.frames[:, 13:25] - toe_pos), dim=1))
+        self.toe_pos = self.rb_states[:, self.feet_indices, 0:3].view(self.num_envs,-1) - self.base_pos.repeat(1,4)
+        temp = torch.exp(-100 * torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos), dim=1))
         return temp
 
     def _reward_track_dof_pos(self):

@@ -1,5 +1,6 @@
 import glob
-
+import os
+import json
 from pybullet_utils import transformations
 
 from legged_gym.motion_loader import motion_util
@@ -46,17 +47,18 @@ class motionLoader:
             self,
             device,
             time_between_frames,
-            frame_duration,
+            frame_duration=1/50,
             data_dir='',
             preload_transitions=False,
             num_preload_transitions=1000000,
-            motion_files=glob.glob('datasets/motion_files2/*'),
+            motion_files='datasets/motion_files2',
             ):
         """Expert dataset provides AMP observations from Dog mocap dataset.
             从参考动作中导入数据，从AMP的程序修改得到的
         time_between_frames: Amount of time in seconds between transition.
         仿真环境里的时间间隔dt
-        frame_duration: 参考动作的时间间隔，1/36s
+        frame_duration: 参考动作的时间间隔，1/36s，读取单文件的情况下实例化时 ！！！需要进行赋值！！！
+        frame_duration设置了默认值，因为读取多文件的时候这个值我是不用的，实例化类的时候！！！不会给这个参数赋值！！！
         """
         self.device = device
         self.time_between_frames = time_between_frames
@@ -66,46 +68,62 @@ class motionLoader:
         self.trajectories_full = []
         self.trajectory_names = []
         self.trajectory_lens = []  # Traj length in seconds.
-        self.trajectory_idxs = [0]  # 只有一条轨迹
-        self.trajectory_weights = [1]
+        self.trajectory_idxs = []  # 只有一条轨迹
+        self.trajectory_weights = []
         self.trajectory_frame_durations = []
         self.trajectory_num_frames = []
         # 读取文件信息
         # # [fl, fr, rl, rr]
+        if os.path.isfile(motion_files):
+            motion_data = np.loadtxt(motion_files, delimiter=',')  # frames*items (70,49)
+            # 用reorder_from_pybullet_to_isaac函数把腿的顺序换一下，因为isaac gym的腿顺序是 左前，右前，左后，右后
+            motion_data = self.reorder_from_pybullet_to_isaac(motion_data)  #
 
-        # motion_files = "opti_traj/output/keep_the_beat/keep_the_beat_ref.txt"
-        motion_data = np.loadtxt(motion_files, delimiter=',')  # frames*items (70,49)
-        # 用reorder_from_pybullet_to_isaac函数把腿的顺序换一下，因为isaac gym的腿顺序是 左前，右前，左后，右后
-        motion_data = self.reorder_from_pybullet_to_isaac(motion_data)  #
-
-        # Normalize and standardize quaternions. 可以不用这一步，我用matlab输出的四元数就是归一化的，平方和等于1
-        # for f_i in range(motion_data.shape[0]):
-        #     root_rot = self.get_root_rot(motion_data[f_i])  # (4,)
-        #     root_rot = pose3d.QuaternionNormalize(root_rot)
-        #     root_rot = motion_util.standardize_quaternion(root_rot)
-        #     motion_data[
-        #         f_i,
-        #         self.POS_SIZE:
-        #             (self.POS_SIZE +
-        #              self.ROT_SIZE)] = root_rot
-
-        # Remove first 7 observation dimensions and last 12 foot_vel (root_pos and root_orn and foot_vel). (70, 42)
-        # todo: 这里还不知道取出来做什么 self.trajectories的用途不明
-        self.trajectories.append(torch.tensor(
-            motion_data[
+            # Remove first 7 observation dimensions and last 12 foot_vel (root_pos and root_orn and foot_vel). (70, 42)
+            # todo: 这里还不知道取出来做什么 self.trajectories的用途不明
+            self.trajectories.append(torch.tensor(
+                motion_data[
                 :,
                 self.ROOT_ROT_END_IDX:self.JOINT_VEL_END_IDX
-            ], dtype=torch.float32, device=device))
-        self.trajectories_full.append(torch.tensor(  # (70, 49)
+                ], dtype=torch.float32, device=device))
+            self.trajectories_full.append(torch.tensor(  # (70, 49)
                 motion_data[:, :self.JOINT_VEL_END_IDX],
                 dtype=torch.float32, device=device))
-        self.trajectory_frame_durations.append(frame_duration) # 1/36s
-        traj_len = (motion_data.shape[0] - 1) * frame_duration
-        self.trajectory_lens.append(traj_len)  # 约为2s
-        self.trajectory_num_frames.append(float(motion_data.shape[0])) # 70
+            self.trajectory_idxs.append(0)
+            self.trajectory_weights.append(1)
+            self.trajectory_frame_durations.append(frame_duration)  # 1/36s
+            traj_len = (motion_data.shape[0] - 1) * frame_duration
+            self.trajectory_lens.append(traj_len)  # 约为2s
+            self.trajectory_num_frames.append(float(motion_data.shape[0]))  # 70
+            print(f"Loaded {traj_len}s. motion from data.")
+        else:
+            for i, motion_file in enumerate(glob.glob(os.path.join(motion_files, '*'))):
+                self.trajectory_names.append(motion_file.split('.')[-2])
+                with open(motion_file,"r") as f:
+                    motion_json = json.load(f)
+                    motion_data = np.array(motion_json["frames"])
+                    motion_data = self.reorder_from_pybullet_to_isaac(motion_data)
+                    # 如果以后有数据的四元数不是标准的四元素，还需要把思源出归一化，把二范数变成1
+                    # 由于我的四元数是标准的，我这里就没有处理
+                    # Remove first 7 observation dimensions (root_pos and root_orn).
+                    self.trajectories.append(torch.tensor(
+                        motion_data[
+                        :,
+                        self.ROOT_ROT_END_IDX:self.JOINT_VEL_END_IDX
+                        ], dtype=torch.float32, device=device))
+                    self.trajectories_full.append(torch.tensor(
+                        motion_data[:, :self.JOINT_VEL_END_IDX],
+                        dtype=torch.float32, device=device))
+                    self.trajectory_idxs.append(i)
+                    self.trajectory_weights.append(1)
+                    frame_duration = float(motion_json["frame_duration"])
+                    self.trajectory_frame_durations.append(frame_duration)
+                    traj_len = (motion_data.shape[0] - 1) * frame_duration
+                    self.trajectory_lens.append(traj_len)
+                    self.trajectory_num_frames.append(float(motion_data.shape[0]))
+                print(f"Loaded {traj_len}s. motion from {motion_file}.")
 
-        print(f"Loaded {traj_len}s. motion from data.")
-
+        self.trajectory_weights = np.array(self.trajectory_weights) / np.sum(self.trajectory_weights)
         self.trajectory_frame_durations = np.array(self.trajectory_frame_durations)
         self.trajectory_lens = np.array(self.trajectory_lens)
         self.trajectory_num_frames = np.array(self.trajectory_num_frames)
@@ -174,6 +192,7 @@ class motionLoader:
         return np.random.choice(
             self.trajectory_idxs, size=size, p=self.trajectory_weights,
             replace=True)
+
 
     def traj_time_sample(self, traj_idx):
         """Sample random time for traj."""
