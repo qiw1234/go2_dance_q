@@ -181,17 +181,17 @@ class OnPolicyRunner:
                         # 创建掩码张量，就是[true, False, ...]这样的，表示要为哪些地方赋值，那些位置不赋值
                         # 使用torch.where找到要赋值的哪些位置的索引也是可以的
                         task_buf = self.env.traj_idxs == task_id
-                        if task_id == 0 or task_id == 5:
-                            # 这里是因为go2_dance_swing和go2_dance_beat两个动作的obs是250维，所以如果是这两个动作，
-                            # 需要把obs的维度裁剪一下
-                            obs_dance = torch.cat((obs[:,:51], obs[:,61:73], obs[:,97:284]),dim=1)
-                        else:
-                            obs_dance = obs
-                        # 索引不能是list，但可以是tensor？
-                        dance_actions[task_buf] = dance_task[self.dance_task_name_list[task_id]](obs_dance[task_buf].detach())
+                        # if task_id == 0 or task_id == 5:
+                        #     # 这里是因为go2_dance_swing和go2_dance_beat两个动作的obs是250维，所以如果是这两个动作，
+                        #     # 需要把obs的维度裁剪一下
+                        #     obs_dance = torch.cat((obs[:,:51], obs[:,61:73], obs[:,97:284]),dim=1)
+                        # else:
+                        #     obs_dance = obs
+                        # 索引不能是list，但可以是tensor？不是，因为tensor和ndarray不能混用
+                        dance_actions[task_buf] = dance_task[self.dance_task_name_list[task_id]](obs[task_buf].detach())
 
                     actions = self.alg.act(obs, critic_obs) + dance_actions
-                    actions = dance_actions
+                    # actions = dance_actions
                     # 已解决读取数据索引越界的问题
                     obs, privileged_obs, rewards, dones, infos = self.env.step(actions)
 

@@ -55,9 +55,9 @@ class GO2DanceCfg_trans(LeggedRobotCfg):
             track_root_rot = 0
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 3
-            track_dof_vel = 3
-            track_toe_pos = 8
+            track_dof_pos = 0
+            track_dof_vel = 0
+            track_toe_pos = 0
             termination = -1.0
 
     class env(LeggedRobotCfg.env):

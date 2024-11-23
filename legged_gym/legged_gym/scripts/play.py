@@ -84,9 +84,9 @@ def play(args):
     # load policy
     train_cfg.runner.resume = True
     ppo_runner, train_cfg = task_registry.make_alg_runner(env=env, name=args.task, args=args, train_cfg=train_cfg)
-    # policy = ppo_runner.get_inference_policy(device=env.device)
-    policy_dict = load_policy()
-    policy = policy_dict[args.task]
+    policy = ppo_runner.get_inference_policy(device=env.device)
+    # policy_dict = load_policy()
+    # policy = policy_dict[args.task]
 
 
 

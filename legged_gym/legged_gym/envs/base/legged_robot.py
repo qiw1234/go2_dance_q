@@ -156,6 +156,8 @@ class LeggedRobot(BaseTask):
         """
         self.reset_buf = torch.any(torch.norm(self.contact_forces[:, self.termination_contact_indices, :], dim=-1) > 1.,
                                    dim=1)
+        # 通过质心位置检测是否摔倒
+        # self.reset_buf = torch.tensor(self.root_states[:, 2] < self.cfg.init_state.lowest_root_height)
         self.time_out_buf = self.episode_length_buf >= self.max_episode_length  # no terminal reward for time-outs
         self.reset_buf |= self.time_out_buf
 
@@ -273,27 +275,35 @@ class LeggedRobot(BaseTask):
     def compute_observations(self):
         """ Computes observations
         """
-        if self.cfg.env.simp_obs:
-            self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel,
-                                      self.base_ang_vel * self.obs_scales.ang_vel,
-                                      self.projected_gravity,
-                                      self.commands[:, :3] * self.commands_scale,
-                                      (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
-                                      self.dof_vel * self.obs_scales.dof_vel,
-                                      self.actions,
-                                      self.frames[:,0:3],
-                                      self.frames[:,13:25]
-                                      ), dim=-1)
-        else:
-            self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel, #3
-                                      self.base_ang_vel * self.obs_scales.ang_vel,        #3
-                                      self.projected_gravity,                             #3
-                                      self.commands[:, :3] * self.commands_scale,         #3
-                                      (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos, #12
-                                      self.dof_vel * self.obs_scales.dof_vel,             #12
-                                      self.actions,                                       #12
-                                      self.frames                                         #49
-                                      ), dim=-1)
+        # if self.cfg.env.simp_obs:
+        #     self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel,
+        #                               self.base_ang_vel * self.obs_scales.ang_vel,
+        #                               self.projected_gravity,
+        #                               self.commands[:, :3] * self.commands_scale,
+        #                               (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
+        #                               self.dof_vel * self.obs_scales.dof_vel,
+        #                               self.actions,
+        #                               self.frames[:,0:3],
+        #                               self.frames[:,13:25]
+        #                               ), dim=-1)
+        # else:
+        #     self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel, #3
+        #                               self.base_ang_vel * self.obs_scales.ang_vel,        #3
+        #                               self.projected_gravity,                             #3
+        #                               self.commands[:, :3] * self.commands_scale,         #3
+        #                               (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos, #12
+        #                               self.dof_vel * self.obs_scales.dof_vel,             #12
+        #                               self.actions,                                       #12
+        #                               self.frames                                         #49
+        #                               ), dim=-1)
+        self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel, #3
+                                  self.base_ang_vel * self.obs_scales.ang_vel,        #3
+                                  self.projected_gravity,                             #3
+                                  (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos, #12
+                                  self.dof_vel * self.obs_scales.dof_vel,             #12
+                                  self.actions,                                       #12
+                                  self.frames                                         #49
+                                  ), dim=-1)
         # add perceptive inputs if not blind
         if self.cfg.terrain.measure_heights:
             heights = torch.clip(self.root_states[:, 2].unsqueeze(1) - 0.5 - self.measured_heights, -1,
@@ -1059,6 +1069,10 @@ class LeggedRobot(BaseTask):
     def _reward_track_root_pos(self):
         # 奖励跟踪root的位置，self.base_pos装的也是绝对坐标
         return torch.exp(-20 * torch.sum(torch.square(self.frames[:, 0:3] - (self.base_pos - self.env_origins)), dim=1))
+
+    def _reward_track_root_height(self):
+        # 奖励跟踪root的高度，self.base_pos装的也是绝对坐标
+        return torch.exp(-20 * torch.square(self.frames[:, 2] - self.base_pos[:, 2]))
 
     def _reward_track_root_rot(self):
         # 奖励跟踪root方向

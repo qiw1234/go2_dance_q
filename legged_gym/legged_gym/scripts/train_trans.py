@@ -16,12 +16,18 @@ def load_policy() -> dict:
     这个函数是按照task_list中的顺序提取对应的动作policy函数
     '''
     dance_task_policy = {}
-    path_list = ['/home/pcpc/robot_dance/legged_gym/log/GO2/keep_the_beat/model_1500.pt',
-                '/home/pcpc/robot_dance/legged_gym/log/GO2/pace/model_1500.pt',
-                '/home/pcpc/robot_dance/legged_gym/log/GO2/swing/model_1500.pt',
-                '/home/pcpc/robot_dance/legged_gym/log/GO2/trot/model_1500.pt',
-                '/home/pcpc/robot_dance/legged_gym/log/GO2/turn_and_jump/model_1500.pt',
-                '/home/pcpc/robot_dance/legged_gym/log/GO2/wave/model_1500.pt']
+    # path_list = ['/home/pcpc/robot_dance/legged_gym/log/GO2/keep_the_beat/model_1500.pt',
+    #             '/home/pcpc/robot_dance/legged_gym/log/GO2/pace/model_1500.pt',
+    #             '/home/pcpc/robot_dance/legged_gym/log/GO2/swing/model_1500.pt',
+    #             '/home/pcpc/robot_dance/legged_gym/log/GO2/trot/model_1500.pt',
+    #             '/home/pcpc/robot_dance/legged_gym/log/GO2/turn_and_jump/model_1500.pt',
+    #             '/home/pcpc/robot_dance/legged_gym/log/GO2/wave/model_1500.pt']
+    path_list = ["legged_gym/log/GO2_new/keep_the_beat/model_1500.pt",
+                 "legged_gym/log/GO2_new/pace/model_1500.pt",
+                 "legged_gym/log/GO2_new/swing/model_1500.pt",
+                 "legged_gym/log/GO2_new/trot/model_1500.pt",
+                 "legged_gym/log/GO2_new/turn_and_jump/model_1500.pt",
+                 "legged_gym/log/GO2_new/wave/model_1500.pt"]
     task_list = ['go2_dance_beat', 'go2_dance_pace', 'go2_dance_swing', 'go2_dance_trot',
                  'go2_dance_turn_and_jump', 'go2_dance_wave']
 

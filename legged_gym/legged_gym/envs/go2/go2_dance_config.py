@@ -50,7 +50,8 @@ class GO2DanceCfg_swing( LeggedRobotCfg ):
             tracking_lin_vel = 0
             tracking_ang_vel = 0
             feet_air_time = 0
-            track_root_pos = 0.5
+            track_root_pos = 0.
+            track_root_height = 0.5
             track_root_rot = 1.
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
@@ -62,8 +63,7 @@ class GO2DanceCfg_swing( LeggedRobotCfg ):
         # 旋转跳跃参考动作
         motion_files = "opti_traj/output/swing_2.txt"
         frame_duration = 1/50
-        RSI = 0 # 参考状态初始化
-        num_observations = 250
+        RSI = 1 # 参考状态初始化
         simp_obs = 1
 
 class GO2DanceCfg_swingPPO( LeggedRobotCfgPPO ):
@@ -72,6 +72,7 @@ class GO2DanceCfg_swingPPO( LeggedRobotCfgPPO ):
     class runner( LeggedRobotCfgPPO.runner ):
         run_name = ''
         experiment_name = 'go2_dance_swing'
+        resume_path = "/home/pcpc/robot_dance/legged_gym/log/GO2_new/swing/model_1500.pt"
 
 
 class GO2DanceCfg_beat(LeggedRobotCfg):
@@ -123,19 +124,18 @@ class GO2DanceCfg_beat(LeggedRobotCfg):
             tracking_ang_vel = 0
             feet_air_time = 0
             track_root_pos = 0
-            track_root_rot = 0
+            track_root_rot = 2.
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
             track_dof_pos = 0
             track_dof_vel = 0
-            track_toe_pos = 1.
+            track_toe_pos = 5.
 
     class env(LeggedRobotCfg.env):
         # 打拍子参考动作
-        motion_files = "opti_traj/output/keep_the_beat/keep_the_beat_ref_simp.txt"
+        motion_files = "opti_traj/output/keep_the_beat_ref_simp.txt"
         frame_duration = 1 / 36
         RSI = 1  # 参考状态初始化
-        num_observations = 250
         simp_obs = 1
 
 
@@ -148,8 +148,10 @@ class GO2DanceCfg_beatPPO(LeggedRobotCfgPPO):
     class runner(LeggedRobotCfgPPO.runner):
         run_name = ''
         experiment_name = 'go2_dance_beat'
-        resume_path = '/home/pcpc/robot_dance/legged_gym/logs/rough_go2/Oct12_14-53-43_/model_150.pt'
+        # resume_path = '/home/pcpc/robot_dance/legged_gym/logs/rough_go2/Oct12_14-53-43_/model_150.pt'
         # resume_path = '/home/pcpc/robot_dance/legged_gym/logs/rough_go2/Oct11_21-53-45_/model_500.pt'
+        resume_path = "legged_gym/log/GO2_new/keep_the_beat/model_1500.pt"
+
 
 
 
@@ -204,7 +206,8 @@ class GO2DanceCfg_turn_and_jump(LeggedRobotCfg):
             feet_air_time = 0
 
             lin_vel_z = -0
-            track_root_pos = 1.
+            track_root_pos = 0
+            track_root_height = 1.
             track_root_rot = 1.2
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
@@ -229,6 +232,7 @@ class GO2DanceCfg_turn_and_jumpPPO(LeggedRobotCfgPPO):
         experiment_name = 'go2_dance_turn_and_jump'
         # resume_path = 'legged_gym/logs/go2_dance_turn_and_jump/Oct22_20-26-38_/model_500.pt'
         # resume_path = 'legged_gym/logs/go2_dance_turn_and_jump/Oct21_21-22-39_/model_3000.pt'  # 找类似芭蕾的动作
+        resume_path = "legged_gym/log/GO2_new/turn_and_jump/model_1500.pt"
 
 
 
@@ -282,7 +286,8 @@ class GO2DanceCfg_wave(LeggedRobotCfg):
             feet_air_time = 0
 
             lin_vel_z = -0
-            track_root_pos = 1.
+            track_root_pos = 0.
+            track_root_height = 1.
             track_root_rot = 1.2
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
@@ -306,7 +311,8 @@ class GO2DanceCfg_wavePPO(LeggedRobotCfgPPO):
     class runner(LeggedRobotCfgPPO.runner):
         run_name = ''
         experiment_name = 'go2_wave'
-        resume_path = 'legged_gym/log/GO2/wave/model_1500.pt'
+        # resume_path = 'legged_gym/log/GO2/wave/model_1500.pt'
+        resume_path = "legged_gym/log/GO2_new/wave/model_1500.pt"
 
 class GO2DanceCfg_pace(LeggedRobotCfg):
     class init_state(LeggedRobotCfg.init_state):
@@ -381,7 +387,8 @@ class GO2DanceCfg_pacePPO(LeggedRobotCfgPPO):
     class runner(LeggedRobotCfgPPO.runner):
         run_name = ''
         experiment_name = 'go2_pace'
-        resume_path = 'legged_gym/logs/go2_trot/Nov02_13-32-18_/model_1400.pt'
+        # resume_path = 'legged_gym/logs/go2_trot/Nov02_13-32-18_/model_1400.pt'
+        resume_path = "legged_gym/log/GO2_new/pace/model_1500.pt"
 
 
 class GO2DanceCfg_trot(LeggedRobotCfg):
@@ -457,4 +464,6 @@ class GO2DanceCfg_trotPPO(LeggedRobotCfgPPO):
     class runner(LeggedRobotCfgPPO.runner):
         run_name = ''
         experiment_name = 'go2_trot'
-        resume_path = 'legged_gym/logs/go2_trot/Nov04_21-29-29_/model_1500.pt'
+        # resume_path = 'legged_gym/logs/go2_trot/Nov04_21-29-29_/model_1500.pt'
+        resume_path = "legged_gym/log/GO2_new/trot/model_1500.pt"
+

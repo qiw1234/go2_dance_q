@@ -34,7 +34,7 @@ class LeggedRobotCfg(BaseConfig):
     class env:
         num_envs = 5000
         simp_obs = 0
-        num_observations = 284
+        num_observations = 94
         num_privileged_obs = None # if not None a priviledge_obs_buf will be returned by step() (critic obs for assymetric training). None is returned otherwise 
         num_actions = 12
         env_spacing = 3.  # not used with heightfields/trimeshes 
@@ -51,7 +51,7 @@ class LeggedRobotCfg(BaseConfig):
         dynamic_friction = 1.0
         restitution = 0.
         # rough terrain only:
-        measure_heights = True
+        measure_heights = False
         measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # 1mx1.6m rectangle (without center line)
         measured_points_y = [-0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5]
         selected = False # select a unique terrain type and pass all arguments
@@ -86,6 +86,7 @@ class LeggedRobotCfg(BaseConfig):
         default_joint_angles = { # target angles when action = 0.0
             "joint_a": 0., 
             "joint_b": 0.}
+        lowest_root_height = 0.1
 
     class control:
         control_type = 'P' # P: position, V: velocity, T: torques
@@ -140,7 +141,7 @@ class LeggedRobotCfg(BaseConfig):
             torques = -0.00001
             dof_vel = -0.
             dof_acc = -2.5e-7
-            base_height = -0. 
+            base_height = -0.
             feet_air_time =  1.0
             collision = -1.
             feet_stumble = -0.0 
