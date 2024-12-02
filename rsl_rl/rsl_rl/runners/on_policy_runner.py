@@ -193,7 +193,7 @@ class OnPolicyRunner:
                     actions = self.alg.act(obs, critic_obs) + dance_actions
                     # actions = dance_actions
                     # 已解决读取数据索引越界的问题
-                    obs, privileged_obs, rewards, dones, infos = self.env.step(actions)
+                    obs, privileged_obs, rewards, dones, infos = self.env.step(actions, dance_actions)
 
                     # save_obs = torch.cat((save_obs, obs), dim=0) #used in debug
                     critic_obs = privileged_obs if privileged_obs is not None else obs

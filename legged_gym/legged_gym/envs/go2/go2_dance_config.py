@@ -206,8 +206,8 @@ class GO2DanceCfg_turn_and_jump(LeggedRobotCfg):
             feet_air_time = 0
 
             lin_vel_z = -0
-            track_root_pos = 0
-            track_root_height = 1.
+            track_root_pos = 1.
+            track_root_height = 0
             track_root_rot = 1.2
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
@@ -232,7 +232,9 @@ class GO2DanceCfg_turn_and_jumpPPO(LeggedRobotCfgPPO):
         experiment_name = 'go2_dance_turn_and_jump'
         # resume_path = 'legged_gym/logs/go2_dance_turn_and_jump/Oct22_20-26-38_/model_500.pt'
         # resume_path = 'legged_gym/logs/go2_dance_turn_and_jump/Oct21_21-22-39_/model_3000.pt'  # 找类似芭蕾的动作
-        resume_path = "legged_gym/log/GO2_new/turn_and_jump/model_1500.pt"
+        resume_path = 'legged_gym/log/GO2_new/turn_and_jump/model_550.pt'
+
+
 
 
 

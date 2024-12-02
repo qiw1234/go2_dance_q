@@ -51,7 +51,7 @@
     name="arm_link0">
     <inertial>
       <origin
-        xyz="1.04193988601165E-17 -2.06800069864048E-18 0.0306919872517665"
+        xyz="0 0 0.0306919872517665"
         rpy="0 0 0" />
       <mass
         value="0.154950873811881" />
@@ -312,11 +312,13 @@
       </geometry>
     </collision>
   </link>
+
+  <!-- xyz="0.251713743388397 -0.0670979052394916 0.049677" -->
   <joint
     name="arm_joint4"
     type="revolute">
     <origin
-      xyz="0.251713743388397 -0.0670979052394916 0.049676701967237"
+      xyz="0.251713743388397 -0.0670979052394916 0"
       rpy="0 0 0" />
     <parent
       link="arm_link3" />
@@ -648,7 +650,7 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.0001"/>
+      <mass value="0.01"/>
       <inertia ixx="1.000e-09" ixy="0.0" ixz="0.0" iyy="1.000e-09" iyz="0.0" izz="1.000e-09"/>
     </inertial>
   </link>
@@ -737,7 +739,7 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.0001"/>
+      <mass value="0.01"/>
       <inertia ixx="1.000e-09" ixy="0.0" ixz="0.0" iyy="1.000e-09" iyz="0.0" izz="1.000e-09"/>
     </inertial>
   </link>
@@ -826,7 +828,7 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.0001"/>
+      <mass value="0.01"/>
       <inertia ixx="1.000e-09" ixy="0.0" ixz="0.0" iyy="1.000e-09" iyz="0.0" izz="1.000e-09"/>
     </inertial>
   </link>
@@ -915,7 +917,7 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.0001"/>
+      <mass value="0.01"/>
       <inertia ixx="1.000e-09" ixy="0.0" ixz="0.0" iyy="1.000e-09" iyz="0.0" izz="1.000e-09"/>
     </inertial>
   </link>

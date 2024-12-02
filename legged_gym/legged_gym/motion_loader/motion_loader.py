@@ -97,6 +97,7 @@ class motionLoader:
             self.trajectory_num_frames.append(float(motion_data.shape[0]))  # 70
             print(f"Loaded {traj_len}s. motion from data.")
         else:
+            print(glob.glob(os.path.join(motion_files, '*')))
             for i, motion_file in enumerate(glob.glob(os.path.join(motion_files, '*'))):
                 self.trajectory_names.append(motion_file.split('.')[-2])
                 with open(motion_file,"r") as f:

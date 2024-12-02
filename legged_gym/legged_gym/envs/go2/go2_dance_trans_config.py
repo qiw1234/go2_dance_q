@@ -59,6 +59,8 @@ class GO2DanceCfg_trans(LeggedRobotCfg):
             track_dof_vel = 0
             track_toe_pos = 0
             termination = -1.0
+            survival = 0.5
+            no_action = 2.
 
     class env(LeggedRobotCfg.env):
         # 打拍子参考动作
@@ -70,6 +72,7 @@ class GO2DanceCfg_trans(LeggedRobotCfg):
         frame_duration = 1 / 100
         RSI = 1  # 参考状态初始化
         episode_length_s = 20
+        dance_sequence = None
 
 
 class GO2DanceCfg_trans_PPO(LeggedRobotCfgPPO):
@@ -82,5 +85,5 @@ class GO2DanceCfg_trans_PPO(LeggedRobotCfgPPO):
         dance_task_list = ["go2_dance_beat", "go2_dance_wave", "go2_dance_pace", "go2_dance_turn_and_jump",
                            "go2_dance_trot", "go2_dance_swing"]
         # dance_task_list = ["go2_dance_wave"]
-        # resume_path = 'legged_gym/logs/go2_gait/Nov02_13-32-18_/model_1400.pt'
-
+        resume_path = 'legged_gym/logs/go2_trans/Nov25_17-06-09_/model_1500.pt'
+        # resume_path = 'legged_gym/log/GO2_new/trans/Nov25_11-05-24_/model_200.pt'

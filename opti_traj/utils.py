@@ -32,8 +32,8 @@ def rot2trans(rot_matrix, pos):
     # temp[3, :] = np.array([0, 0, 0, 1])
     # return temp
     temp = ca.SX.eye(4)
-    temp[:3,:3] = rot_matrix
-    temp[:3,3] = pos
+    temp[:3, :3] = rot_matrix
+    temp[:3, 3] = pos
     # temp[3,:] = ca.SX([0, 0, 0, 1])
     return temp
 
@@ -51,10 +51,19 @@ def quaternion2rotm(quat):
     x = quat[0]
     y = quat[1]
     z = quat[2]
-    rotm = np.array([[1-2*y**2-2*z**2, 2*x*y-2*w*z, 2*x*z+2*w*y],
-                     [2*x*y+2*w*z, 1-2*x**2-2*z**2, 2*y*z-2*w*x],
-                     [2*x*z-2*w*y, 2*y*z+2*w*x, 1-2*x**2-2*y**2]])
+    rotm = np.array([[1 - 2 * y ** 2 - 2 * z ** 2, 2 * x * y - 2 * w * z, 2 * x * z + 2 * w * y],
+                     [2 * x * y + 2 * w * z, 1 - 2 * x ** 2 - 2 * z ** 2, 2 * y * z - 2 * w * x],
+                     [2 * x * z - 2 * w * y, 2 * y * z + 2 * w * x, 1 - 2 * x ** 2 - 2 * y ** 2]])
     return rotm
+
+
+def rotm2quaternion(rotm):
+    w = np.sqrt(1 + rotm[0, 0] + rotm[1, 1] + rotm[2, 2]) / 2.
+    x = (rotm[2, 1] - rotm[1, 2]) / (4 * w)
+    y = (rotm[0, 2] - rotm[2, 0]) / (4 * w)
+    z = (rotm[1, 0] - rotm[0, 1]) / (4 * w)
+    quat = [x, y, z, w]
+    return quat
 
 
 def quat2angvel_map(q):
@@ -74,21 +83,88 @@ def quat2angvel_map(q):
     return np.array([[w, -z, y, -x], [z, w, -x, -y], [-y, x, w, -z]])
 
 
+def arm_fk(theta):
+    """
+    这是panda7上的机械臂的正运动学
+    根据输入的6个关节角度，计算机械臂末端的变换矩阵、旋转矩阵以及对应的四元数。
+    参数:
+    theta1, theta2, theta3, theta4, theta5, theta6: 6个关节角度，单位为弧度
+
+    返回:
+    ARM_end: 机械臂末端的齐次变换矩阵
+    ARM_R: 机械臂末端的旋转矩阵
+    quat: 机械臂末端姿态对应的四元数
+    """
+    # ------DH参数---------------
+    ARM_DH = np.array([
+        [-0.02, np.pi / 2, 0.1005, np.pi / 2 + theta[0]],
+        [0.264, 0, 0, theta[1]],
+        [0.26078, 0, 0, 0.9172 * np.pi + theta[2]],
+        [0.06, np.pi / 2, 0, 0.0828 * np.pi + theta[3]],
+        [0, -np.pi / 2, -0.01047, -np.pi / 2 + theta[4]],
+        [0, 0, 0.0285, 0]
+    ])
+
+    # ------机身质心到机械臂基座的变换矩阵---------------
+    R = np.array([[0, -1, 0, 0],
+                  [1, 0, 0, 0],
+                  [0, 0, 1, 0],
+                  [0, 0, 0, 1]])
+    P = np.array([[1, 0, 0, 0.332],
+                  [0, 1, 0, 0],
+                  [0, 0, 1, 0.105],
+                  [0, 0, 0, 1]])
+
+    # 初始化变换矩阵列表
+    ARM = [np.eye(4)]  # 初始变换矩阵为单位矩阵
+    ARM[0] = np.dot(ARM[0], np.dot(P, R))  # 机身质心到机械臂基座的变换
+
+    for i in range(len(ARM_DH)):
+        a = ARM_DH[i, 0]
+        alpha = ARM_DH[i, 1]
+        d = ARM_DH[i, 2]
+        theta = ARM_DH[i, 3]
+
+        # 计算变换矩阵
+        A = np.array([
+            [np.cos(theta), -np.sin(theta) * np.cos(alpha), np.sin(theta) * np.sin(alpha),
+             a * np.cos(theta)],
+            [np.sin(theta), np.cos(theta) * np.cos(alpha), -np.cos(theta) * np.sin(alpha),
+             a * np.sin(theta)],
+            [0, np.sin(alpha), np.cos(alpha), d],
+            [0, 0, 0, 1]
+        ])
+
+        # 累积变换矩阵
+        ARM.append(np.dot(ARM[i], A))
+
+    ARM_end = ARM[-1]
+    ARM_R = ARM_end[0:3, 0:3]
+    ARM_P = ARM_end[0:3, 3]
+    return ARM_R, ARM_P
+
+
 class QuadrupedRobot:
-    def __init__(self):
+    def __init__(self, l=0.3868, w=0.093, l1=0.0955, l2=0.213, l3=0.213,
+                 lb=[-0.8378, -np.pi / 2, -2.7227, -0.8378, -np.pi / 2, -2.7227, -0.8378, -np.pi / 6, -2.7227,
+                     -0.8378, -np.pi / 6, -2.7227],
+                 ub=[0.8378, 3.4907, -0.8378, 0.8378, 3.4907, -0.8378, 0.8378, 4.5379, -0.8378, 0.8378,
+                     4.5379, -0.8378],
+                 toe_pos_init=[0.178, -0.173, -0.3, 0.178, 0.173, -0.3, -0.178, -0.173, -0.3, -0.178,
+                               0.173, -0.3]
+                 ):
         # go2模型参数
-        self.L = 0.3868
-        self.W = 0.093
-        self.l1 = 0.0955
-        self.l2 = 0.213
-        self.l3 = 0.213
+        self.L = l
+        self.W = w
+        self.l1 = l1
+        self.l2 = l2
+        self.l3 = l3
         self.eye = np.eye(3)
         self.p0 = np.array([0, 0, 0])
-        self.toe =  np.array([self.l3, 0, 0, 1])
-        self.lb = [-0.8378, -np.pi / 2, -2.7227, -0.8378, -np.pi / 2, -2.7227, -0.8378, -np.pi / 6, -2.7227, -0.8378,
-              -np.pi / 6, -2.7227]
-        self.ub = [0.8378, 3.4907, -0.8378, 0.8378, 3.4907, -0.8378, 0.8378, 4.5379, -0.8378, 0.8378, 4.5379, -0.8378]
-        self.toe_pos_init = [ 0.178, -0.173, -0.3, 0.178, 0.173, -0.3, -0.178, -0.173, -0.3, -0.178, 0.173, -0.3]
+        self.toe = np.array([self.l3, 0, 0, 1])
+        self.lb = lb
+        self.ub = ub
+        self.toe_pos_init = toe_pos_init
 
     def rightfoot(self, q):
         "右侧腿末端到髋关节基坐标系的变换矩阵"
@@ -97,7 +173,7 @@ class QuadrupedRobot:
                          rot2trans(self.eye, np.array([0, 0, -self.l1])) @
                          rot2trans(rz(q[1]), self.p0))
         trans23_right = rot2trans(self.eye, np.array([self.l2, 0, 0])) @ rot2trans(rz(q[2]),
-                                                                                         self.p0)
+                                                                                   self.p0)
         return trans01_right @ trans12_right @ trans23_right
 
     def leftfoot(self, q):
@@ -107,7 +183,7 @@ class QuadrupedRobot:
                         rot2trans(self.eye, np.array([0, 0, self.l1])) @
                         rot2trans(rz(q[1]), self.p0))
         trans23_left = rot2trans(self.eye, np.array([self.l2, 0, 0])) @ rot2trans(rz(q[2]),
-                                                                                        self.p0)
+                                                                                  self.p0)
         return trans01_left @ trans12_left @ trans23_left
 
     def trans(self, q, legnum):
@@ -139,11 +215,6 @@ class QuadrupedRobot:
         transm = rot2trans(rotm, p)
         return transm @ self.trans(q, legnum)
 
-
-
-
-
-
 # # 这是用来验证正运动学公式的
 # go2 = QuadrupedRobot()
 # toe_pos = np.array([go2.l3, 0, 0, 1])
@@ -161,4 +232,3 @@ class QuadrupedRobot:
 # # quat = [0.2415334, 0.6404592, -0.5108982, 0.5200544 ]
 # # rotm = quaternion2rotm(quat)
 # # print(rotm)
-

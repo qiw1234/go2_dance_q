@@ -182,8 +182,8 @@ class LeggedRobot(BaseTask):
 
         # reset robot states
         if not self.cfg.env.RSI:
-            self._reset_dofs(env_ids)
             self._reset_root_states(env_ids)
+            self._reset_dofs(env_ids)
         else:
             frames = self.motion_loader.get_full_frame_batch(len(env_ids))
             self._reset_dofs_amp(env_ids, frames)
@@ -239,6 +239,8 @@ class LeggedRobot(BaseTask):
         # base position
         root_pos = self.motion_loader.get_root_pos_batch(frames)
         root_pos[:, :2] = root_pos[:, :2] + self.env_origins[env_ids, :2]  # 加上每个环境的原点位置偏移量
+        # 记录初始位置
+        self.origin_xy[env_ids, :] = root_pos
         self.root_states[env_ids, :3] = root_pos
         root_orn = self.motion_loader.get_root_rot_batch(frames)
         self.root_states[env_ids, 3:7] = root_orn
@@ -296,13 +298,13 @@ class LeggedRobot(BaseTask):
         #                               self.actions,                                       #12
         #                               self.frames                                         #49
         #                               ), dim=-1)
-        self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel, #3
-                                  self.base_ang_vel * self.obs_scales.ang_vel,        #3
-                                  self.projected_gravity,                             #3
-                                  (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos, #12
-                                  self.dof_vel * self.obs_scales.dof_vel,             #12
-                                  self.actions,                                       #12
-                                  self.frames                                         #49
+        self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel, #3   #panda3
+                                  self.base_ang_vel * self.obs_scales.ang_vel,        #3   #3
+                                  self.projected_gravity,                             #3   #3
+                                  (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos, #12   #20
+                                  self.dof_vel * self.obs_scales.dof_vel,             #12  #20
+                                  self.actions,                                       #12  #20
+                                  self.frames                                         #49  #72
                                   ), dim=-1)
         # add perceptive inputs if not blind
         if self.cfg.terrain.measure_heights:
@@ -494,6 +496,8 @@ class LeggedRobot(BaseTask):
                                               gymtorch.unwrap_tensor(self.dof_state),
                                               gymtorch.unwrap_tensor(env_ids_int32), len(env_ids_int32))
 
+
+
     def _reset_root_states(self, env_ids):
         """ Resets ROOT states position and velocities of selected environmments
             Sets base position based on the curriculum
@@ -618,6 +622,7 @@ class LeggedRobot(BaseTask):
         self.base_pos = self.root_states[:, 0:3]
         self.base_quat = self.root_states[:, 3:7]
 
+
         self.contact_forces = gymtorch.wrap_tensor(net_contact_forces).view(self.num_envs, -1,
                                                                             3)  # shape: num_envs, num_bodies, xyz axis
 
@@ -674,6 +679,8 @@ class LeggedRobot(BaseTask):
         self.default_dof_pos = self.default_dof_pos.unsqueeze(0)
         # 定义参考动作帧
         self.frames = None
+        # 定义初始位置
+        self.origin_xy = torch.zeros_like(self.base_pos)
 
     def _prepare_reward_function(self):
         """ Prepares a list of reward functions, whcih will be called to compute the total reward.
@@ -986,6 +993,7 @@ class LeggedRobot(BaseTask):
 
     def _reward_torques(self):
         # Penalize torques
+        # print(self.torques)
         return torch.sum(torch.square(self.torques), dim=1)
 
     def _reward_dof_vel(self):
@@ -1076,7 +1084,13 @@ class LeggedRobot(BaseTask):
 
     def _reward_track_root_rot(self):
         # 奖励跟踪root方向
-        return torch.exp(-10 * torch.sum(torch.square(self.frames[:, 3:7] - self.base_quat), dim=1))
+        # if True:
+        #     print(f'root_rot_ref:  {self.frames[:, 3:7]}')
+        #     print(f'root_rot:  {self.base_quat}')
+        #     # print(torch.sum(torch.square(self.frames[:, 3:7] - self.base_quat), dim=1))
+        #     print(torch.exp(-200 * torch.sum(torch.square(self.frames[:, 3:7] - self.base_quat), dim=1)))
+        #     print(torch.exp(-20 * torch.sum(torch.square(self.frames[:, 3:7] - self.base_quat), dim=1)))
+        return torch.exp(-200 * torch.sum(torch.square(self.frames[:, 3:7] - self.base_quat), dim=1))
 
     def _reward_track_lin_vel_ref(self):
         # 跟踪参考动作的线速度
@@ -1091,17 +1105,26 @@ class LeggedRobot(BaseTask):
         # rb_states里面装的是绝对坐标
         # rb_states里的数据滞后于base_pos,还没弄清楚：post_physics_step中一进去就会更新函数()，保证数据最新
         self.toe_pos = self.rb_states[:, self.feet_indices, 0:3].view(self.num_envs,-1) - self.base_pos.repeat(1,4)
-        temp = torch.exp(-100 * torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos), dim=1))
+        self.toe_pos_absolute = self.rb_states[:, self.feet_indices, 0:3].view(self.num_envs,-1)
+        temp = torch.exp(-200 * torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos), dim=1))
+        # print(f"toe pos ref is : {self.frames[:, 13:25]}")
+        # print(f"toe pos is :{self.toe_pos}")
+        # print(torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos), dim=1))
+        # print(f"toe reward is:{temp}")
+        # print(50*'!')
         return temp
 
     def _reward_track_dof_pos(self):
-        return torch.exp(-5 * torch.sum(torch.square(self.frames[:, 25:37] - self.dof_pos), dim=1))
+        return torch.exp(-5 * torch.sum(torch.square(self.frames[:, 25:37] - self.dof_pos[:, :12]), dim=1))
 
     def _reward_track_dof_vel(self):
-        return torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, 37:49] - self.dof_vel), dim=1))
+        return torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, 37:49] - self.dof_vel[:, :12]), dim=1))
 
     def _reward_jump(self):
         ref_jump_buf = self.frames[:, 15] > -self.frames[:, 2] #足端位置是相对
         sim_jump_buf = self.rb_states[:, self.feet_indices, 2].view(self.num_envs,-1) > 0.04
         jump_buf = ref_jump_buf & sim_jump_buf[:, 0] & sim_jump_buf[:, 1] & sim_jump_buf[:, 2] & sim_jump_buf[:, 3]
         return jump_buf
+
+    def _reward_original_xy(self):
+        return torch.exp(-10*torch.sum(torch.square(self.base_pos[:, :2] - self.origin_xy[:, :2]), dim=1))

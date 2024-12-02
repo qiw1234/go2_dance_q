@@ -40,6 +40,7 @@ class LeggedRobotCfg(BaseConfig):
         env_spacing = 3.  # not used with heightfields/trimeshes 
         send_timeouts = True # send time out information to the algorithm
         episode_length_s = 6 # episode length in seconds
+        debug = False
 
     class terrain:
         mesh_type = 'plane' # "heightfield" # none, plane, heightfield or trimesh
@@ -180,7 +181,7 @@ class LeggedRobotCfg(BaseConfig):
     # viewer camera:
     class viewer:
         ref_env = 0
-        pos = [10, 0, 2]  # [m]
+        pos = [0, -2, 2]  # [m]
         lookat = [11., 5, 3.]  # [m]
 
     class sim:

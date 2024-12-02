@@ -1,32 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: BSD-3-Clause
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# 1. Redistributions of source code must retain the above copyright notice, this
-# list of conditions and the following disclaimer.
-#
-# 2. Redistributions in binary form must reproduce the above copyright notice,
-# this list of conditions and the following disclaimer in the documentation
-# and/or other materials provided with the distribution.
-#
-# 3. Neither the name of the copyright holder nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-# Copyright (c) 2021 ETH Zurich, Nikita Rudin
+
 
 from legged_gym import LEGGED_GYM_ROOT_DIR, envs
 from time import time
@@ -50,19 +22,59 @@ from legged_gym.envs.go2.go2_dance_config import GO2DanceCfg_beat
 from legged_gym.motion_loader.motion_loader import motionLoader
 from .legged_robot import LeggedRobot
 
+
 class LeggedRobotTrans(LeggedRobot):
     def __init__(self, cfg: GO2DanceCfg_beat, sim_params, physics_engine, sim_device, headless):
         super().__init__(cfg, sim_params, physics_engine, sim_device, headless)
-        # 随机选择num_env个从0到5的6个数字，分别代表self.dance_task_name_list中的六个舞蹈动作
-        self.traj_idxs = np.random.randint(0, 5, (self.num_envs,))
-        # self.traj_idxs = np.ones((self.num_envs), dtype=int)*5
+        if self.cfg.env.dance_sequence is not None:
+            self.temp = 0
+            self.traj_idxs = np.full(self.num_envs, self.cfg.env.dance_sequence[0])
+        else:
+            # 随机选择num_env个从0到5的6个数字，分别代表self.dance_task_name_list中的六个舞蹈动作
+            self.traj_idxs = np.random.randint(0, 5, (self.num_envs,))
+            # self.traj_idxs = np.ones((self.num_envs), dtype=int)*5
 
         self.max_episode_length_s = self.cfg.env.episode_length_s
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
-        self.max_length = np.ceil(self.motion_loader.trajectory_lens/self.dt)
+        self.max_length = np.ceil(self.motion_loader.trajectory_lens / self.dt)
         self.max_primitive_length = self.max_length[self.traj_idxs]
 
+
+    def reset(self):
+        """ Reset all robots"""
+        self.reset_idx(torch.arange(self.num_envs, device=self.device))
+        self.max_primitive_length = self.max_length[self.traj_idxs]
+        obs, privileged_obs, _, _, _ = self.step(torch.zeros(self.num_envs, self.num_actions, device=self.device, requires_grad=False),
+                                                 torch.zeros(self.num_envs, self.num_actions, device=self.device, requires_grad=False))
+        return obs, privileged_obs
+
+    def step(self, actions, dance_actions):
+        """ Apply actions, simulate, call self.post_physics_step()
+
+        Args:
+            actions (torch.Tensor): Tensor of shape (num_envs, num_actions_per_env)
+        """
+        clip_actions = self.cfg.normalization.clip_actions
+        self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
+        self.dance_actions = dance_actions
+        # step physics and render each frame
+        self.render()
+        for _ in range(self.cfg.control.decimation):
+            self.torques = self._compute_torques(self.actions).view(self.torques.shape)
+            self.gym.set_dof_actuation_force_tensor(self.sim, gymtorch.unwrap_tensor(self.torques))
+            self.gym.simulate(self.sim)
+            if self.device == 'cpu':
+                self.gym.fetch_results(self.sim, True)
+            self.gym.refresh_dof_state_tensor(self.sim)
+        self.post_physics_step()
+
+        # return clipped obs, clipped states (None), rewards, dones and infos
+        clip_obs = self.cfg.normalization.clip_observations
+        self.obs_buf = torch.clip(self.obs_buf, -clip_obs, clip_obs)
+        if self.privileged_obs_buf is not None:
+            self.privileged_obs_buf = torch.clip(self.privileged_obs_buf, -clip_obs, clip_obs)
+        return self.obs_buf, self.privileged_obs_buf, self.rew_buf, self.reset_buf, self.extras
 
     def post_physics_step(self):
         """ check terminations, compute observations and rewards
@@ -76,11 +88,11 @@ class LeggedRobotTrans(LeggedRobot):
         # 在这里计算对应时刻的参考位置，放在这里self.episode_length_buf的范围是0-69，放到下面就是1-70，越界了
         # self.traj_idxs = self.motion_loader.weighted_traj_idx_sample_batch(self.num_envs)
         self.check_primitive_termination()
-        a = self.episode_length_buf.cpu().numpy() -(self.max_primitive_length - self.max_length[self.traj_idxs])
+        a = self.episode_length_buf.cpu().numpy() - (self.max_primitive_length - self.max_length[self.traj_idxs])
         # print(self.episode_length_buf[54])
         self.episode_time = (self.episode_length_buf.cpu().numpy() -
-                            (self.max_primitive_length -
-                             self.max_length[self.traj_idxs]))*self.dt
+                             (self.max_primitive_length -
+                              self.max_length[self.traj_idxs])) * self.dt
 
         self.frames = self.motion_loader.get_full_frame_at_time_batch(self.traj_idxs, self.episode_time)
 
@@ -170,12 +182,22 @@ class LeggedRobotTrans(LeggedRobot):
         self.primitive_time_out = self.episode_length_buf.cpu() >= torch.from_numpy(self.max_primitive_length)
         # 需要更新self.traj_idxs的环境
         env_ids = self.primitive_time_out.nonzero(as_tuple=False).flatten()
-        # 这里是如果有需要重新选择动作的环境，那就采样对应环境的数量这么多的随机数，赋值给self.traj_idxs对应的位置
-        self.traj_idxs[self.primitive_time_out] = np.random.randint(0, 5, (len(env_ids)))
+        if self.cfg.env.dance_sequence is not None:
+            if len(env_ids) != 0:
+                self.temp += 1
+            self.traj_idxs[self.primitive_time_out] = np.full(len(env_ids), self.cfg.env.dance_sequence[self.temp])
+        else:
+            # 这里是如果有需要重新选择动作的环境，那就采样对应环境的数量这么多的随机数，赋值给self.traj_idxs对应的位置
+            self.traj_idxs[self.primitive_time_out] = np.random.randint(0, 5, (len(env_ids)))
         # 如果一个动作结束了，那么在self.max_primitive_length加上新的动作的轨迹时长，以便下一个动作对比是否结束
         self.max_primitive_length[self.primitive_time_out] += self.max_length[self.traj_idxs[self.primitive_time_out]]
 
+    def _reward_survival(self):
+        "如果这个回合存活，给一个奖励"
+        survival_buf = torch.any(torch.norm(self.contact_forces[:, self.termination_contact_indices, :], dim=-1) < 1.,
+                                 dim=1)
+        return survival_buf
 
-
-
-
+    def _reward_no_action(self):
+        "鼓励policy输出动作为0的actions"
+        return torch.exp(-0.1 * torch.sum(torch.square(self.actions - self.dance_actions), dim=1))
