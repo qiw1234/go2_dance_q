@@ -121,15 +121,15 @@ beat_ref[:, 52:56] = arm_rot[:num_row - 1, :]
 beat_ref[:, 56:64] = arm_dof_pos[:num_row - 1, :]
 beat_ref[:, 64:72] = arm_dof_vel
 
-# # 导出txt
+# # 导出完整轨迹
 # outfile = 'output_panda/panda_beat.txt'
 # np.savetxt(outfile, beat_ref, delimiter=',')
 
-# # 导出txt
+# # 导出fixed arm轨迹
 # outfile = 'output_panda_fixed_arm/panda_beat.txt'
 # np.savetxt(outfile, beat_ref[:, :49], delimiter=',')
 
-# 导出txt
+# 导出 fixed gripper轨迹
 outfile = 'output_panda_fixed_gripper/panda_beat.txt'
 out = np.hstack((beat_ref[:, :49], beat_ref[:, 49:56], beat_ref[:, 56:62], beat_ref[:, 64:70]))
 np.savetxt(outfile, out, delimiter=',')

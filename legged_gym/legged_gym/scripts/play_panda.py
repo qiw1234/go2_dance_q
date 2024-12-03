@@ -110,9 +110,9 @@ def play(args):
         actions = policy(obs.detach())
         # actions[:, 18:20] = 0
         obs, _, rews, dones, infos = env.step(actions.detach())
-        # print(actions)
+        print(f"actions:{actions.detach()}")
         # print(env.dof_pos[:, 0:3])
-        # print(env.dof_pos[:, 12:20])
+        print(f"dof: {env.dof_pos[:, 12:18]}")
         # print(env.torques)
         if RECORD_FRAMES:
             if i % 2:

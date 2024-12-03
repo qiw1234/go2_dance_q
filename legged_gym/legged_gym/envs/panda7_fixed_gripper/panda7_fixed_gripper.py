@@ -54,7 +54,7 @@ class panda7_fixed_gripper_BeatCfg(LeggedRobotCfg):
         penalize_contacts_on = ["thigh", "calf", "base", "arm_link0", "arm_link1", "arm_link2",
                                 "arm_link3", "arm_link4", "arm_link5", "arm_link6"]
         terminate_after_contacts_on = ["base"]
-        self_collisions = 1  # 1 to disable, 0 to enable...bitwise filter
+        self_collisions = 0  # 1 to disable, 0 to enable...bitwise filter
 
     class rewards(LeggedRobotCfg.rewards):
         soft_dof_pos_limit = 0.9
@@ -63,11 +63,12 @@ class panda7_fixed_gripper_BeatCfg(LeggedRobotCfg):
         class scales(LeggedRobotCfg.rewards.scales):
             # regularization reward
             torques = -0.00001
-            dof_pos_limits = -100.0
+            dof_pos_limits = -10.0
             action_rate = -0.1
             collision = -5.
             lin_vel_z = -1.0
             feet_air_time = 0
+            survival = 2
 
             # 模仿奖励
             tracking_lin_vel = 0
@@ -102,6 +103,7 @@ class panda7_fixed_gripper_BeatCfgPPO(LeggedRobotCfgPPO):
     class runner(LeggedRobotCfgPPO.runner):
         run_name = ''
         experiment_name = ('panda7_fixed_gripper_beat')
+        max_iterations = 16000
         # resume_path = 'legged_gym/logs/panda7_beat/Dec01_20-31-14_/model_1500.pt'
 
 

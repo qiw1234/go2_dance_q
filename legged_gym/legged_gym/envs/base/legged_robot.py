@@ -681,6 +681,7 @@ class LeggedRobot(BaseTask):
         self.frames = None
         # 定义初始位置
         self.origin_xy = torch.zeros_like(self.base_pos)
+        self.toe_pos_body = torch.zeros((self.num_envs, 12), device=self.device)
 
     def _prepare_reward_function(self):
         """ Prepares a list of reward functions, whcih will be called to compute the total reward.
@@ -1103,10 +1104,19 @@ class LeggedRobot(BaseTask):
     def _reward_track_toe_pos(self):
         # 跟踪末端执行器的相对位置
         # rb_states里面装的是绝对坐标
+        # 使用quat_rotate_inverse将世界系下的末端相对足端位置转换为body系下的相对位置
         # rb_states里的数据滞后于base_pos,还没弄清楚：post_physics_step中一进去就会更新函数()，保证数据最新
-        self.toe_pos = self.rb_states[:, self.feet_indices, 0:3].view(self.num_envs,-1) - self.base_pos.repeat(1,4)
-        self.toe_pos_absolute = self.rb_states[:, self.feet_indices, 0:3].view(self.num_envs,-1)
+        self.toe_pos_world = self.rb_states[:, self.feet_indices, 0:3].view(self.num_envs, -1)
+        self.toe_pos_body[:, :3] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, :3])
+        self.toe_pos_body[:, 3:6] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 3:6])
+        self.toe_pos_body[:, 6:9] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 6:9])
+        self.toe_pos_body[:, 9:12] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 9:12])
+        self.toe_pos = self.toe_pos_body - self.base_pos.repeat(1, 4)
         temp = torch.exp(-200 * torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos), dim=1))
+        # verrify excepted [0, -1, 0]
+        # a = torch.tensor([0, 0, torch.sin(torch.tensor(torch.pi/4)), torch.cos(torch.tensor(torch.pi/4))]).repeat(4, 1)
+        # b = torch.tensor([1., 0, 0])
+        # c = quat_rotate_inverse(a, b.repeat(4, 1))
         # print(f"toe pos ref is : {self.frames[:, 13:25]}")
         # print(f"toe pos is :{self.toe_pos}")
         # print(torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos), dim=1))
