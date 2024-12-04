@@ -459,7 +459,7 @@ class panda7_fixed_arm_Turn_and_jumpCfg(LeggedRobotCfg):
             track_ang_vel_ref = 0
             track_dof_pos = 0
             track_dof_vel = 0
-            track_toe_pos = 1.5
+            track_toe_pos = 20
             # jump reward
             jump = 1
 
@@ -552,12 +552,12 @@ class panda7_fixed_arm_WaveCfg(LeggedRobotCfg):
             tracking_ang_vel = 0
             track_root_pos = 0
             track_root_height = 1.
-            track_root_rot = 1.2
+            track_root_rot = 5
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
             track_dof_pos = 0
             track_dof_vel = 0
-            track_toe_pos = 8
+            track_toe_pos = 12
 
     class env(LeggedRobotCfg.env):
         motion_files = "opti_traj/output_panda_fixed_arm/panda_wave.txt"
