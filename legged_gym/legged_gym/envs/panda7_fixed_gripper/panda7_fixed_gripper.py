@@ -83,7 +83,7 @@ class panda7_fixed_gripper_BeatCfg(LeggedRobotCfg):
             track_toe_pos = 5
             # 机械臂
             track_arm_dof_pos = 1
-            track_arm_dof_vel = 0
+            track_arm_dof_vel = 1
             track_arm_pos = 0
             track_arm_rot = 0
 
@@ -103,7 +103,7 @@ class panda7_fixed_gripper_BeatCfgPPO(LeggedRobotCfgPPO):
     class runner(LeggedRobotCfgPPO.runner):
         run_name = ''
         experiment_name = ('panda7_fixed_gripper_beat')
-        max_iterations = 16000
+        # max_iterations = 16000
         # resume_path = 'legged_gym/logs/panda7_beat/Dec01_20-31-14_/model_1500.pt'
 
 
@@ -291,8 +291,8 @@ class panda7_fixed_gripper_SwingCfg(LeggedRobotCfg):
             track_toe_pos = 1
             # 机械臂
             track_arm_dof_pos = 1
-            track_griper_dof_pos = 5
-            track_arm_dof_vel = 0
+            track_griper_dof_pos = 0
+            track_arm_dof_vel = 2
             track_arm_pos = 0
             track_arm_rot = 0
 

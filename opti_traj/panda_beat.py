@@ -20,7 +20,7 @@ panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.287854, -0.481
                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828]
 panda7 = utils.QuadrupedRobot(l=0.65, w=0.225, l1=0.126375, l2=0.34, l3=0.34,
                               lb=panda_lb, ub=panda_ub, toe_pos_init=panda_toe_pos_init)
-num_row = 250
+num_row = 150
 num_col = 72
 fps = 50
 
@@ -44,7 +44,7 @@ def get_pos_beat(num_frames, tend):
     h = 0.12
     a1 = 0.01
     a2 = 0.01
-    T = 1  # 周期1s
+    T = 0.6  # 周期0.6s
     traj = np.zeros((num_frames, 3))
     for item, t in enumerate(np.linspace(0, tend, num_frames)):
         n = np.floor((t - 0) / T)
@@ -101,10 +101,10 @@ for i in range(num_row - 1):
 
 # arm fk
 robot_arm_rot, robot_arm_pos=utils.arm_fk([0, 0, 0, 0, 0, 0])
-# 机械臂末端在世界系中相对质心的位置
+# 机械臂末端在机身坐标系下的位置
 arm_pos[:] = robot_arm_pos
-# 机械臂末端姿态
-arm_rot[:] = utils.rotm2quaternion(utils.quaternion2rotm(root_rot[0, :]) @ robot_arm_rot)
+# 机械臂末端在机身坐标系下的姿态
+arm_rot[:] = utils.rotm2quaternion(robot_arm_rot)
 
 
 
@@ -121,15 +121,15 @@ beat_ref[:, 52:56] = arm_rot[:num_row - 1, :]
 beat_ref[:, 56:64] = arm_dof_pos[:num_row - 1, :]
 beat_ref[:, 64:72] = arm_dof_vel
 
-# # 导出完整轨迹
-# outfile = 'output_panda/panda_beat.txt'
-# np.savetxt(outfile, beat_ref, delimiter=',')
+# 导出完整轨迹
+outfile = 'output_panda/panda_beat.txt'
+np.savetxt(outfile, beat_ref, delimiter=',')
 
 # # 导出fixed arm轨迹
-# outfile = 'output_panda_fixed_arm/panda_beat.txt'
-# np.savetxt(outfile, beat_ref[:, :49], delimiter=',')
+outfile = 'output_panda_fixed_arm/panda_beat.txt'
+np.savetxt(outfile, beat_ref[:, :49], delimiter=',')
 
 # 导出 fixed gripper轨迹
 outfile = 'output_panda_fixed_gripper/panda_beat.txt'
-out = np.hstack((beat_ref[:, :49], beat_ref[:, 49:56], beat_ref[:, 56:62], beat_ref[:, 64:70]))
+out = np.hstack((beat_ref[:, :56], beat_ref[:, 56:62], beat_ref[:, 64:70]))
 np.savetxt(outfile, out, delimiter=',')

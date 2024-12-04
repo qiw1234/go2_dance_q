@@ -70,7 +70,7 @@ def load_policy() -> dict:
 def play(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     # override some parameters for testing
-    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 50)
+    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 20)
     env_cfg.terrain.num_rows = 5
     env_cfg.terrain.num_cols = 5
     env_cfg.terrain.curriculum = False
@@ -110,9 +110,9 @@ def play(args):
         actions = policy(obs.detach())
         # actions[:, 18:20] = 0
         obs, _, rews, dones, infos = env.step(actions.detach())
-        print(f"actions:{actions.detach()}")
+        # print(f"actions:{actions.detach()}")
         # print(env.dof_pos[:, 0:3])
-        print(f"dof: {env.dof_pos[:, 12:18]}")
+        # print(f"dof: {env.dof_pos[:, 12:18]}")
         # print(env.torques)
         if RECORD_FRAMES:
             if i % 2:
@@ -138,18 +138,18 @@ def play(args):
                     'base_vel_z': env.base_lin_vel[robot_index, 2].item(),
                     'base_vel_yaw': env.base_ang_vel[robot_index, 2].item(),
                     'contact_forces_z': env.contact_forces[robot_index, env.feet_indices, 2].cpu().numpy(),
-                    'foot_pos_0_x' : env.toe_pos_absolute[robot_index, 0].item(),
-                    'foot_pos_0_y': env.toe_pos_absolute[robot_index, 1].item(),
-                    'foot_pos_0_z': env.toe_pos_absolute[robot_index, 2].item(),
-                    'foot_pos_1_x': env.toe_pos_absolute[robot_index, 3].item(),
-                    'foot_pos_1_y': env.toe_pos_absolute[robot_index, 4].item(),
-                    'foot_pos_1_z': env.toe_pos_absolute[robot_index, 5].item(),
-                    'foot_pos_2_x': env.toe_pos_absolute[robot_index, 6].item(),
-                    'foot_pos_2_y': env.toe_pos_absolute[robot_index, 7].item(),
-                    'foot_pos_2_z': env.toe_pos_absolute[robot_index, 8].item(),
-                    'foot_pos_3_x': env.toe_pos_absolute[robot_index, 9].item(),
-                    'foot_pos_3_y': env.toe_pos_absolute[robot_index, 10].item(),
-                    'foot_pos_3_z': env.toe_pos_absolute[robot_index, 11].item(),
+                    'foot_pos_0_x' : env.toe_pos_world[robot_index, 0].item(),
+                    'foot_pos_0_y': env.toe_pos_world[robot_index, 1].item(),
+                    'foot_pos_0_z': env.toe_pos_world[robot_index, 2].item(),
+                    'foot_pos_1_x': env.toe_pos_world[robot_index, 3].item(),
+                    'foot_pos_1_y': env.toe_pos_world[robot_index, 4].item(),
+                    'foot_pos_1_z': env.toe_pos_world[robot_index, 5].item(),
+                    'foot_pos_2_x': env.toe_pos_world[robot_index, 6].item(),
+                    'foot_pos_2_y': env.toe_pos_world[robot_index, 7].item(),
+                    'foot_pos_2_z': env.toe_pos_world[robot_index, 8].item(),
+                    'foot_pos_3_x': env.toe_pos_world[robot_index, 9].item(),
+                    'foot_pos_3_y': env.toe_pos_world[robot_index, 10].item(),
+                    'foot_pos_3_z': env.toe_pos_world[robot_index, 11].item(),
                     'base_pos_x' : env.base_pos[robot_index, 0].item(),
                     'base_pos_y': env.base_pos[robot_index, 1].item(),
                     'base_pos_z': env.base_pos[robot_index, 2].item(),

@@ -54,6 +54,11 @@ from .panda7.panda7_config import panda7BeatCfg, panda7BeatCfgPPO
 from .panda7.panda7_config import panda7TrotCfg, panda7TrotCfgPPO
 
 from .panda7_fixed_arm.panda7_fixed_arm_config import panda7_fixed_arm_BeatCfg, panda7_fixed_arm_BeatCfgPPO
+from .panda7_fixed_arm.panda7_fixed_arm_config import panda7_fixed_arm_TrotCfg, panda7_fixed_arm_TrotCfgPPO
+from .panda7_fixed_arm.panda7_fixed_arm_config import panda7_fixed_arm_PaceCfg, panda7_fixed_arm_PaceCfgPPO
+from .panda7_fixed_arm.panda7_fixed_arm_config import panda7_fixed_arm_SwingCfg, panda7_fixed_arm_SwingCfgPPO
+from .panda7_fixed_arm.panda7_fixed_arm_config import panda7_fixed_arm_Turn_and_jumpCfg, panda7_fixed_arm_Turn_and_jumpCfgPPO
+from .panda7_fixed_arm.panda7_fixed_arm_config import panda7_fixed_arm_WaveCfg, panda7_fixed_arm_WaveCfgPPO
 
 from .panda7_fixed_gripper.panda7_fixed_gripper import panda7_fixed_gripper_BeatCfg, panda7_fixed_gripper_BeatCfgPPO
 import os
@@ -78,7 +83,12 @@ task_registry.register( "panda7_beat", LeggedRobotPanda, panda7BeatCfg(), panda7
 task_registry.register( "panda7_trot", LeggedRobotPanda, panda7TrotCfg(), panda7TrotCfgPPO() )
 # panda7 fixed arm
 task_registry.register( "panda7_fixed_arm_beat", LeggedRobot, panda7_fixed_arm_BeatCfg(), panda7_fixed_arm_BeatCfgPPO() )
-
+task_registry.register( "panda7_fixed_arm_trot", LeggedRobot, panda7_fixed_arm_TrotCfg(), panda7_fixed_arm_TrotCfgPPO() )
+task_registry.register( "panda7_fixed_arm_pace", LeggedRobot, panda7_fixed_arm_PaceCfg(), panda7_fixed_arm_PaceCfgPPO() )
+task_registry.register( "panda7_fixed_arm_swing", LeggedRobot, panda7_fixed_arm_SwingCfg(), panda7_fixed_arm_SwingCfgPPO() )
+task_registry.register( "panda7_fixed_arm_turn_and_jump", LeggedRobot, panda7_fixed_arm_Turn_and_jumpCfg(),
+                        panda7_fixed_arm_Turn_and_jumpCfgPPO() )
+task_registry.register( "panda7_fixed_arm_wave", LeggedRobot, panda7_fixed_arm_WaveCfg(), panda7_fixed_arm_WaveCfgPPO() )
 # panda7 fixed gripper
 task_registry.register( "panda7_fixed_gripper_beat", LeggedRobotPandaFixedGripper, panda7_fixed_gripper_BeatCfg(), panda7_fixed_gripper_BeatCfgPPO())
 

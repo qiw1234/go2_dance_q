@@ -995,6 +995,7 @@ class LeggedRobot(BaseTask):
     def _reward_torques(self):
         # Penalize torques
         # print(self.torques)
+        # print(torch.sum(torch.square(self.torques), dim=1))
         return torch.sum(torch.square(self.torques), dim=1)
 
     def _reward_dof_vel(self):
@@ -1107,19 +1108,18 @@ class LeggedRobot(BaseTask):
         # 使用quat_rotate_inverse将世界系下的末端相对足端位置转换为body系下的相对位置
         # rb_states里的数据滞后于base_pos,还没弄清楚：post_physics_step中一进去就会更新函数()，保证数据最新
         self.toe_pos_world = self.rb_states[:, self.feet_indices, 0:3].view(self.num_envs, -1)
-        self.toe_pos_body[:, :3] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, :3])
-        self.toe_pos_body[:, 3:6] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 3:6])
-        self.toe_pos_body[:, 6:9] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 6:9])
-        self.toe_pos_body[:, 9:12] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 9:12])
-        self.toe_pos = self.toe_pos_body - self.base_pos.repeat(1, 4)
-        temp = torch.exp(-200 * torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos), dim=1))
+        self.toe_pos_body[:, :3] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, :3]-self.base_pos)
+        self.toe_pos_body[:, 3:6] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 3:6]-self.base_pos)
+        self.toe_pos_body[:, 6:9] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 6:9]-self.base_pos)
+        self.toe_pos_body[:, 9:12] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 9:12]-self.base_pos)
+        temp = torch.exp(-200 * torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos_body), dim=1))
         # verrify excepted [0, -1, 0]
         # a = torch.tensor([0, 0, torch.sin(torch.tensor(torch.pi/4)), torch.cos(torch.tensor(torch.pi/4))]).repeat(4, 1)
         # b = torch.tensor([1., 0, 0])
         # c = quat_rotate_inverse(a, b.repeat(4, 1))
         # print(f"toe pos ref is : {self.frames[:, 13:25]}")
-        # print(f"toe pos is :{self.toe_pos}")
-        # print(torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos), dim=1))
+        # print(f"toe pos is :{self.toe_pos_body}")
+        # print(torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos_body), dim=1))
         # print(f"toe reward is:{temp}")
         # print(50*'!')
         return temp
@@ -1132,7 +1132,9 @@ class LeggedRobot(BaseTask):
 
     def _reward_jump(self):
         ref_jump_buf = self.frames[:, 15] > -self.frames[:, 2] #足端位置是相对
-        sim_jump_buf = self.rb_states[:, self.feet_indices, 2].view(self.num_envs,-1) > 0.04
+        # sim_jump_buf = self.rb_states[:, self.feet_indices, 2].view(self.num_envs,-1) > 0.04   # for go2
+        sim_jump_buf = self.rb_states[:, self.feet_indices, 2].view(self.num_envs, -1) > 0.07  # for panda7
+        print(self.rb_states[:, self.feet_indices, 2].view(self.num_envs, -1))
         jump_buf = ref_jump_buf & sim_jump_buf[:, 0] & sim_jump_buf[:, 1] & sim_jump_buf[:, 2] & sim_jump_buf[:, 3]
         return jump_buf
 

@@ -22,7 +22,7 @@ panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.287854, -0.481
                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828]
 panda7 = utils.QuadrupedRobot(l=0.65, w=0.225, l1=0.126375, l2=0.34, l3=0.34,
                               lb=panda_lb, ub=panda_ub, toe_pos_init=panda_toe_pos_init)
-num_row = 250
+num_row = 80
 num_col = 72
 fps = 50
 
@@ -50,7 +50,7 @@ root_pos[:, 2] = 0.55
 
 # 姿态
 q0 = [0, 0, 0, 1]
-q1 = [0, np.sin(-np.pi / 24), 0, np.cos(-np.pi / 24)]
+q1 = [0, np.sin(-np.pi / 72), 0, np.cos(-np.pi / 72)]
 end = 10
 for i in range(end):
     frac = i / (end - 1)
@@ -90,20 +90,20 @@ dof_pos[40:50, :3] = np.linspace(q_FR_2, q_FR_3, 10)
 dof_pos[50:60, :3] = np.linspace(q_FR_3, q_FR_2, 10)
 dof_pos[60:70, :3] = np.linspace(q_FR_2, q_FR_3, 10)
 dof_pos[70:80, :3] = np.linspace(q_FR_3, q_FR_0, 10)
-# 计算右前腿在质心处世界坐标系下的位置
-# 因为四元数转欧拉角的函数没写，所以这里直接欧拉角为[0,0,0]，再左乘旋转矩阵
-for i in range(num_row):
-    pos = (utils.quaternion2rotm(root_rot[i, :]) @
-           casadi.DM(panda7.transrpy(dof_pos[i, :3], 0, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3])
-    toe_pos[i, :3] = pos.T
+
+# 计算足端位置在质心坐标系的坐标
+for i in range(toe_pos.shape[0]):
+    toe_pos[i, :3] = np.transpose(casadi.DM(panda7.transrpy(dof_pos[i, :3], 0, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3])
+    toe_pos[i, 3:6] = np.transpose(utils.quaternion2rotm(root_rot[i,:])) @ toe_pos[i, 3:6]
+    toe_pos[i, 6:9] = np.transpose(utils.quaternion2rotm(root_rot[i,:])) @ toe_pos[i, 6:9]
+    toe_pos[i, 9:12] = np.transpose(utils.quaternion2rotm(root_rot[i,:])) @ toe_pos[i, 9:12]
 
 # go2的关节上下限
 q = SX.sym('q', 3, 1)
 for j in range(1, 4):
     for i in range(num_row):
         # 这里的toe_pos是世界系足端轨迹，需要考虑质心姿态，因此左乘一个质心姿态
-        pos = (casadi.SX(casadi.DM(utils.quaternion2rotm(root_rot[i, :])).full()) @
-               (panda7.transrpy(q, j, [0, 0, 0], [0, 0, 0]) @ panda7.toe)[:3])
+        pos = (panda7.transrpy(q, j, [0, 0, 0], [0, 0, 0]) @ panda7.toe)[:3]
         cost = 500 * casadi.dot((toe_pos[i, 3 * j:3 * j + 3] - pos[:3]), (toe_pos[i, 3 * j:3 * j + 3] - pos[:3]))
         nlp = {'x': q, 'f': cost}
         S = casadi.nlpsol('S', 'ipopt', nlp)
@@ -117,12 +117,10 @@ for i in range(num_row - 1):
 
 # arm fk
 robot_arm_rot, robot_arm_pos=utils.arm_fk([0, 0, 0, 0, 0, 0])
-
-for i in range(num_row):
-    # 机械臂末端位置
-    arm_pos[i, :] = utils.quaternion2rotm(root_rot[i, :]) @ robot_arm_pos + root_pos[i, :]
-    # 机械臂末端姿态
-    arm_rot[i, :] = utils.rotm2quaternion(utils.quaternion2rotm(root_rot[i, :]) @ robot_arm_rot)
+# 机械臂末端在机身坐标系下的位置
+arm_pos[:] = robot_arm_pos
+# 机械臂末端在机身坐标系下的姿态
+arm_rot[:] = utils.rotm2quaternion(robot_arm_rot)
 
 
 
@@ -132,7 +130,7 @@ ref[:, :3] = root_pos[:num_row - 1, :]
 ref[:, 3:7] = root_rot[:num_row - 1, :]
 ref[:, 7:10] = root_lin_vel
 ref[:, 10:13] = root_ang_vel
-ref[:, 13:25] = panda7.toe_pos_init # 前面计算出质心系下的足端位置是方便计算关节角度
+ref[:, 13:25] = toe_pos[:num_row - 1, :]
 ref[:, 25:37] = dof_pos[:num_row - 1, :]
 ref[:, 37:49] = dof_vel
 ref[:, 49:52] = arm_pos[:num_row - 1, :]
@@ -140,6 +138,15 @@ ref[:, 52:56] = arm_rot[:num_row - 1, :]
 ref[:, 56:64] = arm_dof_pos[:num_row - 1, :]
 ref[:, 64:72] = arm_dof_vel
 
-# 导出txt
+# # 导出完整轨迹
 outfile = 'output_panda/panda_wave.txt'
 np.savetxt(outfile, ref, delimiter=',')
+
+# # 导出fixed arm轨迹
+outfile = 'output_panda_fixed_arm/panda_wave.txt'
+np.savetxt(outfile, ref[:, :49], delimiter=',')
+
+# 导出 fixed gripper轨迹
+outfile = 'output_panda_fixed_gripper/panda_wave.txt'
+out = np.hstack((ref[:, :56], ref[:, 56:62], ref[:, 64:70]))
+np.savetxt(outfile, out, delimiter=',')

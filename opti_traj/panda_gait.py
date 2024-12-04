@@ -14,7 +14,7 @@ panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.287854, -0.481
                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828]
 panda7 = utils.QuadrupedRobot(l=0.65, w=0.225, l1=0.126375, l2=0.34, l3=0.34,
                               lb=panda_lb, ub=panda_ub, toe_pos_init=panda_toe_pos_init)
-num_row = 250
+num_row = 100
 num_col = 72
 fps = 50
 
@@ -35,7 +35,7 @@ hopf_signal = np.zeros((num_row,8))
 
 # CPG信号
 initPos = np.array([0.5, -0.5, -0.5, 0.5, 0, 0, 0, 0])
-gait = 'pace'
+gait = 'trot'
 cpg = CPG.cpgBuilder(initPos, gait=gait)
 
 # 欧拉法获取振荡信号
@@ -123,19 +123,17 @@ root_rot[:,3] = 1
 
 # arm fk
 robot_arm_rot, robot_arm_pos=utils.arm_fk([0, 0, 0, 0, 0, 0])
-
-for i in range(num_row):
-    # 机械臂末端位置
-    arm_pos[i, :] = utils.quaternion2rotm(root_rot[i, :]) @ robot_arm_pos + root_pos[i, :]
-    # 机械臂末端姿态
-    arm_rot[i, :] = utils.rotm2quaternion(utils.quaternion2rotm(root_rot[i, :]) @ robot_arm_rot)
+# 机械臂末端在机身坐标系下的位置
+arm_pos[:] = robot_arm_pos
+# 机械臂末端在机身坐标系下的姿态
+arm_rot[:] = utils.rotm2quaternion(robot_arm_rot)
 
 # 组合轨迹
 ref[:, :3] = root_pos[:num_row - 1, :]
 ref[:, 3:7] = root_rot[:num_row - 1, :]
 ref[:, 7:10] = root_lin_vel
 ref[:, 10:13] = root_ang_vel
-ref[:, 13:25] = panda7.toe_pos_init # 前面计算出质心系下的足端位置是方便计算关节角度
+ref[:, 13:25] = toe_pos[:num_row - 1, :]
 ref[:, 25:37] = dof_pos[:num_row - 1, :]
 ref[:, 37:49] = dof_vel
 ref[:, 49:52] = arm_pos[:num_row - 1, :]
@@ -143,8 +141,16 @@ ref[:, 52:56] = arm_rot[:num_row - 1, :]
 ref[:, 56:64] = arm_dof_pos[:num_row - 1, :]
 ref[:, 64:72] = arm_dof_vel
 
-# 导出txt
+# # 导出完整轨迹
 outfile = 'output_panda/panda_'+gait+'.txt'
 np.savetxt(outfile, ref, delimiter=',')
-# a=1
+
+# # 导出fixed arm轨迹
+outfile = 'output_panda_fixed_arm/panda_'+gait+'.txt'
+np.savetxt(outfile, ref[:, :49], delimiter=',')
+
+# 导出 fixed gripper轨迹
+outfile = 'output_panda_fixed_gripper/panda_'+gait+'.txt'
+out = np.hstack((ref[:, :56], ref[:, 56:62], ref[:, 64:70]))
+np.savetxt(outfile, out, delimiter=',')
 

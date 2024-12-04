@@ -210,7 +210,9 @@ class LeggedRobotPandaFixedGripper(LeggedRobot):
             print(torch.sum(torch.square(self.frames[:, 56:64] - self.dof_pos[:, 12:20]), dim=1))
             print(torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, 56:62] - self.dof_pos[:, 12:18]), dim=1)))
             print(50*'#')
-        return torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, 56:62] - self.dof_pos[:, 12:18]), dim=1))
+        return torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, self.motion_loader.ARM_JOINT_POS_START_IDX:
+                                                                      self.motion_loader.ARM_JOINT_POS_END_IDX] -
+                                                       self.dof_pos[:, 12:18]), dim=1))
 
     def _reward_track_griper_dof_pos(self):
         if 0:
@@ -221,7 +223,9 @@ class LeggedRobotPandaFixedGripper(LeggedRobot):
         return torch.exp(-1000 * torch.sum(torch.square(self.frames[:, 62:64] - self.dof_pos[:, 18:20]), dim=1))
 
     def _reward_track_arm_dof_vel(self):
-        return torch.exp(-1 * torch.sum(torch.square(self.frames[:, 64:72] - self.dof_vel[:, 12:20]), dim=1))
+        return torch.exp(-1 * torch.sum(torch.square(self.frames[:, self.motion_loader.ARM_JOINT_VEL_START_IDX:
+                                                                    self.motion_loader.ARM_JOINT_VEL_END_IDX] -
+                                                     self.dof_vel[:, 12:18]), dim=1))
 
     def _reward_track_arm_pos(self):
         arm_pos = self.rb_states[:, self.arm_indices, 0:3].view(self.num_envs, -1) - self.base_pos
