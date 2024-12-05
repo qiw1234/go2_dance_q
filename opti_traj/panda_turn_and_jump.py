@@ -208,7 +208,7 @@ ref[:, 49:52] = arm_pos[:num_row - 1, :]
 ref[:, 52:56] = arm_rot[:num_row - 1, :]
 ref[:, 56:64] = arm_dof_pos[:num_row - 1, :]
 ref[:, 64:72] = arm_dof_vel
-
+a = root_pos[:num_row - 1, 2] - toe_pos[:num_row - 1, 2]
 # # 导出完整轨迹
 outfile = 'output_panda/panda_turn_and_jump.txt'
 np.savetxt(outfile, ref, delimiter=',')

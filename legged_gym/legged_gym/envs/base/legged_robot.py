@@ -1132,9 +1132,10 @@ class LeggedRobot(BaseTask):
         return torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, 37:49] - self.dof_vel[:, :12]), dim=1))
 
     def _reward_jump(self):
-        ref_jump_buf = self.frames[:, 15] > -self.frames[:, 2] #足端位置是相对
+        ref_jump_buf = self.frames[:, 15] + self.frames[:, 2] > 0.07 #足端位置是相对
         # sim_jump_buf = self.rb_states[:, self.feet_indices, 2].view(self.num_envs,-1) > 0.04   # for go2
         sim_jump_buf = self.rb_states[:, self.feet_indices, 2].view(self.num_envs, -1) > 0.06  # for panda7
+        print(ref_jump_buf)
         # print(self.rb_states[:, self.feet_indices, 2].view(self.num_envs, -1))
         jump_buf = ref_jump_buf & sim_jump_buf[:, 0] & sim_jump_buf[:, 1] & sim_jump_buf[:, 2] & sim_jump_buf[:, 3]
         return jump_buf

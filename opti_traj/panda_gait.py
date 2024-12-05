@@ -112,10 +112,12 @@ for i in range(num_row - 1):
     dof_vel[i,:] = (dof_pos[i+1,:] - dof_pos[i,:]) * fps
 
 # 质心位置
-x = vx*t
+# x = vx*t
+x=0
 root_pos[:,0] = x
 root_pos[:,2] = 0.55
 # 质心速度
+# root_lin_vel[:,0] = vx
 root_lin_vel[:,0] = vx
 # 机身方向
 root_rot[:,3] = 1
@@ -141,6 +143,8 @@ ref[:, 52:56] = arm_rot[:num_row - 1, :]
 ref[:, 56:64] = arm_dof_pos[:num_row - 1, :]
 ref[:, 64:72] = arm_dof_vel
 
+# 太空步
+gait = 'spacetrot'
 # # 导出完整轨迹
 outfile = 'output_panda/panda_'+gait+'.txt'
 np.savetxt(outfile, ref, delimiter=',')
