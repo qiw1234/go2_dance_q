@@ -47,7 +47,7 @@ class panda7BeatCfg( LeggedRobotCfg ):
         decimation = 4
 
     class asset( LeggedRobotCfg.asset ):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_nleg_arm_1008.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_nleg_arm_1008_1.urdf'
         name = "panda7"
         foot_name = "FOOT"
         arm_name = "arm_link6"
@@ -153,7 +153,7 @@ class panda7TrotCfg(LeggedRobotCfg):
         decimation = 4
 
     class asset(LeggedRobotCfg.asset):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_nleg_arm_1008.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_nleg_arm_1008_1.urdf'
         name = "panda7"
         foot_name = "FOOT"
         arm_name = "arm_link6"
@@ -258,7 +258,7 @@ class panda7SwingCfg(LeggedRobotCfg):
         decimation = 4
 
     class asset(LeggedRobotCfg.asset):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_nleg_arm_1008.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_nleg_arm_1008_1.urdf'
         name = "panda7"
         foot_name = "FOOT"
         arm_name = "arm_link6"
@@ -364,7 +364,7 @@ class panda7Turn_and_jumpCfg(LeggedRobotCfg):
         decimation = 4
 
     class asset(LeggedRobotCfg.asset):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_nleg_arm_1008.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_nleg_arm_1008_1.urdf'
         name = "panda7"
         foot_name = "FOOT"
         arm_name = "arm_link6"
@@ -471,7 +471,7 @@ class panda7WaveCfg(LeggedRobotCfg):
         decimation = 4
 
     class asset(LeggedRobotCfg.asset):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_nleg_arm_1008.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_nleg_arm_1008_1.urdf'
         name = "panda7"
         foot_name = "FOOT"
         arm_name = "arm_link6"
@@ -576,7 +576,7 @@ class panda7PaceCfg(LeggedRobotCfg):
         decimation = 4
 
     class asset(LeggedRobotCfg.asset):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_nleg_arm_1008.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_nleg_arm_1008_1.urdf'
         name = "panda7"
         foot_name = "FOOT"
         arm_name = "arm_link6"
@@ -634,4 +634,6 @@ class panda7PaceCfgPPO(LeggedRobotCfgPPO):
     class runner(LeggedRobotCfgPPO.runner):
         run_name = ''
         experiment_name = ('panda7_pace')
+
+
 

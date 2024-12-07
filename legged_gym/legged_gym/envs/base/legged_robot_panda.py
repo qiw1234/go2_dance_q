@@ -205,19 +205,41 @@ class LeggedRobotPanda(LeggedRobot):
                                               gymtorch.unwrap_tensor(self.dof_state),
                                               gymtorch.unwrap_tensor(env_ids_int32), len(env_ids_int32))
 
+    def compute_observations(self):
+        """ Computes observations
+        """
+        self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel, #3   #panda3
+                                  self.base_ang_vel * self.obs_scales.ang_vel,        #3   #3
+                                  self.projected_gravity,                             #3   #3
+                                  (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos, #12   #20
+                                  self.dof_vel * self.obs_scales.dof_vel,             #12  #20
+                                  self.actions,                                       #12  #20
+                                  # self.frames                                         #49  #72
+                                  ), dim=-1)
+        # add perceptive inputs if not blind
+        if self.cfg.terrain.measure_heights:
+            heights = torch.clip(self.root_states[:, 2].unsqueeze(1) - 0.5 - self.measured_heights, -1,
+                                 1.) * self.obs_scales.height_measurements
+            self.obs_buf = torch.cat((self.obs_buf, heights), dim=-1)
+        # add noise if needed
+        if self.add_noise:
+            self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
+        # print(self.obs_buf) #use in debug
 
     def _reward_track_arm_dof_pos(self):
         if 0:
-            print(torch.sum(torch.square(self.frames[:, 56:64] - self.dof_pos[:, 12:20]), dim=1))
-            print(torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, 56:62] - self.dof_pos[:, 12:18]), dim=1)))
+            print(f'dof pos:{self.dof_pos[:, 12:20]}')
+            # print(f'ref : {self.frames[:, 56:64]}')
+            # print(torch.sum(torch.square(self.frames[:, 56:64] - self.dof_pos[:, 12:20]), dim=1))
+            # print(torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, 56:62] - self.dof_pos[:, 12:18]), dim=1)))
             print(50*'#')
         return torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, 56:62] - self.dof_pos[:, 12:18]), dim=1))
 
     def _reward_track_griper_dof_pos(self):
-        if 0:
-            # print(self.dof_pos[:, 18:20])
+        if 1:
+            print(self.dof_pos[:, 18:20])
             # print(torch.sum(torch.square(self.frames[:, 62:64] - self.dof_pos[:, 18:20]), dim=1))
-            print(torch.exp(-1000 * torch.sum(torch.square(self.frames[:, 62:64] - self.dof_pos[:, 18:20]), dim=1)))
+            # print(torch.exp(-1000 * torch.sum(torch.square(self.frames[:, 62:64] - self.dof_pos[:, 18:20]), dim=1)))
             print(50*'_')
         return torch.exp(-1000 * torch.sum(torch.square(self.frames[:, 62:64] - self.dof_pos[:, 18:20]), dim=1))
 

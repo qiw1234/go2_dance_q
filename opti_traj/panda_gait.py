@@ -35,7 +35,7 @@ hopf_signal = np.zeros((num_row,8))
 
 # CPG信号
 initPos = np.array([0.5, -0.5, -0.5, 0.5, 0, 0, 0, 0])
-gait = 'trot'
+gait = 'spacetrot'
 cpg = CPG.cpgBuilder(initPos, gait=gait)
 
 # 欧拉法获取振荡信号

@@ -103,6 +103,7 @@ class LeggedRobot(BaseTask):
             if self.device == 'cpu':
                 self.gym.fetch_results(self.sim, True)
             self.gym.refresh_dof_state_tensor(self.sim)
+            # print(f'torques:{self.torques}')
         self.post_physics_step()
 
         # return clipped obs, clipped states (None), rewards, dones and infos
@@ -465,11 +466,14 @@ class LeggedRobot(BaseTask):
             [torch.Tensor]: Torques sent to the simulation
         """
         #pd controller
-        actions_scaled = actions * self.cfg.control.action_scale
+        actions_scaled = actions * self.action_scale
         control_type = self.cfg.control.control_type
         if control_type == "P":
             torques = self.p_gains * (
                     actions_scaled + self.default_dof_pos - self.dof_pos) - self.d_gains * self.dof_vel
+            # print(f'actions:{actions_scaled}')
+            # print(f'dof vel:{self.dof_vel}')
+            # print(f'torques:{torques}')
         elif control_type == "V":
             torques = self.p_gains * (actions_scaled - self.dof_vel) - self.d_gains * (
                     self.dof_vel - self.last_dof_vel) / self.sim_params.dt
@@ -598,6 +602,7 @@ class LeggedRobot(BaseTask):
     def _init_buffers(self):
         """ Initialize torch tensors which will contain simulation states and processed quantities
         """
+        self.action_scale = torch.tensor(self.cfg.control.action_scale, device=self.device)
         # get gym GPU state tensors
         actor_root_state = self.gym.acquire_actor_root_state_tensor(
             self.sim)  # (num_actors,13)返回root状态，位置，旋转（四元数），速度角速度，13D
@@ -1135,7 +1140,7 @@ class LeggedRobot(BaseTask):
         ref_jump_buf = self.frames[:, 15] + self.frames[:, 2] > 0.07 #足端位置是相对
         # sim_jump_buf = self.rb_states[:, self.feet_indices, 2].view(self.num_envs,-1) > 0.04   # for go2
         sim_jump_buf = self.rb_states[:, self.feet_indices, 2].view(self.num_envs, -1) > 0.06  # for panda7
-        print(ref_jump_buf)
+        # print(ref_jump_buf)
         # print(self.rb_states[:, self.feet_indices, 2].view(self.num_envs, -1))
         jump_buf = ref_jump_buf & sim_jump_buf[:, 0] & sim_jump_buf[:, 1] & sim_jump_buf[:, 2] & sim_jump_buf[:, 3]
         return jump_buf

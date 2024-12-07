@@ -70,9 +70,9 @@ def load_policy() -> dict:
 def play(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     # override some parameters for testing
-    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 50)
-    env_cfg.terrain.num_rows = 5
-    env_cfg.terrain.num_cols = 5
+    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 5)
+    env_cfg.terrain.num_rows = 1
+    env_cfg.terrain.num_cols = 1
     env_cfg.terrain.curriculum = False
     env_cfg.noise.add_noise = False
     env_cfg.domain_rand.randomize_friction = False
@@ -98,7 +98,7 @@ def play(args):
     logger = Logger(env.dt)
     robot_index = 0 # which robot is used for logging
     joint_index = 1 # which joint is used for logging
-    stop_state_log = 100 # number of steps before plotting states
+    stop_state_log = 200 # number of steps before plotting states
     stop_rew_log = env.max_episode_length + 1 # number of steps before print average episode rewards
     camera_position = np.array(env_cfg.viewer.pos, dtype=np.float64)
     camera_vel = np.array([1., 1., 0.])
@@ -126,7 +126,7 @@ def play(args):
         if i < stop_state_log:
             logger.log_states(
                 {
-                    'dof_pos_target': actions[robot_index, joint_index].item() * env.cfg.control.action_scale,
+                    'dof_pos_target': actions[robot_index, joint_index].item() * env.action_scale,
                     'dof_pos': env.dof_pos[robot_index, joint_index].item(),
                     'dof_vel': env.dof_vel[robot_index, joint_index].item(),
                     'dof_torque': env.torques[robot_index, joint_index].item(),
@@ -153,6 +153,12 @@ def play(args):
                     'base_pos_x' : env.base_pos[robot_index, 0].item(),
                     'base_pos_y': env.base_pos[robot_index, 1].item(),
                     'base_pos_z': env.base_pos[robot_index, 2].item(),
+                    'arm_dof_pos1':env.dof_pos[robot_index, 12].item(),
+                    'arm_dof_pos2': env.dof_pos[robot_index, 13].item(),
+                    'arm_dof_pos3': env.dof_pos[robot_index, 14].item(),
+                    'arm_dof_pos4': env.dof_pos[robot_index, 15].item(),
+                    'arm_dof_pos5': env.dof_pos[robot_index, 16].item(),
+                    'arm_dof_pos6': env.dof_pos[robot_index, 17].item(),
                 }
             )
         elif i==stop_state_log:

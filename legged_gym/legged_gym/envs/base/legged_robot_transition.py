@@ -185,6 +185,7 @@ class LeggedRobotTrans(LeggedRobot):
         if self.cfg.env.dance_sequence is not None:
             if len(env_ids) != 0:
                 self.temp += 1
+            # print(np.full(len(env_ids), self.cfg.env.dance_sequence[self.temp]))
             self.traj_idxs[self.primitive_time_out] = np.full(len(env_ids), self.cfg.env.dance_sequence[self.temp])
         else:
             # 这里是如果有需要重新选择动作的环境，那就采样对应环境的数量这么多的随机数，赋值给self.traj_idxs对应的位置

@@ -66,7 +66,7 @@ class Logger:
         nb_rows = 3
         nb_cols = 3
         plt.rcParams['font.size'] = 20
-        fig, axs = plt.subplots(nb_rows, nb_cols)
+        # fig, axs = plt.subplots(nb_rows, nb_cols)
         for key, value in self.state_log.items():
             time = np.linspace(0, len(value)*self.dt, len(value))
             break
@@ -127,29 +127,50 @@ class Logger:
         # a.legend()
 
         # plot root position
-        a = axs[0, 0]
-        if log["base_pos_x"]: a.plot(time, log["base_pos_x"], label='base_pos_x')
-        if log["base_pos_y"]: a.plot(time, log["base_pos_y"], label='base_pos_y')
-        if log["base_pos_z"]: a.plot(time, log["base_pos_z"], label='base_pos_z')
-        plt.rcParams['xtick.labelsize'] = 20
-        a.set(xlabel='time [s]', ylabel='Position [m]', title='base pos')
-        # plot foot 1 position
-        a = axs[0, 1]
-        if log["foot_pos_1_x"]: a.plot(time, log["foot_pos_1_x"], label='foot_pos_1_x')
-        if log["foot_pos_1_y"]: a.plot(time, log["foot_pos_1_y"], label='foot_pos_1_y')
-        if log["foot_pos_1_z"]: a.plot(time, log["foot_pos_1_z"], label='foot_pos_1_z')
-        plt.rcParams['xtick.labelsize'] = 20
-        a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos 1')
-        # plot foot 2 position
-        a = axs[0, 2]
-        if log["foot_pos_2_x"]: a.plot(time, log["foot_pos_2_x"], label='foot_pos_2_x')
-        if log["foot_pos_2_y"]: a.plot(time, log["foot_pos_2_y"], label='foot_pos_2_y')
-        if log["foot_pos_2_z"]: a.plot(time, log["foot_pos_2_z"], label='foot_pos_2_z')
-        plt.rcParams['xtick.labelsize'] = 20
-        a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos 2')
+        # fig, axs = plt.subplots(nb_rows, nb_cols)
+        # a = axs[0, 0]
+        # if log["base_pos_x"]: a.plot(time, log["base_pos_x"], label='base_pos_x')
+        # if log["base_pos_y"]: a.plot(time, log["base_pos_y"], label='base_pos_y')
+        # if log["base_pos_z"]: a.plot(time, log["base_pos_z"], label='base_pos_z')
+        # plt.rcParams['xtick.labelsize'] = 20
+        # a.set(xlabel='time [s]', ylabel='Position [m]', title='base pos')
+        # # plot foot 1 position
+        # a = axs[0, 1]
+        # if log["foot_pos_1_x"]: a.plot(time, log["foot_pos_1_x"], label='foot_pos_1_x')
+        # if log["foot_pos_1_y"]: a.plot(time, log["foot_pos_1_y"], label='foot_pos_1_y')
+        # if log["foot_pos_1_z"]: a.plot(time, log["foot_pos_1_z"], label='foot_pos_1_z')
+        # plt.rcParams['xtick.labelsize'] = 20
+        # a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos 1')
+        # # plot foot 2 position
+        # a = axs[0, 2]
+        # if log["foot_pos_2_x"]: a.plot(time, log["foot_pos_2_x"], label='foot_pos_2_x')
+        # if log["foot_pos_2_y"]: a.plot(time, log["foot_pos_2_y"], label='foot_pos_2_y')
+        # if log["foot_pos_2_z"]: a.plot(time, log["foot_pos_2_z"], label='foot_pos_2_z')
+        # plt.rcParams['xtick.labelsize'] = 20
+        # a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos 2')
+        # # plot foot z position
+        # a = axs[1, 0]
+        # a.plot(time, log["foot_pos_0_z"], label='foot_pos_0_z')
+        # a.plot(time, log["foot_pos_1_z"], label='foot_pos_1_z')
+        # a.plot(time, log["foot_pos_2_z"], label='foot_pos_2_z')
+        # a.plot(time, log["foot_pos_3_z"], label='foot_pos_3_z')
+        # plt.rcParams['xtick.labelsize'] = 20
+        # a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos z')
+        # # plot arm dof pos
+        # a = axs[1, 1]
+        # a.plot(time, log["arm_dof_pos1"], label='arm_dof_pos1')
+        # a.plot(time, log["arm_dof_pos2"], label='arm_dof_pos2')
+        # a.plot(time, log["arm_dof_pos3"], label='arm_dof_pos3')
+        # # a.plot(time, log["arm_dof_pos4"], label='arm_dof_pos4')
+        # a.plot(time, log["arm_dof_pos5"], label='arm_dof_pos5')
+        # a.plot(time, log["arm_dof_pos6"], label='arm_dof_pos6')
+        # plt.rcParams['xtick.labelsize'] = 20
+        # a.set(xlabel='time [s]', ylabel='joint position[rad]', title='arm joint position')
 
-        # plt.tight_layout()
-        plt.show()
+        # plt.figure()
+        # plt.plot(time, log["arm_dof_pos6"])
+        #
+        # plt.show()
 
     def print_rewards(self):
         print("Average rewards per second:")

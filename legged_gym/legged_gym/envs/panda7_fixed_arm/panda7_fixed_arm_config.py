@@ -551,13 +551,13 @@ class panda7_fixed_arm_WaveCfg(LeggedRobotCfg):
             tracking_lin_vel = 0
             tracking_ang_vel = 0
             track_root_pos = 0
-            track_root_height = 1.
+            track_root_height = 0
             track_root_rot = 5
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 0
+            track_dof_pos = 5
             track_dof_vel = 0
-            track_toe_pos = 12
+            track_toe_pos = 30
 
     class env(LeggedRobotCfg.env):
         motion_files = "opti_traj/output_panda_fixed_arm/panda_wave.txt"

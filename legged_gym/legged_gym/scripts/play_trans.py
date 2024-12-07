@@ -39,25 +39,34 @@ import numpy as np
 import torch
 
 from rsl_rl.modules import ActorCritic
-def load_policy() -> dict:
+def load_policy(robot_name) -> dict:
     '''
     这个函数是按照task_list中的顺序提取对应的动作policy函数
     '''
     dance_task_policy = {}
-    # path_list = ['/home/pcpc/robot_dance/legged_gym/log/GO2/keep_the_beat/model_1500.pt',
-    #             '/home/pcpc/robot_dance/legged_gym/log/GO2/pace/model_1500.pt',
-    #             '/home/pcpc/robot_dance/legged_gym/log/GO2/swing/model_1500.pt',
-    #             '/home/pcpc/robot_dance/legged_gym/log/GO2/trot/model_1500.pt',
-    #             '/home/pcpc/robot_dance/legged_gym/log/GO2/turn_and_jump/model_1500.pt',
-    #             '/home/pcpc/robot_dance/legged_gym/log/GO2/wave/model_1500.pt']
-    path_list = ["legged_gym/log/GO2_new/keep_the_beat/model_1500.pt",
-                 "legged_gym/log/GO2_new/pace/model_1500.pt",
-                 "legged_gym/log/GO2_new/swing/model_1500.pt",
-                 "legged_gym/log/GO2_new/trot/model_1500.pt",
-                 "legged_gym/log/GO2_new/turn_and_jump/model_1200.pt",
-                 "legged_gym/log/GO2_new/wave/model_1500.pt"]
-    task_list = ['go2_dance_beat', 'go2_dance_pace', 'go2_dance_swing', 'go2_dance_trot',
-                 'go2_dance_turn_and_jump', 'go2_dance_wave']
+    if robot_name == 'go2':
+        # path_list = ['/home/pcpc/robot_dance/legged_gym/log/GO2/keep_the_beat/model_1500.pt',
+        #             '/home/pcpc/robot_dance/legged_gym/log/GO2/pace/model_1500.pt',
+        #             '/home/pcpc/robot_dance/legged_gym/log/GO2/swing/model_1500.pt',
+        #             '/home/pcpc/robot_dance/legged_gym/log/GO2/trot/model_1500.pt',
+        #             '/home/pcpc/robot_dance/legged_gym/log/GO2/turn_and_jump/model_1500.pt',
+        #             '/home/pcpc/robot_dance/legged_gym/log/GO2/wave/model_1500.pt']
+        path_list = ["legged_gym/log/GO2_new/keep_the_beat/model_1500.pt",
+                     "legged_gym/log/GO2_new/pace/model_1500.pt",
+                     "legged_gym/log/GO2_new/swing/model_1500.pt",
+                     "legged_gym/log/GO2_new/trot/model_1500.pt",
+                     "legged_gym/log/GO2_new/turn_and_jump/model_1200.pt",
+                     "legged_gym/log/GO2_new/wave/model_1500.pt"]
+        task_list = ['go2_dance_beat', 'go2_dance_pace', 'go2_dance_swing', 'go2_dance_trot',
+                     'go2_dance_turn_and_jump', 'go2_dance_wave']
+    else:
+        path_list = ["legged_gym/log/panda_fixed_arm/keep_the_beat/model_3000.pt",
+                     "legged_gym/log/panda_fixed_arm/swing/model_1500.pt",
+                     "legged_gym/log/panda_fixed_arm/trot/model_1600.pt",
+                     "legged_gym/log/panda_fixed_arm/turn_and_jump/model_15000.pt",
+                     "legged_gym/log/panda_fixed_arm/wave/model_6000.pt"]
+        task_list = ['panda7_fixed_arm_beat', 'panda7_fixed_arm_swing', 'panda7_fixed_arm_trot',
+                     'panda7_fixed_arm_turn_and_jump', 'panda7_fixed_arm_wave']
 
     for i, load_path in enumerate(path_list):
         env_cfg = task_registry.env_cfgs[task_list[i]]
@@ -76,14 +85,14 @@ def load_policy() -> dict:
 def play(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     # override some parameters for testing
-    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 50)
-    env_cfg.terrain.num_rows = 5
-    env_cfg.terrain.num_cols = 5
+    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 2)
+    env_cfg.terrain.num_rows = 1
+    env_cfg.terrain.num_cols = 1
     env_cfg.terrain.curriculum = False
     env_cfg.noise.add_noise = False
     env_cfg.domain_rand.randomize_friction = False
     env_cfg.domain_rand.push_robots = False
-    # env_cfg.env.dance_sequence = [0, 5, 3, 1, 0, 3, 5, 1, 0, 3, 5, 1, 0, 5, 1, 0, 5, 1, 3]
+    env_cfg.env.dance_sequence = [4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2]
 
     # prepare environment
     env, _ = task_registry.make_env(name=args.task, args=args, env_cfg=env_cfg)
@@ -92,7 +101,7 @@ def play(args):
     train_cfg.runner.resume = True
     ppo_runner, train_cfg = task_registry.make_alg_runner(env=env, name=args.task, args=args, train_cfg=train_cfg)
     policy_trans = ppo_runner.get_inference_policy(device=env.device)
-    policy_dict = load_policy()
+    policy_dict = load_policy('panda')
 
 
 
