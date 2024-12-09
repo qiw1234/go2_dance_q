@@ -49,6 +49,12 @@ from legged_gym.utils.helpers import class_to_dict
 from .legged_robot_config import LeggedRobotCfg
 from legged_gym.motion_loader.motion_loader import motionLoader
 
+def get_euler_xyz_tensor(quat):
+    r, p, w = get_euler_xyz(quat)
+    # stack r, p, w in dim1
+    euler_xyz = torch.stack((r, p, w), dim=1)
+    euler_xyz[euler_xyz > np.pi] -= 2 * np.pi
+    return euler_xyz
 
 class LeggedRobot(BaseTask):
     def __init__(self, cfg: LeggedRobotCfg, sim_params, physics_engine, sim_device, headless):
@@ -135,6 +141,8 @@ class LeggedRobot(BaseTask):
         self.base_lin_vel[:] = quat_rotate_inverse(self.base_quat, self.root_states[:, 7:10])
         self.base_ang_vel[:] = quat_rotate_inverse(self.base_quat, self.root_states[:, 10:13])
         self.projected_gravity[:] = quat_rotate_inverse(self.base_quat, self.gravity_vec)
+        self.target_euler = get_euler_xyz_tensor(self.frames[:, 3:7])
+        self.base_euler = get_euler_xyz_tensor(self.base_quat)
 
         self._post_physics_step_callback()
 
@@ -660,6 +668,10 @@ class LeggedRobot(BaseTask):
         self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.root_states[:, 7:10])
         self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.root_states[:, 10:13])
         self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
+        self.target_euler = torch.zeros(self.num_envs, 4, device=self.device, dtype=torch.float, requires_grad=False)
+        self.base_euler = get_euler_xyz_tensor(self.base_quat)
+
+
         if self.cfg.terrain.measure_heights:
             self.height_points = self._init_height_points()
         self.measured_heights = 0
@@ -988,13 +1000,23 @@ class LeggedRobot(BaseTask):
         # b = torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1)
         return torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1)
 
+    # def _reward_orientation(self):
+    #     excepted_vector = quat_rotate_inverse(self.frames[:, 3:7], torch.tensor([[1., 1., 1.]], device=self.device))
+    #     body_vector = quat_rotate_inverse(self.base_quat, torch.tensor([[1., 1., 1.]], device=self.device))
+    #     # print(f'ref: {excepted_vector}')
+    #     # print(f'body: {body_vector}')
+    #     # print(torch.exp(-10*torch.sum(torch.square(body_vector[:, :3] - excepted_vector), dim=1)))
+    #     return torch.exp(-10*torch.sum(torch.square(body_vector[:, :3] - excepted_vector), dim=1))
+
     def _reward_orientation(self):
-        excepted_vector = quat_rotate_inverse(self.frames[:, 3:7], torch.tensor([[1., 1., 1.]], device=self.device))
-        body_vector = quat_rotate_inverse(self.base_quat, torch.tensor([[1., 1., 1.]], device=self.device))
-        # print(f'ref: {excepted_vector}')
-        # print(f'body: {body_vector}')
-        # print(torch.exp(-10*torch.sum(torch.square(body_vector[:, :3] - excepted_vector), dim=1)))
-        return torch.exp(-10*torch.sum(torch.square(body_vector[:, :3] - excepted_vector), dim=1))
+        # Penalize non-flat base orientation
+        rew = torch.exp(-torch.sum(torch.square(self.projected_gravity[:, :2]), dim=1))
+        return rew
+
+    def _reward_tracking_yaw(self):
+        # yaw角度跟踪奖励
+        rew = torch.exp(-torch.abs(self.target_euler[:, 2] - self.base_euler[:, 2]))
+        return rew
 
     def _reward_base_height(self):
         # Penalize base height away from target
