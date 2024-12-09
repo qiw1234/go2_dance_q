@@ -271,19 +271,20 @@ class panda7_fixed_gripper_SwingCfg(LeggedRobotCfg):
             collision = -5.
             lin_vel_z = -1.0
             feet_air_time = 0
-            survival = 1
+            survival = 0
             test = 0
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
             track_root_pos = 0
             track_root_height = 0.5
-            track_root_rot = 1.
-            track_lin_vel_ref = 0
-            track_ang_vel_ref = 0
-            track_dof_pos = 0
-            track_dof_vel = 0
-            track_toe_pos = 1
+            track_root_rot = 2.
+            orientation = 0.
+            track_lin_vel_ref = 1
+            track_ang_vel_ref = 1
+            track_dof_pos = 1
+            track_dof_vel = 1
+            track_toe_pos = 10
             # 机械臂
             track_arm_dof_pos = 1
             track_griper_dof_pos = 0
@@ -307,7 +308,8 @@ class panda7_fixed_gripper_SwingCfgPPO(LeggedRobotCfgPPO):
     class runner(LeggedRobotCfgPPO.runner):
         run_name = ''
         experiment_name = ('panda7_fixed_gripper_swing')
-        # resume_path = 'legged_gym/logs/panda7_beat/Dec01_20-31-14_/model_1500.pt'
+        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_swing/Dec08_17-19-33_/model_10000.pt'
+        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_swing/Dec08_15-06-19_/model_2550.pt'
 
 
 class panda7_fixed_gripper_Turn_and_jumpCfg(LeggedRobotCfg):
@@ -366,7 +368,7 @@ class panda7_fixed_gripper_Turn_and_jumpCfg(LeggedRobotCfg):
     class rewards(LeggedRobotCfg.rewards):
         soft_dof_pos_limit = 0.9
         base_height_target = 0.25
-
+        only_positive_rewards = False
         class scales(LeggedRobotCfg.rewards.scales):
             # regularization reward
             torques = -0.00001
@@ -375,25 +377,25 @@ class panda7_fixed_gripper_Turn_and_jumpCfg(LeggedRobotCfg):
             collision = -5.
             lin_vel_z = -1.0
             feet_air_time = 0
-            survival = 1
+            survival = 0
             test = 0
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
             track_root_pos = 1
             track_root_height = 0
-            track_root_rot = 10
-            track_lin_vel_ref = 0
-            track_ang_vel_ref = 0
+            track_root_rot = 1
+            track_lin_vel_ref = 1
+            track_ang_vel_ref = 1
             track_dof_pos = 10
-            track_dof_vel = 0
-            track_toe_pos = 10
+            track_dof_vel = 1
+            track_toe_pos = 20
             # jump reward
             jump = 1
             # 机械臂
             track_arm_dof_pos = 1
             track_griper_dof_pos = 0
-            track_arm_dof_vel = 0
+            track_arm_dof_vel = 1
             track_arm_pos = 1
             track_arm_rot = 1
 
@@ -679,7 +681,7 @@ class panda7_fixed_gripper_SpacetrotCfg(LeggedRobotCfg):
     class rewards(LeggedRobotCfg.rewards):
         soft_dof_pos_limit = 0.9
         base_height_target = 0.25
-
+        only_positive_rewards = False
         class scales(LeggedRobotCfg.rewards.scales):
             # regularization reward
             torques = -0.00001
@@ -688,7 +690,7 @@ class panda7_fixed_gripper_SpacetrotCfg(LeggedRobotCfg):
             collision = -5.
             lin_vel_z = -1.0
             feet_air_time = 0
-            survival = 1
+            survival = 0
             test = 0
             orientation = -0.0
             # 模仿奖励
@@ -696,12 +698,13 @@ class panda7_fixed_gripper_SpacetrotCfg(LeggedRobotCfg):
             tracking_ang_vel = 0
             track_root_pos = 0
             track_root_height = 0
-            track_root_rot = 0
-            track_lin_vel_ref = 0
-            track_ang_vel_ref = 0
-            track_dof_pos = 6
-            track_dof_vel = 6
-            track_toe_pos = 15
+            track_root_rot = 1
+            orientation = 0.
+            track_lin_vel_ref = 1
+            track_ang_vel_ref = 1
+            track_dof_pos = 1
+            track_dof_vel = 1
+            track_toe_pos = 10
             # 机械臂
             track_arm_dof_pos = 3
             track_griper_dof_pos = 0

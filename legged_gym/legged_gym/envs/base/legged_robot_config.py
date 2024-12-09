@@ -138,7 +138,7 @@ class LeggedRobotCfg(BaseConfig):
             tracking_ang_vel = 0.5 # 跟踪随机指令的角速度
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
-            orientation = -1.0
+            orientation = 2        # 原来是惩罚
             torques = -0.00001
             dof_vel = -0.
             dof_acc = -2.5e-7
@@ -235,7 +235,7 @@ class LeggedRobotCfgPPO(BaseConfig):
         policy_class_name = 'ActorCritic'
         algorithm_class_name = 'PPO'
         num_steps_per_env = 24 # per iteration
-        max_iterations = 1500 # number of policy updates
+        max_iterations = 15000 # number of policy updates
 
         # logging
         save_interval = 50 # check for potential saves every this many iterations

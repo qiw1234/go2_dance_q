@@ -18,11 +18,11 @@ from casadi import *
 # panda7的关节上下限
 panda_lb = [-0.87, -1.78, -2.53, -0.69, -1.78, -2.53, -0.87, -1.3, -2.53, -0.69, -1.3, -2.53]
 panda_ub = [0.69, 3.4, -0.45, 0.87, 3.4, -0.45, 0.69, 4, -0.45, 0.87, 4, -0.45]
-# panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.287854, -0.481828, -0.349867,
-#                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828]
-# 左前腿向内收，这样能三条腿能站稳
-panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.0353867, -0.506912, -0.349867,
+panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.287854, -0.481828, -0.349867,
                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828]
+# 左前腿向内收，这样能三条腿能站稳
+# panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.0353867, -0.506912, -0.349867,
+#                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828] # 关节角度-0.4
 panda7 = utils.QuadrupedRobot(l=0.65, w=0.225, l1=0.126375, l2=0.34, l3=0.34,
                               lb=panda_lb, ub=panda_ub, toe_pos_init=panda_toe_pos_init)
 num_row = 80
@@ -84,15 +84,21 @@ q_FR_0 = [-0.1, 0.8, -1.5]  # 初始位置
 q_FR_1 = [-0.1, -0.8, -1.5]  # 抬手中间位置
 q_FR_2 = [-0.1, -0.8, -1]  # 抬手下方
 q_FR_3 = [-0.1, -0.8, -2]  # 抬手上方
-
-dof_pos[:10, :3] = np.linspace(q_FR_0, q_FR_1, 10)
-dof_pos[10:20, :3] = np.linspace(q_FR_1, q_FR_2, 10)
-dof_pos[20:30, :3] = np.linspace(q_FR_2, q_FR_3, 10)
-dof_pos[30:40, :3] = np.linspace(q_FR_3, q_FR_2, 10)
-dof_pos[40:50, :3] = np.linspace(q_FR_2, q_FR_3, 10)
-dof_pos[50:60, :3] = np.linspace(q_FR_3, q_FR_2, 10)
-dof_pos[60:70, :3] = np.linspace(q_FR_2, q_FR_3, 10)
-dof_pos[70:80, :3] = np.linspace(q_FR_3, q_FR_0, 10)
+q_FL_0 = [0.1, 0.8, -1.5]
+q_FL_1 = [-0.4, 0.8, -1.5]
+# 右前腿关节角度
+dof_pos[:10, :3] = q_FR_0
+dof_pos[10:20, :3] = np.linspace(q_FR_0, q_FR_1, 10)
+dof_pos[20:30, :3] = np.linspace(q_FR_1, q_FR_2, 10)
+dof_pos[30:40, :3] = np.linspace(q_FR_2, q_FR_3, 10)
+dof_pos[40:50, :3] = np.linspace(q_FR_3, q_FR_2, 10)
+dof_pos[50:60, :3] = np.linspace(q_FR_2, q_FR_3, 10)
+dof_pos[60:70, :3] = np.linspace(q_FR_3, q_FR_0, 10)
+dof_pos[70:80, :3] = q_FR_0
+# 左前腿关节角度
+dof_pos[:, 3:6] = q_FL_1
+dof_pos[:10, 3:6] = np.linspace(q_FL_0, q_FL_1, 10)
+dof_pos[70:80, 3:6] = np.linspace(q_FL_1, q_FL_0, 10)
 
 # 计算足端位置在质心坐标系的坐标
 for i in range(toe_pos.shape[0]):

@@ -989,8 +989,12 @@ class LeggedRobot(BaseTask):
         return torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1)
 
     def _reward_orientation(self):
-        # Penalize non-flat base orientation
-        return torch.sum(torch.square(self.projected_gravity[:, :2]), dim=1)
+        excepted_vector = quat_rotate_inverse(self.frames[:, 3:7], torch.tensor([[1., 1., 1.]], device=self.device))
+        body_vector = quat_rotate_inverse(self.base_quat, torch.tensor([[1., 1., 1.]], device=self.device))
+        # print(f'ref: {excepted_vector}')
+        # print(f'body: {body_vector}')
+        # print(torch.exp(-10*torch.sum(torch.square(body_vector[:, :3] - excepted_vector), dim=1)))
+        return torch.exp(-10*torch.sum(torch.square(body_vector[:, :3] - excepted_vector), dim=1))
 
     def _reward_base_height(self):
         # Penalize base height away from target

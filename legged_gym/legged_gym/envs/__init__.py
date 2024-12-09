@@ -62,17 +62,17 @@ from .panda7_fixed_arm.panda7_fixed_arm_config import panda7_fixed_arm_Turn_and_
 from .panda7_fixed_arm.panda7_fixed_arm_config import panda7_fixed_arm_WaveCfg, panda7_fixed_arm_WaveCfgPPO
 from .panda7_fixed_arm.panda_fixed_arm_trans_config import panda7_fixed_arm_TransCfg, panda7_fixed_arm_TransCfgPPO
 
-from .panda7_fixed_gripper.panda7_fixed_gripper import (
+from .panda7_fixed_gripper.panda7_fixed_gripper_config import (
     panda7_fixed_gripper_BeatCfg, panda7_fixed_gripper_BeatCfgPPO)
-from .panda7_fixed_gripper.panda7_fixed_gripper import (
+from .panda7_fixed_gripper.panda7_fixed_gripper_config import (
     panda7_fixed_gripper_SpacetrotCfg, panda7_fixed_gripper_SpacetrotCfgPPO)
-from .panda7_fixed_gripper.panda7_fixed_gripper import (
+from .panda7_fixed_gripper.panda7_fixed_gripper_config import (
     panda7_fixed_gripper_Turn_and_jumpCfgPPO,panda7_fixed_gripper_Turn_and_jumpCfg)
-from .panda7_fixed_gripper.panda7_fixed_gripper import (
+from .panda7_fixed_gripper.panda7_fixed_gripper_config import (
     panda7_fixed_gripper_SwingCfg,panda7_fixed_gripper_SwingCfgPPO)
-from .panda7_fixed_gripper.panda7_fixed_gripper import (
+from .panda7_fixed_gripper.panda7_fixed_gripper_config import (
     panda7_fixed_gripper_TrotCfg,panda7_fixed_gripper_TrotCfgPPO)
-from .panda7_fixed_gripper.panda7_fixed_gripper import (
+from .panda7_fixed_gripper.panda7_fixed_gripper_config import (
     panda7_fixed_gripper_WaveCfg,panda7_fixed_gripper_WaveCfgPPO)
 
 import os

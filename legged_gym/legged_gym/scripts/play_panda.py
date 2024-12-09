@@ -106,14 +106,14 @@ def play(args):
     img_idx = 0
 
 
-    for i in range(10*int(env.max_episode_length)):
+    for i in range(20*int(env.max_episode_length)):
         actions = policy(obs.detach())
         # actions[:, 18:20] = 0
         obs, _, rews, dones, infos = env.step(actions.detach())
         # print(f"actions:{actions.detach()}")
         # print(env.dof_pos[:, 0:3])
         # print(f"dof: {env.dof_pos[:, 12:18]}")
-        # print(env.torques)
+        # print(env.base_quat)
         if RECORD_FRAMES:
             if i % 2:
                 filename = os.path.join(LEGGED_GYM_ROOT_DIR, 'logs', train_cfg.runner.experiment_name, 'exported', 'frames', f"{img_idx}.png")
