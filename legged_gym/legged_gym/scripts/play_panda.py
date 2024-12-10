@@ -70,7 +70,7 @@ def load_policy() -> dict:
 def play(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     # override some parameters for testing
-    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 10)
+    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 1)
     env_cfg.terrain.num_rows = 1
     env_cfg.terrain.num_cols = 1
     env_cfg.terrain.curriculum = False
@@ -106,11 +106,12 @@ def play(args):
     img_idx = 0
 
 
-    for i in range(20*int(env.max_episode_length)):
+    for i in range(50*int(env.max_episode_length)):
         actions = policy(obs.detach())
         # actions[:, 18:20] = 0
         obs, _, rews, dones, infos = env.step(actions.detach())
-        # print(f"actions:{actions.detach()}")
+        if torch.min(actions.detach())<-1:
+            print(f"actions:{actions.detach()}")
         # print(env.dof_pos[:, 0:3])
         # print(f"dof: {env.dof_pos[:, 12:18]}")
         # print(env.base_quat)

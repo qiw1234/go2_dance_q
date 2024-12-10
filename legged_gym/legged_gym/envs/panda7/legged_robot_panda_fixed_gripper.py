@@ -117,59 +117,6 @@ class LeggedRobotPandaFixedGripper(LeggedRobot):
         arm_name = self.cfg.asset.arm_name
         self.arm_link6_indice = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], arm_name)
 
-    # def reset_idx(self, env_ids):
-    #     """ Reset some environments.
-    #         Calls self._reset_dofs(env_ids), self._reset_root_states(env_ids), and self._resample_commands(env_ids)
-    #         [Optional] calls self._update_terrain_curriculum(env_ids), self.update_command_curriculum(env_ids) and
-    #         Logs episode info
-    #         Resets some buffers
-    #
-    #     Args:
-    #         env_ids (list[int]): List of environment ids which must be reset
-    #     """
-    #     if len(env_ids) == 0:
-    #         return
-    #     # update curriculum
-    #     if self.cfg.terrain.curriculum:
-    #         self._update_terrain_curriculum(env_ids)
-    #     # avoid updating command curriculum at each step since the maximum command is common to all envs
-    #     if self.cfg.commands.curriculum and (self.common_step_counter % self.max_episode_length == 0):
-    #         self.update_command_curriculum(env_ids)
-    #
-    #     # reset robot states
-    #     if not self.cfg.env.RSI:
-    #         self._reset_dofs(env_ids)
-    #         self._reset_root_states(env_ids)
-    #     else:
-    #         # 用于初始化
-    #         traj_idxs = self.motion_loader.weighted_traj_idx_sample_batch(len(env_ids))
-    #         init_times = np.zeros(len(env_ids), dtype=int)
-    #         frames = self.motion_loader.get_full_frame_at_time_batch(traj_idxs, init_times)
-    #         self._reset_dofs_amp(env_ids, frames)
-    #         self._reset_root_states_amp(env_ids, frames)
-    #
-    #     self._resample_commands(env_ids)
-    #
-    #     # reset buffers
-    #     self.last_actions[env_ids] = 0.
-    #     self.last_dof_vel[env_ids] = 0.
-    #     self.feet_air_time[env_ids] = 0.
-    #     self.episode_length_buf[env_ids] = 0
-    #     self.reset_buf[env_ids] = 1
-    #     # fill extras
-    #     self.extras["episode"] = {}
-    #     for key in self.episode_sums.keys():
-    #         self.extras["episode"]['rew_' + key] = torch.mean(
-    #             self.episode_sums[key][env_ids]) / self.max_episode_length_s
-    #         self.episode_sums[key][env_ids] = 0.
-    #     # log additional curriculum info
-    #     if self.cfg.terrain.curriculum:
-    #         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
-    #     if self.cfg.commands.curriculum:
-    #         self.extras["episode"]["max_command_x"] = self.command_ranges["lin_vel_x"][1]
-    #     # send timeout info to the algorithm
-    #     if self.cfg.env.send_timeouts:
-    #         self.extras["time_outs"] = self.time_out_buf
 
     def _reset_dofs_amp(self, env_ids, frames):
         """ Resets DOF position and velocities of selected environmments

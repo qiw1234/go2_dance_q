@@ -229,6 +229,11 @@ class LeggedRobot(BaseTask):
             self._reset_root_states(env_ids)
             self._reset_dofs(env_ids)
         else:
+            # 用于初始化
+            # traj_idxs = self.motion_loader.weighted_traj_idx_sample_batch(len(env_ids))
+            # 这里计算出来的时间都是结束的时间，不合理
+            # init_times = self.episode_length_buf[env_ids].cpu().numpy() / self.max_episode_length * self.max_episode_length_s
+            # frames = self.motion_loader.get_full_frame_at_time_batch(traj_idxs, init_times)
             frames = self.motion_loader.get_full_frame_batch(len(env_ids))
             self._reset_dofs_amp(env_ids, frames)
             self._reset_root_states_amp(env_ids, frames)
@@ -1148,7 +1153,10 @@ class LeggedRobot(BaseTask):
     def _reward_track_root_rot(self):
         # 奖励跟踪root方向
         base_euler_error = get_euler_xyz_tensor(self.base_quat) - get_euler_xyz_tensor(self.frames[:, 3:7])
-        return torch.exp(-200 * torch.sum(torch.square(base_euler_error), dim=1))
+        rew = torch.exp(-50 * torch.sum(torch.square(base_euler_error), dim=1))
+        # print(base_euler_error)
+        # print(rew)
+        return rew
 
     def _reward_track_lin_vel_ref(self):
         # 跟踪参考动作的线速度
@@ -1166,6 +1174,9 @@ class LeggedRobot(BaseTask):
         # 使用quat_rotate_inverse将世界系下的末端相对足端位置转换为body系下的相对位置
         # rb_states里的数据滞后于base_pos,还没弄清楚：post_physics_step中一进去就会更新函数()，保证数据最新
         temp = torch.exp(-50 * torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos_body), dim=1))
+        # print(f'ref toe pos {self.frames[:, 13:25]}')
+        # print(f'toe pos {self.toe_pos_body}')
+        # print(50*'*')
         return temp
 
     def _reward_track_dof_pos(self):

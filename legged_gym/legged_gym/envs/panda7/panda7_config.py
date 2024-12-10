@@ -441,12 +441,13 @@ class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
 class panda7FixedGripperWaveCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_wave'
-        resume_path = 'legged_gym/logs/panda7_fixed_gripper_wave/Dec10_11-34-50_/model_100.pt'
+        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_wave/Dec10_11-34-50_/model_100.pt'
 
 class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
         class scales(panda7FixedGripperCfg.rewards.scales):
             lin_vel_z = -0
+            survival = 1
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
@@ -459,7 +460,7 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
             track_dof_vel = 0
             track_toe_pos = 10
             # jump reward
-            jump = 1
+            jump = 5
             # 机械臂
             track_arm_dof_pos = 1
             track_griper_dof_pos = 0
