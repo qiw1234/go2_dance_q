@@ -56,6 +56,31 @@ def get_euler_xyz_tensor(quat):
     euler_xyz[euler_xyz > np.pi] -= 2 * np.pi
     return euler_xyz
 
+def euler_from_quaternion(quat_angle):
+    """
+    Convert a quaternion into euler angles (roll, pitch, yaw)
+    roll is rotation around x in radians (counterclockwise)
+    pitch is rotation around y in radians (counterclockwise)
+    yaw is rotation around z in radians (counterclockwise)
+    """
+    x = quat_angle[:, 0];
+    y = quat_angle[:, 1];
+    z = quat_angle[:, 2];
+    w = quat_angle[:, 3]
+    t0 = +2.0 * (w * x + y * z)
+    t1 = +1.0 - 2.0 * (x * x + y * y)
+    roll_x = torch.atan2(t0, t1)
+
+    t2 = +2.0 * (w * y - z * x)
+    t2 = torch.clip(t2, -1, 1)
+    pitch_y = torch.asin(t2)
+
+    t3 = +2.0 * (w * z + x * y)
+    t4 = +1.0 - 2.0 * (y * y + z * z)
+    yaw_z = torch.atan2(t3, t4)
+
+    return roll_x, pitch_y, yaw_z  # in radians
+
 class LeggedRobot(BaseTask):
     def __init__(self, cfg: LeggedRobotCfg, sim_params, physics_engine, sim_device, headless):
         """ Parses the provided config file,
@@ -141,8 +166,18 @@ class LeggedRobot(BaseTask):
         self.base_lin_vel[:] = quat_rotate_inverse(self.base_quat, self.root_states[:, 7:10])
         self.base_ang_vel[:] = quat_rotate_inverse(self.base_quat, self.root_states[:, 10:13])
         self.projected_gravity[:] = quat_rotate_inverse(self.base_quat, self.gravity_vec)
-        self.target_euler = get_euler_xyz_tensor(self.frames[:, 3:7])
-        self.base_euler = get_euler_xyz_tensor(self.base_quat)
+        self.base_euler_xyz = get_euler_xyz_tensor(self.base_quat)
+        self.base_roll, self.base_pitch, self.base_yaw = euler_from_quaternion(self.base_quat)
+
+        self.toe_pos_world = self.rb_states[:, self.feet_indices, 0:3].view(self.num_envs, -1)
+        self.toe_pos_body[:, :3] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, :3] - self.base_pos)
+        self.toe_pos_body[:, 3:6] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 3:6] - self.base_pos)
+        self.toe_pos_body[:, 6:9] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 6:9] - self.base_pos)
+        self.toe_pos_body[:, 9:12] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 9:12] - self.base_pos)
+
+        arm_end_pos = self.rb_states[:, self.arm_link6_indice, 0:3].view(self.num_envs, -1) - self.base_pos
+        self.arm_end_pos = quat_rotate_inverse(self.base_quat, arm_end_pos)
+        self.arm_end_quat = self.rb_states[:, self.arm_link6_indice, 3:7].view(self.num_envs, -1)
 
         self._post_physics_step_callback()
 
@@ -812,6 +847,7 @@ class LeggedRobot(BaseTask):
         # save body names from the asset
         body_names = self.gym.get_asset_rigid_body_names(robot_asset)
         self.dof_names = self.gym.get_asset_dof_names(robot_asset)
+        # print(body_names)
         self.num_bodies = len(body_names)
         self.num_dofs = len(self.dof_names)
         feet_names = [s for s in body_names if self.cfg.asset.foot_name in s]
@@ -1000,22 +1036,15 @@ class LeggedRobot(BaseTask):
         # b = torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1)
         return torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1)
 
-    # def _reward_orientation(self):
-    #     excepted_vector = quat_rotate_inverse(self.frames[:, 3:7], torch.tensor([[1., 1., 1.]], device=self.device))
-    #     body_vector = quat_rotate_inverse(self.base_quat, torch.tensor([[1., 1., 1.]], device=self.device))
-    #     # print(f'ref: {excepted_vector}')
-    #     # print(f'body: {body_vector}')
-    #     # print(torch.exp(-10*torch.sum(torch.square(body_vector[:, :3] - excepted_vector), dim=1)))
-    #     return torch.exp(-10*torch.sum(torch.square(body_vector[:, :3] - excepted_vector), dim=1))
 
     def _reward_orientation(self):
         # Penalize non-flat base orientation
-        rew = torch.exp(-torch.sum(torch.square(self.projected_gravity[:, :2]), dim=1))
+        rew = torch.sum(torch.square(self.projected_gravity[:, :2]), dim=1)
         return rew
 
     def _reward_tracking_yaw(self):
-        # yaw角度跟踪奖励
-        rew = torch.exp(-torch.abs(self.target_euler[:, 2] - self.base_euler[:, 2]))
+        _, _, yaw_ref = euler_from_quaternion(self.frames[:, 3:7])
+        rew = torch.exp(-torch.abs(yaw_ref - self.base_yaw))
         return rew
 
     def _reward_base_height(self):
@@ -1107,6 +1136,7 @@ class LeggedRobot(BaseTask):
         return torch.sum((torch.norm(self.contact_forces[:, self.feet_indices, :],
                                      dim=-1) - self.cfg.rewards.max_contact_force).clip(min=0.), dim=1)
 
+#-----------------------imitation rewards-----------------------------------------------
     def _reward_track_root_pos(self):
         # 奖励跟踪root的位置，self.base_pos装的也是绝对坐标
         return torch.exp(-20 * torch.sum(torch.square(self.frames[:, 0:3] - (self.base_pos - self.env_origins)), dim=1))
@@ -1117,43 +1147,25 @@ class LeggedRobot(BaseTask):
 
     def _reward_track_root_rot(self):
         # 奖励跟踪root方向
-        # if True:
-        # print(f'root pos:{self.base_pos}')
-        # print(f'root_rot_ref:  {self.frames[:, 3:7]}')
-        # print(f'root_rot:  {self.base_quat}')
-        #     # print(torch.sum(torch.square(self.frames[:, 3:7] - self.base_quat), dim=1))
-        #     print(torch.exp(-200 * torch.sum(torch.square(self.frames[:, 3:7] - self.base_quat), dim=1)))
-        #     print(torch.exp(-20 * torch.sum(torch.square(self.frames[:, 3:7] - self.base_quat), dim=1)))
-        return torch.exp(-200 * torch.sum(torch.square(self.frames[:, 3:7] - self.base_quat), dim=1))
+        base_euler_error = get_euler_xyz_tensor(self.base_quat) - get_euler_xyz_tensor(self.frames[:, 3:7])
+        return torch.exp(-200 * torch.sum(torch.square(base_euler_error), dim=1))
 
     def _reward_track_lin_vel_ref(self):
         # 跟踪参考动作的线速度
-        return torch.exp(-2 * torch.sum(torch.square(self.frames[:, 7:10] - self.base_lin_vel), dim=1))
+        base_lin_vel_error = self.base_lin_vel - quat_rotate_inverse(self.frames[:, 3:7], self.frames[:, 7:10])
+        return torch.exp(-2 * torch.sum(torch.square(base_lin_vel_error), dim=1))
 
     def _reward_track_ang_vel_ref(self):
         # 跟踪参考动作的角速度，与_reward_tracking_ang_vel不一样，这是跟踪命令速度
-        return torch.exp(-0.2 * torch.sum(torch.square(self.frames[:, 10:13] - self.base_ang_vel), dim=1))
+        base_lin_ang_error = self.base_ang_vel - quat_rotate_inverse(self.frames[:, 3:7], self.frames[:, 10:13])
+        return torch.exp(-0.2 * torch.sum(torch.square(base_lin_ang_error), dim=1))
 
     def _reward_track_toe_pos(self):
         # 跟踪末端执行器的相对位置
         # rb_states里面装的是绝对坐标
         # 使用quat_rotate_inverse将世界系下的末端相对足端位置转换为body系下的相对位置
         # rb_states里的数据滞后于base_pos,还没弄清楚：post_physics_step中一进去就会更新函数()，保证数据最新
-        self.toe_pos_world = self.rb_states[:, self.feet_indices, 0:3].view(self.num_envs, -1)
-        self.toe_pos_body[:, :3] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, :3]-self.base_pos)
-        self.toe_pos_body[:, 3:6] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 3:6]-self.base_pos)
-        self.toe_pos_body[:, 6:9] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 6:9]-self.base_pos)
-        self.toe_pos_body[:, 9:12] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 9:12]-self.base_pos)
-        temp = torch.exp(-200 * torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos_body), dim=1))
-        # verrify excepted [0, -1, 0]
-        # a = torch.tensor([0, 0, torch.sin(torch.tensor(torch.pi/4)), torch.cos(torch.tensor(torch.pi/4))]).repeat(4, 1)
-        # b = torch.tensor([1., 0, 0])
-        # c = quat_rotate_inverse(a, b.repeat(4, 1))
-        # print(f"toe pos ref is : {self.frames[:, 13:25]}")
-        # print(f"toe pos is :{self.toe_pos_body}")
-        # print(torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos_body), dim=1))
-        # print(f"toe reward is:{temp}")
-        # print(50*'!')
+        temp = torch.exp(-50 * torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos_body), dim=1))
         return temp
 
     def _reward_track_dof_pos(self):

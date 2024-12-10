@@ -65,7 +65,7 @@ class pandaCfg(LeggedRobotCfg):
         class scales(LeggedRobotCfg.rewards.scales):
             # regularization reward
             torques = -0.00001
-            dof_pos_limits = -100.0
+            dof_pos_limits = -10.0
             action_rate = -0.1
             collision = -5.
             lin_vel_z = -1.0
@@ -421,11 +421,12 @@ class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
             track_root_pos = 0
             track_root_height = 1.
             track_root_rot = 1.2
+            orientation = 0
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 10
+            track_dof_pos = 1
             track_dof_vel = 0
-            track_toe_pos = 50
+            track_toe_pos = 5
             # 机械臂
             track_arm_dof_pos = 1
             track_griper_dof_pos = 0
@@ -440,29 +441,31 @@ class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
 class panda7FixedGripperWaveCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_wave'
+        resume_path = 'legged_gym/logs/panda7_fixed_gripper_wave/Dec10_11-34-50_/model_100.pt'
 
 class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
         class scales(panda7FixedGripperCfg.rewards.scales):
+            lin_vel_z = -0
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
             track_root_pos = 1
             track_root_height = 0
             track_root_rot = 1
-            track_lin_vel_ref = 1
-            track_ang_vel_ref = 1
-            track_dof_pos = 10
-            track_dof_vel = 1
-            track_toe_pos = 20
+            track_lin_vel_ref = 0
+            track_ang_vel_ref = 0
+            track_dof_pos = 0
+            track_dof_vel = 0
+            track_toe_pos = 10
             # jump reward
-            jump = 10
+            jump = 1
             # 机械臂
             track_arm_dof_pos = 1
             track_griper_dof_pos = 0
-            track_arm_dof_vel = 1
-            track_arm_pos = 1
-            track_arm_rot = 1
+            track_arm_dof_vel = 0
+            track_arm_pos = 0
+            track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
         motion_files = "opti_traj/output_panda_fixed_gripper/panda_turn_and_jump.txt"

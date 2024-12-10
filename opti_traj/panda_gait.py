@@ -127,8 +127,9 @@ root_rot[:,3] = 1
 robot_arm_rot, robot_arm_pos=utils.arm_fk([0, 0, 0, 0, 0, 0])
 # 机械臂末端在机身坐标系下的位置
 arm_pos[:] = robot_arm_pos
-# 机械臂末端在机身坐标系下的姿态
-arm_rot[:] = utils.rotm2quaternion(robot_arm_rot)
+# 机械臂末端在世界系下的姿态
+for i in range(num_row):
+    arm_rot[i, :] = utils.rotm2quaternion(utils.quaternion2rotm(root_rot[i,:]) @ robot_arm_rot)
 
 # 组合轨迹
 ref[:, :3] = root_pos[:num_row - 1, :]

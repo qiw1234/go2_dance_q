@@ -35,7 +35,7 @@ class LeggedRobotCfg(BaseConfig):
         num_envs = 5000
         simp_obs = 0
         num_observations = 60
-        num_privileged_obs = 131 # if not None a priviledge_obs_buf will be returned by step() (critic obs for assymetric training). None is returned otherwise
+        num_privileged_obs = 132 # if not None a priviledge_obs_buf will be returned by step() (critic obs for assymetric training). None is returned otherwise
         num_actions = 12
         env_spacing = 3.  # not used with heightfields/trimeshes 
         send_timeouts = True # send time out information to the algorithm
@@ -138,7 +138,7 @@ class LeggedRobotCfg(BaseConfig):
             tracking_ang_vel = 0.5 # 跟踪随机指令的角速度
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
-            orientation = 2        # 原来是惩罚
+            orientation = -0.1
             torques = -0.00001
             dof_vel = -0.
             dof_acc = -2.5e-7
@@ -163,6 +163,7 @@ class LeggedRobotCfg(BaseConfig):
             ang_vel = 0.25
             dof_pos = 1.0
             dof_vel = 0.05
+            quat = 1.
             height_measurements = 5.0
         clip_observations = 100.
         clip_actions = 1.2
