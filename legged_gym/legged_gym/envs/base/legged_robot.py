@@ -123,8 +123,11 @@ class LeggedRobot(BaseTask):
         Args:
             actions (torch.Tensor): Tensor of shape (num_envs, num_actions_per_env)
         """
-        clip_actions = self.cfg.normalization.clip_actions
+        actions.to(self.device)
+        clip_actions = self.cfg.normalization.clip_actions / self.cfg.control.action_scale
         self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
+        clip_arm_actions = self.cfg.normalization.clip_arm_actions / self.cfg.control.action_scale
+        self.actions[:, -12:] = torch.clip(self.actions[:, -12:], -clip_arm_actions, clip_arm_actions).to(self.device)
         # step physics and render each frame
         self.render()
         for _ in range(self.cfg.control.decimation):
@@ -519,8 +522,10 @@ class LeggedRobot(BaseTask):
         if control_type == "P":
             torques = self.p_gains * (
                     actions_scaled + self.default_dof_pos - self.dof_pos) - self.d_gains * self.dof_vel
-            # print(f'actions:{actions_scaled}')
-            # print(f'dof vel:{self.dof_vel}')
+            # print(f'actions:{actions_scaled[:, -4]}')
+            # print(f'dof pos:{self.dof_pos[:, -4]}')
+            # print(f'dof pos error:{actions_scaled[:, -4] - self.dof_pos[:, -4]}')
+            # print(50*'*')
             # print(f'torques:{torques}')
         elif control_type == "V":
             torques = self.p_gains * (actions_scaled - self.dof_vel) - self.d_gains * (

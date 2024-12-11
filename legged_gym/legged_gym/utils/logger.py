@@ -156,21 +156,29 @@ class Logger:
         # a.plot(time, log["foot_pos_3_z"], label='foot_pos_3_z')
         # plt.rcParams['xtick.labelsize'] = 20
         # a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos z')
-        # # plot arm dof pos
-        # a = axs[1, 1]
-        # a.plot(time, log["arm_dof_pos1"], label='arm_dof_pos1')
-        # a.plot(time, log["arm_dof_pos2"], label='arm_dof_pos2')
-        # a.plot(time, log["arm_dof_pos3"], label='arm_dof_pos3')
-        # # a.plot(time, log["arm_dof_pos4"], label='arm_dof_pos4')
-        # a.plot(time, log["arm_dof_pos5"], label='arm_dof_pos5')
-        # a.plot(time, log["arm_dof_pos6"], label='arm_dof_pos6')
-        # plt.rcParams['xtick.labelsize'] = 20
-        # a.set(xlabel='time [s]', ylabel='joint position[rad]', title='arm joint position')
+        # plot arm dof pos
+        fig, a = plt.subplots()
 
+        a.plot(time, log["arm_dof_pos1"], label='arm_dof_pos1', c='r')
+        a.plot(time, log["arm_dof_pos2"], label='arm_dof_pos2', c='g')
+        a.plot(time, log["arm_dof_pos3"], label='arm_dof_pos3', c='b')
+        a.plot(time, log["arm_dof_pos4"], label='arm_dof_pos4', c='c')
+        a.plot(time, log["arm_dof_pos5"], label='arm_dof_pos5', c='y')
+        a.plot(time, log["arm_dof_pos6"], label='arm_dof_pos6', c='k')
+        a.plot(time, log["arm action 1"], label='arm action 1', linestyle='--', c='r')
+        a.plot(time, log["arm action 2"], label='arm action 2', linestyle='--', c='g')
+        a.plot(time, log["arm action 3"], label='arm action 3', linestyle='--', c='b')
+        a.plot(time, log["arm action 4"], label='arm action 4', linestyle='--', c='c')
+        a.plot(time, log["arm action 5"], label='arm action 5', linestyle='--', c='y')
+        a.plot(time, log["arm action 6"], label='arm action 6', linestyle='--', c='k')
+
+        plt.rcParams['xtick.labelsize'] = 20
+        a.set(xlabel='time [s]', ylabel='joint position[rad]', title='arm joint position')
+        a.legend()
         # plt.figure()
         # plt.plot(time, log["arm_dof_pos6"])
         #
-        # plt.show()
+        plt.show()
 
     def print_rewards(self):
         print("Average rewards per second:")

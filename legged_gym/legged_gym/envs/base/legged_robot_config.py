@@ -166,7 +166,8 @@ class LeggedRobotCfg(BaseConfig):
             quat = 1.
             height_measurements = 5.0
         clip_observations = 100.
-        clip_actions = 100.
+        clip_actions = 2.5
+        clip_arm_actions = 1.2
 
     class noise:
         add_noise = True
