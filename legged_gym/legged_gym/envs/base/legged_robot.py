@@ -1149,6 +1149,8 @@ class LeggedRobot(BaseTask):
 #-----------------------imitation rewards-----------------------------------------------
     def _reward_track_root_pos(self):
         # 奖励跟踪root的位置，self.base_pos装的也是绝对坐标
+        # print(self.frames[:, 0:3])
+        # print(self.base_pos - self.env_origins)
         return torch.exp(-20 * torch.sum(torch.square(self.frames[:, 0:3] - (self.base_pos - self.env_origins)), dim=1))
 
     def _reward_track_root_height(self):

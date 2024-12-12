@@ -137,7 +137,13 @@ class LeggedRobotPandaFixedGripper(LeggedRobot):
                                               gymtorch.unwrap_tensor(env_ids_int32), len(env_ids_int32))
 
     def _reward_track_arm_dof_pos(self):
-        return torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, self.motion_loader.ARM_JOINT_POS_START_IDX:
+        # arm_dof_pos_error = self.dof_pos[:, 12:18] - self.frames[:, 56:62]
+        # rew = torch.exp(-0.1 * torch.sum(torch.square(arm_dof_pos_error), dim=1))
+        # print(self.dof_pos[:, 12:18])
+        # print(self.frames[:, 56:62])
+        # print(rew)
+        # print(50*"-")
+        return torch.exp(-20 * torch.sum(torch.square(self.frames[:, self.motion_loader.ARM_JOINT_POS_START_IDX:
                                                                       self.motion_loader.ARM_JOINT_POS_END_IDX] -
                                                        self.dof_pos[:, 12:18]), dim=1))
 

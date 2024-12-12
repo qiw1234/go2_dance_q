@@ -59,7 +59,7 @@ def load_policy(robot_name) -> dict:
                      "legged_gym/log/GO2_new/wave/model_1500.pt"]
         task_list = ['go2_dance_beat', 'go2_dance_pace', 'go2_dance_swing', 'go2_dance_trot',
                      'go2_dance_turn_and_jump', 'go2_dance_wave']
-    else:
+    elif robot_name == 'panda_fixed_arm':
         path_list = ["legged_gym/log/panda_fixed_arm/keep_the_beat/model_3000.pt",
                      "legged_gym/log/panda_fixed_arm/swing/model_1500.pt",
                      "legged_gym/log/panda_fixed_arm/trot/model_1600.pt",
@@ -67,11 +67,21 @@ def load_policy(robot_name) -> dict:
                      "legged_gym/log/panda_fixed_arm/wave/model_6000.pt"]
         task_list = ['panda7_fixed_arm_beat', 'panda7_fixed_arm_swing', 'panda7_fixed_arm_trot',
                      'panda7_fixed_arm_turn_and_jump', 'panda7_fixed_arm_wave']
+    elif robot_name == 'panda_fixed_gripper':
+        path_list = [
+            #        "legged_gym/log/panda_fixed_gripper/keep_the_beat/model_3000.pt",
+                     "legged_gym/log/panda7_fixed_gripper/swing/model_9100.pt",
+                     "legged_gym/log/panda7_fixed_gripper/trot/model_3600.pt",
+                     "legged_gym/log/panda7_fixed_gripper/turn_and_jump/model_8650.pt",
+                     "legged_gym/log/panda7_fixed_gripper/wave/model_10000.pt"
+                     ]
+        task_list = ['panda7_fixed_gripper_swing', 'panda7_fixed_gripper_trot',
+                     'panda7_fixed_gripper_turn_and_jump', 'panda7_fixed_gripper_wave']
 
     for i, load_path in enumerate(path_list):
         env_cfg = task_registry.env_cfgs[task_list[i]]
         train_cfg = task_registry.train_cfgs[task_list[i]]
-        policy:torch.nn.Module = ActorCritic(env_cfg.env.num_observations, env_cfg.env.num_observations,
+        policy:torch.nn.Module = ActorCritic(env_cfg.env.num_observations, env_cfg.env.num_privileged_obs,
                                              env_cfg.env.num_actions, train_cfg.policy.actor_hidden_dims,
                                              train_cfg.policy.critic_hidden_dims, train_cfg.policy.activation,
                                              train_cfg.policy.init_noise_std).to('cuda:0')
@@ -92,7 +102,8 @@ def play(args):
     env_cfg.noise.add_noise = False
     env_cfg.domain_rand.randomize_friction = False
     env_cfg.domain_rand.push_robots = False
-    env_cfg.env.dance_sequence = [4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2]
+    env_cfg.env.dance_sequence = [0, 0, 1, 3, 0, 1, 2, 1, 3, 1, 0, 1, 2, 1, 3, 1]
+    # env_cfg.env.dance_sequence = [0, 0, 1, 1, 1, 1, 1, 1, 1, 1]
 
     # prepare environment
     env, _ = task_registry.make_env(name=args.task, args=args, env_cfg=env_cfg)
@@ -101,7 +112,7 @@ def play(args):
     train_cfg.runner.resume = True
     ppo_runner, train_cfg = task_registry.make_alg_runner(env=env, name=args.task, args=args, train_cfg=train_cfg)
     policy_trans = ppo_runner.get_inference_policy(device=env.device)
-    policy_dict = load_policy('panda')
+    policy_dict = load_policy('panda_fixed_gripper')
 
 
 
@@ -130,11 +141,11 @@ def play(args):
             task_buf = ppo_runner.env.traj_idxs == task_id
             dance_actions[task_buf] = policy_dict[ppo_runner.dance_task_name_list[task_id]](obs[task_buf].detach())
 
-        trans_mask = env.episode_time > env.motion_loader.trajectory_lens[env.traj_idxs]/10
+        # trans_mask = env.episode_time > env.motion_loader.trajectory_lens[env.traj_idxs]/10
         actions = dance_actions
         # actions[trans_mask] += policy_trans(obs.detach())[trans_mask]
 
-        obs, _, rews, dones, infos = env.step(actions.detach(), dance_actions)
+        obs, _, rews, dones, infos = env.step(actions.detach())
         if RECORD_FRAMES:
             if i % 2:
                 filename = os.path.join(LEGGED_GYM_ROOT_DIR, 'logs', train_cfg.runner.experiment_name, 'exported', 'frames', f"{img_idx}.png")

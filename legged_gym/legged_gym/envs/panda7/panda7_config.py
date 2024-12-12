@@ -283,12 +283,14 @@ class panda7FixedGripperCfg(pandaCfg):
         damping = {'hip': 2.0, 'thigh': 2.0, 'calf': 2.0,
                    'joint1': 2., 'joint2': 2, 'joint3': 2,
                    'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.01}  # [N*m*s/rad] 0.8 1 1
+
         # stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
         #              'joint1': 150., 'joint2': 600., 'joint3': 150,
         #              'joint4': 20., 'joint5': 15., 'joint6': 10.}  # [N*m/rad]# 20  15  10
         # damping = {'hip': 2.0, 'thigh': 2.0, 'calf': 2.0,
         #            'joint1': 2., 'joint2': 2, 'joint3': 2,
         #            'joint4': 0.1, 'joint5': 1., 'joint6': 1}  # [N*m*s/rad] 0.8 1 1
+
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.25
         # decimation: Number of control action updates @ sim DT per policy DT
@@ -424,17 +426,17 @@ class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            track_root_pos = 0
-            track_root_height = 1.
+            track_root_pos = 1.
+            track_root_height = 0.
             track_root_rot = 1.2
             orientation = 0
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 1
+            track_dof_pos = 1.5
             track_dof_vel = 0
             track_toe_pos = 10
             # 机械臂
-            track_arm_dof_pos = 1
+            track_arm_dof_pos = 2
             track_griper_dof_pos = 0
             track_arm_dof_vel = 1
             track_arm_pos = 0
@@ -447,7 +449,7 @@ class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
 class panda7FixedGripperWaveCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_wave'
-        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_wave/Dec10_11-34-50_/model_100.pt'
+        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_wave/Dec10_21-11-15_/model_9950.pt'
 
 class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
@@ -464,11 +466,11 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
             track_ang_vel_ref = 0
             track_dof_pos = 0
             track_dof_vel = 0
-            track_toe_pos = 10
+            track_toe_pos = 5
             # jump reward
-            jump = 5
+            jump = 5.
             # 机械臂
-            track_arm_dof_pos = 1
+            track_arm_dof_pos = 2
             track_griper_dof_pos = 0
             track_arm_dof_vel = 0
             track_arm_pos = 0
@@ -497,9 +499,9 @@ class panda7FixedGripperSpaceTrotCfg(panda7FixedGripperCfg):
             track_ang_vel_ref = 1
             track_dof_pos = 5
             track_dof_vel = 1
-            track_toe_pos = 8
+            track_toe_pos = 5
             # 机械臂
-            track_arm_dof_pos = 1
+            track_arm_dof_pos = 3
             track_griper_dof_pos = 0
             track_arm_dof_vel = 0
             track_arm_pos = 0
@@ -512,3 +514,39 @@ class panda7FixedGripperSpaceTrotCfg(panda7FixedGripperCfg):
 class panda7FixedGripperSpaceTrotCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_spacetrot'
+
+#----------------------panda7 fixed gripper trans config---------------------------
+class panda7FixedGripperTransCfg(panda7FixedGripperCfg):
+    class rewards(panda7FixedGripperCfg.rewards):
+        class scales(panda7FixedGripperCfg.rewards.scales):
+            lin_vel_z = -0
+            survival = 1
+            # 模仿奖励
+            tracking_lin_vel = 0
+            tracking_ang_vel = 0
+            track_root_pos = 1
+            track_root_height = 0
+            track_root_rot = 1
+            track_lin_vel_ref = 0
+            track_ang_vel_ref = 0
+            track_dof_pos = 0
+            track_dof_vel = 0
+            track_toe_pos = 5
+            # jump reward
+            jump = 5.
+            # 机械臂
+            track_arm_dof_pos = 2
+            track_griper_dof_pos = 0
+            track_arm_dof_vel = 0
+            track_arm_pos = 0
+            track_arm_rot = 0
+    class env(panda7FixedGripperCfg.env):
+        motion_files = "opti_traj/output_panda_fixed_gripper_json"
+        dance_sequence = None
+
+class panda7FixedGripperTransCfgPPO(pandaCfgPPO):
+    class runner(pandaCfgPPO.runner):
+        experiment_name = 'panda7_fixed_gripper_trans'
+        resume_path = 'legged_gym/logs/panda7_fixed_gripper_turn_and_jump/Dec11_20-30-49_/model_750.pt' # 随便给个路径就行，这个路径的文件不用
+        dance_task_list = ['panda7_fixed_gripper_wave', 'panda7_fixed_gripper_trot', 'panda7_fixed_gripper_turn_and_jump',
+                           'panda7_fixed_gripper_swing']

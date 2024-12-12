@@ -3,7 +3,7 @@ import numpy as np
 import glob
 import os
 
-files = "output_panda_fixed_arm"
+files = "output_panda_fixed_gripper"
 motion_full =[]
 name_full = []
 for i, file in enumerate(os.listdir(files)):
@@ -16,7 +16,7 @@ for j in range(len(motion_full)):
         'frame_duration':1/50,
         'frames':motion_full[j].tolist()
     }
-    with open('output_panda_fixed_arm_json/'+name_full[j]+'.json', 'w') as f:
+    with open('output_panda_fixed_gripper_json/'+name_full[j]+'.json', 'w') as f:
         json.dump(json_data, f, indent=4)
 
 # file = "swing_2.txt"
