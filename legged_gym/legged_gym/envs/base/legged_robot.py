@@ -47,7 +47,7 @@ from legged_gym.utils.terrain import Terrain
 from legged_gym.utils.math import quat_apply_yaw, wrap_to_pi, torch_rand_sqrt_float
 from legged_gym.utils.helpers import class_to_dict
 from .legged_robot_config import LeggedRobotCfg
-from legged_gym.motion_loader.motion_loader import motionLoader
+from legged_gym.motion_loader.motion_loader_panda_fixed_gripper import motionLoaderPandaFixedGripper
 
 def get_euler_xyz_tensor(quat):
     r, p, w = get_euler_xyz(quat)
@@ -63,9 +63,9 @@ def euler_from_quaternion(quat_angle):
     pitch is rotation around y in radians (counterclockwise)
     yaw is rotation around z in radians (counterclockwise)
     """
-    x = quat_angle[:, 0];
-    y = quat_angle[:, 1];
-    z = quat_angle[:, 2];
+    x = quat_angle[:, 0]
+    y = quat_angle[:, 1]
+    z = quat_angle[:, 2]
     w = quat_angle[:, 3]
     t0 = +2.0 * (w * x + y * z)
     t1 = +1.0 - 2.0 * (x * x + y * y)
@@ -108,10 +108,10 @@ class LeggedRobot(BaseTask):
         self._init_buffers()
         self._prepare_reward_function()
         self.init_done = True
-        # 加载动作数据
-        self.motion_loader = motionLoader(motion_files=self.cfg.env.motion_files, device=self.device,
-                                          time_between_frames=self.dt, frame_duration=self.cfg.env.frame_duration)
-
+        # 重新加载动作数据
+        self.motion_loader = motionLoaderPandaFixedGripper(motion_files=self.cfg.env.motion_files, device=self.device,
+                                                           time_between_frames=self.dt,
+                                                           frame_duration=self.cfg.env.frame_duration)
         self.max_episode_length_s = self.motion_loader.trajectory_lens[0]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
@@ -274,8 +274,10 @@ class LeggedRobot(BaseTask):
             env_ids (List[int]): Environemnt ids
             frames: AMP frames to initialize motion with
         """
-        self.dof_pos[env_ids] = self.motion_loader.get_joint_pose_batch(frames)
-        self.dof_vel[env_ids] = self.motion_loader.get_joint_vel_batch(frames)
+        self.dof_pos[env_ids] = torch.cat((self.motion_loader.get_joint_pose_batch(frames),
+                                           self.motion_loader.get_arm_joint_pos_batch(frames)), dim=1)
+        self.dof_vel[env_ids] = torch.cat((self.motion_loader.get_joint_vel_batch(frames),
+                                           self.motion_loader.get_arm_joint_vel_batch(frames)), dim=1)
         env_ids_int32 = env_ids.to(dtype=torch.int32)
         self.gym.set_dof_state_tensor_indexed(self.sim,
                                               gymtorch.unwrap_tensor(self.dof_state),
@@ -329,44 +331,51 @@ class LeggedRobot(BaseTask):
     def compute_observations(self):
         """ Computes observations
         """
-        # if self.cfg.env.simp_obs:
-        #     self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel,
-        #                               self.base_ang_vel * self.obs_scales.ang_vel,
-        #                               self.projected_gravity,
-        #                               self.commands[:, :3] * self.commands_scale,
-        #                               (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
-        #                               self.dof_vel * self.obs_scales.dof_vel,
-        #                               self.actions,
-        #                               self.frames[:,0:3],
-        #                               self.frames[:,13:25]
-        #                               ), dim=-1)
-        # else:
-        #     self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel, #3
-        #                               self.base_ang_vel * self.obs_scales.ang_vel,        #3
-        #                               self.projected_gravity,                             #3
-        #                               self.commands[:, :3] * self.commands_scale,         #3
-        #                               (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos, #12
-        #                               self.dof_vel * self.obs_scales.dof_vel,             #12
-        #                               self.actions,                                       #12
-        #                               self.frames                                         #49
-        #                               ), dim=-1)
-        self.obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel, #3   #panda3
-                                  self.base_ang_vel * self.obs_scales.ang_vel,        #3   #3
-                                  self.projected_gravity,                             #3   #3
-                                  (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos, #12   #20
-                                  self.dof_vel * self.obs_scales.dof_vel,             #12  #20
-                                  self.actions,                                       #12  #20
-                                  self.frames                                         #49  #72
+        # base: pos quat lin_vel ang_vel
+        base_pos_error = self.base_pos - self.env_origins - self.frames[:, 0:3]
+        base_euler_error = get_euler_xyz_tensor(self.base_quat) - get_euler_xyz_tensor(self.frames[:, 3:7])
+        base_lin_vel_error = self.base_lin_vel - quat_rotate_inverse(self.frames[:, 3:7], self.frames[:, 7:10])
+        base_lin_ang_error = self.base_ang_vel - quat_rotate_inverse(self.frames[:, 3:7], self.frames[:, 10:13])
+        # foot: pos q dq
+        foot_pos_error = self.toe_pos_body - self.frames[:, 13:25]
+        leg_dof_pos_error = self.dof_pos[:, 0:12] - self.frames[:, 25:37]  # LF RF LH RH
+        leg_dof_vel_error = self.dof_vel[:, 0:12] - self.frames[:, 37:49]
+        # arm: pos quat q dq
+        arm_end_pos_error = self.arm_end_pos - self.frames[:, 49:52]
+        arm_end_rot_error = get_euler_xyz_tensor(self.arm_end_quat) - get_euler_xyz_tensor(self.frames[:, 52:56])
+        arm_dof_pos_error = self.dof_pos[:, 12:18] - self.frames[:, 56:62]
+        arm_dof_vel_error = self.dof_vel[:, 12:18] - self.frames[:, 62:68]
+
+        tracking_error = torch.cat((base_pos_error, base_euler_error, base_lin_vel_error, base_lin_ang_error,
+                                    foot_pos_error, leg_dof_pos_error, leg_dof_vel_error,
+                                    arm_end_pos_error, arm_end_rot_error, arm_dof_pos_error, arm_dof_vel_error), dim=-1)
+
+        self.privileged_obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel,  # 3   # 0...3
+                                             self.base_ang_vel * self.obs_scales.ang_vel,  # 3   # 3...6
+                                             self.projected_gravity,  # 3   # 6...9
+                                             (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,  # 18   # 9...27
+                                             self.dof_vel * self.obs_scales.dof_vel,  # 18  # 27...45
+                                             self.actions,  # 18  # 45...63
+                                             self.base_euler_xyz * self.obs_scales.quat, # 3  63...66
+                                             tracking_error  # 66   66...132
+                                             ), dim=-1)
+        self.obs_buf = torch.cat((self.base_ang_vel * self.obs_scales.ang_vel,  # 3   # 3
+                                  self.projected_gravity,  # 3   # 6
+                                  (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,  # 18   # 24
+                                  self.dof_vel * self.obs_scales.dof_vel,  # 18  # 42
+                                  self.actions,  # 18  # 60
                                   ), dim=-1)
+
         # add perceptive inputs if not blind
         if self.cfg.terrain.measure_heights:
             heights = torch.clip(self.root_states[:, 2].unsqueeze(1) - 0.5 - self.measured_heights, -1,
                                  1.) * self.obs_scales.height_measurements
             self.obs_buf = torch.cat((self.obs_buf, heights), dim=-1)
+
         # add noise if needed
         if self.add_noise:
             self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
-        # print(self.obs_buf) #use in debug
+        # print(self.obs_buf) # use in debug
 
     def create_sim(self):
         """ Creates simulation, terrain and evironments
@@ -640,13 +649,12 @@ class LeggedRobot(BaseTask):
         self.add_noise = self.cfg.noise.add_noise
         noise_scales = self.cfg.noise.noise_scales
         noise_level = self.cfg.noise.noise_level
-        noise_vec[:3] = noise_scales.lin_vel * noise_level * self.obs_scales.lin_vel
-        noise_vec[3:6] = noise_scales.ang_vel * noise_level * self.obs_scales.ang_vel
-        noise_vec[6:9] = noise_scales.gravity * noise_level
-        noise_vec[9:12] = 0.  # commands
-        noise_vec[12:24] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
-        noise_vec[24:36] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
-        noise_vec[36:48] = 0.  # previous actions
+
+        noise_vec[0:3] = noise_scales.ang_vel * noise_level * self.obs_scales.ang_vel
+        noise_vec[3:6] = noise_scales.gravity * noise_level
+        noise_vec[6:24] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
+        noise_vec[24:42] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
+        noise_vec[42:60] = 0.  # previous actions
         if self.cfg.terrain.measure_heights:
             noise_vec[48:235] = noise_scales.height_measurements * noise_level * self.obs_scales.height_measurements
         return noise_vec
@@ -916,6 +924,10 @@ class LeggedRobot(BaseTask):
                                                                                         self.actor_handles[0],
                                                                                         termination_contact_names[i])
 
+        # get arm_indices
+        arm_name = self.cfg.asset.arm_name
+        self.arm_link6_indice = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], arm_name)
+
     def _get_env_origins(self):
         """ Sets environment origins. On rough terrain the origins are defined by the terrain platforms.
             Otherwise create a grid.
@@ -1146,7 +1158,7 @@ class LeggedRobot(BaseTask):
         return torch.sum((torch.norm(self.contact_forces[:, self.feet_indices, :],
                                      dim=-1) - self.cfg.rewards.max_contact_force).clip(min=0.), dim=1)
 
-#-----------------------imitation rewards-----------------------------------------------
+#-----------------------leg imitation rewards-----------------------------------------------
     def _reward_track_root_pos(self):
         # 奖励跟踪root的位置，self.base_pos装的也是绝对坐标
         # print(self.frames[:, 0:3])
@@ -1203,3 +1215,32 @@ class LeggedRobot(BaseTask):
 
     def _reward_original_xy(self):
         return torch.exp(-10*torch.sum(torch.square(self.base_pos[:, :2] - self.origin_xy[:, :2]), dim=1))
+
+#------------------------arm imitation rewards---------------------------------------
+    def _reward_track_arm_dof_pos(self):
+        return torch.exp(-20 * torch.sum(torch.square(self.frames[:, self.motion_loader.ARM_JOINT_POS_START_IDX:
+                                                                      self.motion_loader.ARM_JOINT_POS_END_IDX] -
+                                                       self.dof_pos[:, 12:18]), dim=1))
+
+    def _reward_track_griper_dof_pos(self):
+        return torch.exp(-1000 * torch.sum(torch.square(self.frames[:, 62:64] - self.dof_pos[:, 18:20]), dim=1))
+
+    def _reward_track_arm_dof_vel(self):
+        return torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, self.motion_loader.ARM_JOINT_VEL_START_IDX:
+                                                                      self.motion_loader.ARM_JOINT_VEL_END_IDX] -
+                                                       self.dof_vel[:, 12:18]), dim=1))
+
+    def _reward_track_arm_pos(self):
+        temp = torch.exp(-100 * torch.sum(torch.square(self.frames[:, 49:52] - self.arm_end_pos), dim=1))
+        return temp
+
+    def _reward_track_arm_rot(self):
+        return torch.exp(-10 * torch.sum(torch.square(get_euler_xyz_tensor(self.arm_end_quat) -
+                                                      get_euler_xyz_tensor(self.frames[:, 52:56])), dim=1))
+
+    def _reward_survival(self):
+        "如果这个回合存活，给一个奖励"
+        survival_buf = torch.any(torch.norm(self.contact_forces[:, self.termination_contact_indices, :], dim=-1) < 1.,
+                                 dim=1)
+        # print(survival_buf)
+        return survival_buf
