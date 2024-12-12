@@ -98,7 +98,8 @@ def play(args):
     logger = Logger(env.dt)
     robot_index = 0 # which robot is used for logging
     joint_index = 1 # which joint is used for logging
-    stop_state_log = 200 # number of steps before plotting states
+    start_state_log = 0
+    stop_state_log = 400 # number of steps before plotting states
     stop_rew_log = env.max_episode_length + 1 # number of steps before print average episode rewards
     camera_position = np.array(env_cfg.viewer.pos, dtype=np.float64)
     camera_vel = np.array([1., 1., 0.])
@@ -110,8 +111,8 @@ def play(args):
         actions = policy(obs.detach())
         # actions[:, 18:20] = 0
         obs, _, rews, dones, infos = env.step(actions.detach())
-        if torch.min(actions.detach())<-1:
-            print(f"actions:{actions.detach()}")
+        # if torch.max(actions.detach())>18:
+        #     print(f"actions:{actions.detach()}")
         # print(env.dof_pos[:, 0:3])
         # print(f"dof: {env.dof_pos[:, 12:18]}")
         # print(env.base_quat)
@@ -125,7 +126,7 @@ def play(args):
             camera_position += camera_vel * env.dt
             env.set_camera(camera_position, camera_position + camera_direction)
 
-        if i < stop_state_log:
+        if start_state_log < i < stop_state_log:
             logger.log_states(
                 {
                     'dof_pos_target': actions[robot_index, joint_index].item() * env.action_scale,
@@ -161,6 +162,12 @@ def play(args):
                     'arm_dof_pos4': env.dof_pos[robot_index, 15].item(),
                     'arm_dof_pos5': env.dof_pos[robot_index, 16].item(),
                     'arm_dof_pos6': env.dof_pos[robot_index, 17].item(),
+                    'arm action 1': actions.detach()[robot_index, 12].item()*0.06,
+                    'arm action 2': actions.detach()[robot_index, 13].item()*0.06,
+                    'arm action 3': actions.detach()[robot_index, 14].item()*0.06,
+                    'arm action 4': actions.detach()[robot_index, 15].item()*0.06,
+                    'arm action 5': actions.detach()[robot_index, 16].item()*0.06,
+                    'arm action 6': actions.detach()[robot_index, 17].item()*0.06,
                 }
             )
         elif i==stop_state_log:

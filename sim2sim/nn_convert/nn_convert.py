@@ -27,7 +27,7 @@ def nn_convert():
     # load_path = "../model/turnjump/model_7450"
     
     # 加载模型参数
-    pt_path =  load_path + ".pt"  # 模型路径 "../legged_gym/logs/panda7_fixed_arm_swing/Dec03_18-08-47_"
+    pt_path = load_path + ".pt"  # 模型路径 "../legged_gym/logs/panda7_fixed_arm_swing/Dec03_18-08-47_"
     loaded_dict = torch.load(pt_path)
     print("loaded_dict: ", loaded_dict.keys())
     policy.actor.load_state_dict(loaded_dict['actor_state_dict']) 
