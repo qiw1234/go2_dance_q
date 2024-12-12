@@ -16,7 +16,7 @@ import yaml
 import ctypes
 
 
-model_path_swing = "./model/swing/model_15000.jit"
+model_path_swing = "./model/swing/model_10000.jit"
 model_path_turnjump = "./model/turnjump/model_7450.jit"
 
 
@@ -95,7 +95,7 @@ class BJTUDance:
     # 初始化方法
     def __init__(self):
         self.device = torch.device('cpu')  # cpu cuda
-        self.num_obs = 63  # 94
+        self.num_obs = 60  # 94 63
         self.num_acts = 18  # 12
         self.scale = {"lin_vel": 2.0,
                       "ang_vel": 0.25,
@@ -103,7 +103,8 @@ class BJTUDance:
                       "dof_vel": 0.05,
                       "height_measurements": 5.0,
                       "clip_observations": 100.,
-                      "clip_actions": 1.2,
+                      "clip_actions": 2.5,
+                      "clip_arm_actions": 1.2,
                       "action_scale": 0.25}
         default_dof_pos = [0.1,0.8,-1.5,  -0.1,0.8,-1.5,  0.1,1.,-1.5,  -0.1,1.,-1.5, 0,0,0, 0,0,0, 0,0]  # LF RF LH RH
         self.default_dof_pos = to_torch(default_dof_pos[0:self.num_acts], device=self.device, requires_grad=False)
@@ -119,8 +120,10 @@ class BJTUDance:
         self.actions_last = torch.zeros(self.num_acts, device=self.device, requires_grad=False)
         self.actions_last2 = torch.zeros(self.num_acts, device=self.device, requires_grad=False)
         
-        p_gains = [150.,150.,150., 150.,150.,150.,  150.,150.,150.,  150.,150.,150.,  150.,600.,150., 20.,15.,10., 10.,10.]
-        d_gains = [2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2., 0.1,1.,1., 1.,1.]
+        # p_gains = [150.,150.,150., 150.,150.,150.,  150.,150.,150.,  150.,150.,150.,  150.,600.,150., 20.,15.,10., 10.,10.]
+        # d_gains = [2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2., 0.1,1.,1., 1.,1.]
+        p_gains = [150.,150.,150., 150.,150.,150.,  150.,150.,150.,  150.,150.,150.,  150.,150.,100., 20.,15.,10., 10.,10.]
+        d_gains = [2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2., 0.1,0.1,0.1, 0.1,0.1]
         self.p_gains = to_torch(p_gains[0:self.num_acts], device=self.device, requires_grad=False)
         self.d_gains = to_torch(d_gains[0:self.num_acts], device=self.device, requires_grad=False)
         self.torques = torch.zeros(self.num_acts, device=self.device, requires_grad=False)
@@ -248,31 +251,22 @@ class BJTUDance:
         x, y, z, w = rpy2quaternion(self.shareinfo_feed.sensor_package.imu_euler[0], 
                                     self.shareinfo_feed.sensor_package.imu_euler[1], self.shareinfo_feed.sensor_package.imu_euler[2])
         base_quat = to_torch([x, y, z, w], dtype=torch.float32, device=self.device).unsqueeze(0)
-
-        base_lin_vel_w = [self.shareinfo_feed.sensor_package.body_vel[0],
-                          self.shareinfo_feed.sensor_package.body_vel[0], self.shareinfo_feed.sensor_package.body_vel[0]]
+        
         base_ang_vel_w = [self.shareinfo_feed.sensor_package.imu_wxyz[0],
                           self.shareinfo_feed.sensor_package.imu_wxyz[0], self.shareinfo_feed.sensor_package.imu_wxyz[0]]
-
-        base_lin_vel_w = to_torch(base_lin_vel_w, dtype=torch.float32, device=self.device).unsqueeze(0)
         base_ang_vel_w = to_torch(base_ang_vel_w, dtype=torch.float32, device=self.device).unsqueeze(0)
-
-        base_lin_vel = quat_rotate_inverse(base_quat, base_lin_vel_w).squeeze(0)
         base_ang_vel = quat_rotate_inverse(base_quat, base_ang_vel_w).squeeze(0)
-
+        
         gravity_vec = to_torch([0, 0, -1], dtype=torch.float32, device=self.device).unsqueeze(0)
         projected_gravity = quat_rotate_inverse(base_quat, gravity_vec).squeeze(0)
         
-        # print("base_quat: ", base_quat)
-        # print("base_lin_vel: ", base_lin_vel)
-        # print("base_ang_vel: ", base_ang_vel)
-        # print("projected_gravity: ", projected_gravity)
-
-        self.actor_state[0:3] = base_lin_vel * self.scale["lin_vel"]
-        self.actor_state[3:6] = base_ang_vel * self.scale["ang_vel"]
-        self.actor_state[6:9] = projected_gravity
+        self.actor_state[0:3] = base_ang_vel * self.scale["ang_vel"]
+        self.actor_state[3:6] = projected_gravity
         
-        # print("actor_state[0:9]: ", self.actor_state[0:9])
+        print("base_quat: ", base_quat)
+        print("base_ang_vel: ", base_ang_vel)
+        print("projected_gravity: ", projected_gravity)
+        print("actor_state[0:6]: ", self.actor_state[0:6])
 
         for i in range(4):  # LF RF LH RH
             for j in range(3):
@@ -283,10 +277,17 @@ class BJTUDance:
             self.dof_pos[12+i] = self.shareinfo_feed.sensor_package.joint_arm[i]
             self.dof_vel[12+i] = self.shareinfo_feed.sensor_package.joint_arm_dq[i]  # 机械臂的关节角速度
                 
-        self.actor_state[9 : 9+self.num_acts] = (self.dof_pos - self.default_dof_pos) * self.scale["dof_pos"]
-        self.actor_state[9+self.num_acts : 9+self.num_acts*2] = self.dof_vel * self.scale["dof_vel"]
-        self.actor_state[9+self.num_acts*2 : 9+self.num_acts*3] = self.actions
+        self.actor_state[6 : 6+self.num_acts] = (self.dof_pos - self.default_dof_pos) * self.scale["dof_pos"]
+        self.actor_state[6+self.num_acts : 6+self.num_acts*2] = self.dof_vel * self.scale["dof_vel"]
+        self.actor_state[6+self.num_acts*2 : 6+self.num_acts*3] = self.actions
 
+        print("dof_pos: ", (self.dof_pos - self.default_dof_pos) * self.scale["dof_pos"])
+        print("actor_state[6 : 6+self.num_acts]: ", self.actor_state[6 : 6+self.num_acts])
+        print("dof_vel: ", self.dof_vel * self.scale["dof_vel"])
+        print("actor_state[6+self.num_acts : 6+self.num_acts*2]: ", self.actor_state[6+self.num_acts : 6+self.num_acts*2])
+        print("actions: ", self.actions)
+        print("actor_state[6+self.num_acts : 6+self.num_acts*2]: ", self.actor_state[6+self.num_acts*2 : 6+self.num_acts*3])
+        
     def PutToNet2(self):
         x2, y2, z2, w2 = rpy2quaternion(self.shareinfo_feed.sensor_package2.imu_euler[0], 
                                         self.shareinfo_feed.sensor_package2.imu_euler[1], self.shareinfo_feed.sensor_package2.imu_euler[2])
@@ -344,9 +345,14 @@ class BJTUDance:
             # print("actions: ", actions)
             # print("self.actor_state: ", self.actor_state)
             
+            actions.to(self.device)
+            actions2.to(self.device)
             clip_actions = self.scale["clip_actions"]
+            clip_arm_actions = self.scale["clip_arm_actions"]
             self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
+            self.actions[-12:] = torch.clip(self.actions[-12:], -clip_arm_actions, clip_arm_actions).to(self.device)
             self.actions2 = torch.clip(actions2, -clip_actions, clip_actions).to(self.device)
+            self.actions2[-12:] = torch.clip(self.actions2[-12:], -clip_arm_actions, clip_arm_actions).to(self.device)
             self.actions_last = self.actions.clone()
             self.actions_last2 = self.actions2.clone()
             self.actions_scaled = self.actions * self.scale["action_scale"]
