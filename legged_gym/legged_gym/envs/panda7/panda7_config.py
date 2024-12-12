@@ -302,6 +302,7 @@ class panda7FixedGripperCfg(pandaCfg):
     class env(pandaCfg.env):
         num_actions = 18
         num_observations = 60
+        motion_files = "opti_traj/output_panda_fixed_gripper_json"
 
 
 class panda7FixedGripperBeatCfg(panda7FixedGripperCfg):
@@ -325,7 +326,8 @@ class panda7FixedGripperBeatCfg(panda7FixedGripperCfg):
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_beat.txt"
+        # motion_files = "opti_traj/output_panda_fixed_gripper/panda_beat.txt"
+        motion_name = 'beat'
 
 
 class panda7FixedGripperBeatCfgPPO(pandaCfgPPO):
@@ -339,21 +341,24 @@ class panda7FixedGripperTrotCfg(panda7FixedGripperCfg):
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            track_root_pos = 0
-            track_root_rot = 0
-            track_lin_vel_ref = 0
-            track_ang_vel_ref = 0
-            track_dof_pos = 3
-            track_dof_vel = 3
-            track_toe_pos = 8
+            track_root_pos = 1
+            track_root_height = 0
+            track_root_rot = 1
+            track_lin_vel_ref = 1
+            track_ang_vel_ref = 1
+            track_dof_pos = 5
+            track_dof_vel = 1
+            track_toe_pos = 5
             # 机械臂
-            track_arm_dof_pos = 0
-            track_arm_dof_vel = 5
-            track_arm_pos = 5
+            track_arm_dof_pos = 3
+            track_griper_dof_pos = 0
+            track_arm_dof_vel = 0
+            track_arm_pos = 0
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_trot.txt"
+        # motion_files = "opti_traj/output_panda_fixed_gripper/panda_trot.txt"
+        motion_name = 'trot'
 
 
 class panda7FixedGripperTrotCfgPPO(pandaCfgPPO):
@@ -366,23 +371,24 @@ class panda7FixedGripperPaceCfg(panda7FixedGripperCfg):
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            track_root_pos = 0
+            track_root_pos = 1
             track_root_height = 0
-            track_root_rot = 0
-            track_lin_vel_ref = 0
-            track_ang_vel_ref = 0
-            track_dof_pos = 3
-            track_dof_vel = 3
-            track_toe_pos = 8
+            track_root_rot = 1
+            track_lin_vel_ref = 1
+            track_ang_vel_ref = 1
+            track_dof_pos = 5
+            track_dof_vel = 1
+            track_toe_pos = 5
             # 机械臂
-            track_arm_dof_pos = 1
-            track_griper_dof_pos = 5
+            track_arm_dof_pos = 3
+            track_griper_dof_pos = 0
             track_arm_dof_vel = 0
             track_arm_pos = 0
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_pace.txt"
+        # motion_files = "opti_traj/output_panda_fixed_gripper/panda_pace.txt"
+        motion_name = 'pace'
 
 
 class panda7FixedGripperPaceCfgPPO(pandaCfgPPO):
@@ -413,7 +419,7 @@ class panda7FixedGripperSwingCfg(panda7FixedGripperCfg):
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_swing.txt"
+        motion_name = 'swing'
 
 
 class panda7FixedGripperSwingCfgPPO(pandaCfgPPO):
@@ -443,7 +449,8 @@ class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_wave.txt"
+        # motion_files = "opti_traj/output_panda_fixed_gripper/panda_wave.txt"
+        motion_name = 'wave'
 
 
 class panda7FixedGripperWaveCfgPPO(pandaCfgPPO):
@@ -477,7 +484,8 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_turn_and_jump.txt"
+        # motion_files = "opti_traj/output_panda_fixed_gripper/panda_turn_and_jump.txt"
+        motion_name = 'turn_and_jump'
 
 
 
@@ -508,7 +516,8 @@ class panda7FixedGripperSpaceTrotCfg(panda7FixedGripperCfg):
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_spacetrot.txt"
+        # motion_files = "opti_traj/output_panda_fixed_gripper/panda_spacetrot.txt"
+        turn_and_jump = 'spacetrot'
 
 
 class panda7FixedGripperSpaceTrotCfgPPO(pandaCfgPPO):

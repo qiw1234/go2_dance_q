@@ -112,7 +112,11 @@ class LeggedRobot(BaseTask):
         self.motion_loader = motionLoaderPandaFixedGripper(motion_files=self.cfg.env.motion_files, device=self.device,
                                                            time_between_frames=self.dt,
                                                            frame_duration=self.cfg.env.frame_duration)
-        self.max_episode_length_s = self.motion_loader.trajectory_lens[0]
+
+
+        self.action_id = [id for id, name in enumerate(self.motion_loader.trajectory_names) if self.cfg.env.motion_name in name]
+        # self.action_id = 0
+        self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
 
@@ -158,7 +162,8 @@ class LeggedRobot(BaseTask):
 
         # 在这里计算对应时刻的参考位置，放在这里self.episode_length_buf的范围是0-69，放到下面就是1-70，越界了
         time = self.episode_length_buf.cpu().numpy() / self.max_episode_length * self.max_episode_length_s
-        traj_idxs = self.motion_loader.weighted_traj_idx_sample_batch(self.num_envs)
+        # traj_idxs = self.motion_loader.weighted_traj_idx_sample_batch(self.num_envs)
+        traj_idxs =np.random.choice(self.action_id, size=self.num_envs, replace=True)
         self.frames = self.motion_loader.get_full_frame_at_time_batch(traj_idxs, time)
 
         self.episode_length_buf += 1
