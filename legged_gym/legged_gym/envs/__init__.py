@@ -102,7 +102,7 @@ task_registry.register( "panda7_fixed_arm_wave", LeggedRobot, panda7_fixed_arm_W
 task_registry.register("panda7_fixed_arm_trans", LeggedRobotTrans, panda7_fixed_arm_TransCfg(), panda7_fixed_arm_TransCfgPPO())
 # panda7 fixed gripper
 task_registry.register( "panda7_fixed_gripper_beat", LeggedRobot, panda7FixedGripperBeatCfg(), panda7FixedGripperBeatCfgPPO())
-task_registry.register( "panda7_fixed_gripper_spacetrot", LeggedRobotPandaFixedGripper,
+task_registry.register( "panda7_fixed_gripper_spacetrot", LeggedRobot,
                         panda7FixedGripperSpaceTrotCfg(), panda7FixedGripperSpaceTrotCfgPPO() )
 task_registry.register( "panda7_fixed_gripper_turn_and_jump", LeggedRobot,
                         panda7FixedGripperTurnAndJumpCfg(), panda7FixedGripperTurnAndJumpCfgPPO() )
