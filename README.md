@@ -41,4 +41,5 @@ pip install keyboard
 Sim2Sim运行
 ```bash
 sudo /home/ubuntn/anaconda3/envs/dance/bin/python bjtu_dance_twodogs.py
+sudo /home/senweihuang/anaconda3/envs/dance/bin/python bjtu_dance_twodogs.py
 ```
