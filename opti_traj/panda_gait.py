@@ -72,7 +72,7 @@ vx = 1
 ax = vx*cpg.T*cpg.beta
 ay = 0
 az = 0.08
-az2 = 0.01
+az2 = 0.02
 for i in range(4):
     for j in range(num_row):
         if phase[j,i]<0:

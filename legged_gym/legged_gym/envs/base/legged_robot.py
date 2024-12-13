@@ -108,12 +108,11 @@ class LeggedRobot(BaseTask):
         self._init_buffers()
         self._prepare_reward_function()
         self.init_done = True
+        self.global_counter = 0
         # 重新加载动作数据
         self.motion_loader = motionLoaderPandaFixedGripper(motion_files=self.cfg.env.motion_files, device=self.device,
                                                            time_between_frames=self.dt,
                                                            frame_duration=self.cfg.env.frame_duration)
-
-
         self.action_id = [id for id, name in enumerate(self.motion_loader.trajectory_names) if self.cfg.env.motion_name in name]
         # self.action_id = 0
         self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
@@ -128,6 +127,20 @@ class LeggedRobot(BaseTask):
             actions (torch.Tensor): Tensor of shape (num_envs, num_actions_per_env)
         """
         actions.to(self.device)
+        self.action_history_buf = torch.cat([self.action_history_buf[:, 1:].clone(), actions[:, None, :].clone()],
+                                            dim=1)
+        if self.cfg.domain_rand.action_delay:
+            if self.global_counter % self.cfg.domain_rand.delay_update_global_steps == 0:
+                if len(self.cfg.domain_rand.action_curr_step) != 0:
+                    self.delay = torch.tensor(self.cfg.domain_rand.action_curr_step.pop(0), device=self.device,
+                                              dtype=torch.float)
+            if self.viewer:
+                self.delay = torch.tensor(self.cfg.domain_rand.action_delay_view, device=self.device, dtype=torch.float)
+            indices = -self.delay - 1  # print("indices: ", indices)  # -2
+            actions = self.action_history_buf[:, indices.long()]  # delay for 1/50=20ms  对小数部分进行截断转换为long
+
+        self.global_counter += 1
+
         clip_actions = self.cfg.normalization.clip_actions / self.cfg.control.action_scale
         self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
         clip_arm_actions = self.cfg.normalization.clip_arm_actions / self.cfg.control.action_scale
@@ -254,6 +267,7 @@ class LeggedRobot(BaseTask):
         self.feet_air_time[env_ids] = 0.
         self.episode_length_buf[env_ids] = 0
         self.reset_buf[env_ids] = 1
+        self.action_history_buf[env_ids, :, :] = 0.
 
         # fill extras
         self.extras["episode"] = {}
@@ -281,6 +295,7 @@ class LeggedRobot(BaseTask):
         """
         self.dof_pos[env_ids] = torch.cat((self.motion_loader.get_joint_pose_batch(frames),
                                            self.motion_loader.get_arm_joint_pos_batch(frames)), dim=1)
+        self.dof_pos[env_ids] += torch_rand_float(-0.15, 0.15, (len(env_ids), self.num_dof), device=self.device)
         self.dof_vel[env_ids] = torch.cat((self.motion_loader.get_joint_vel_batch(frames),
                                            self.motion_loader.get_arm_joint_vel_batch(frames)), dim=1)
         env_ids_int32 = env_ids.to(dtype=torch.int32)
@@ -301,11 +316,11 @@ class LeggedRobot(BaseTask):
         # 记录初始位置
         self.origin_xy[env_ids, :] = root_pos
         self.root_states[env_ids, :3] = root_pos
+        self.root_states[env_ids, :2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
         root_orn = self.motion_loader.get_root_rot_batch(frames)
         self.root_states[env_ids, 3:7] = root_orn
         self.root_states[env_ids, 7:10] = quat_rotate(root_orn,
-                                                      self.motion_loader.get_linear_vel_batch(
-                                                          frames))  # TODO: body 2 world
+                                                      self.motion_loader.get_linear_vel_batch(frames))  # TODO: body 2 world
         self.root_states[env_ids, 10:13] = quat_rotate(root_orn, self.motion_loader.get_angular_vel_batch(frames))
 
         env_ids_int32 = env_ids.to(dtype=torch.int32)
@@ -360,7 +375,7 @@ class LeggedRobot(BaseTask):
                                              self.projected_gravity,  # 3   # 6...9
                                              (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,  # 18   # 9...27
                                              self.dof_vel * self.obs_scales.dof_vel,  # 18  # 27...45
-                                             self.actions,  # 18  # 45...63
+                                             self.action_history_buf[:, -1],  # 18  # 45...63
                                              self.base_euler_xyz * self.obs_scales.quat, # 3  63...66
                                              tracking_error  # 66   66...132
                                              ), dim=-1)
@@ -368,7 +383,7 @@ class LeggedRobot(BaseTask):
                                   self.projected_gravity,  # 3   # 6
                                   (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,  # 18   # 24
                                   self.dof_vel * self.obs_scales.dof_vel,  # 18  # 42
-                                  self.actions,  # 18  # 60
+                                  self.action_history_buf[:, -1],  # 18  # 60
                                   ), dim=-1)
 
         # add perceptive inputs if not blind
@@ -715,6 +730,10 @@ class LeggedRobot(BaseTask):
                                         requires_grad=False)
         self.last_dof_vel = torch.zeros_like(self.dof_vel)
         self.last_root_vel = torch.zeros_like(self.root_states[:, 7:13])  # 包含线速度和角速度
+
+        self.action_history_buf = torch.zeros(self.num_envs, self.cfg.domain_rand.action_buf_len, self.num_dofs,
+                                              device=self.device, dtype=torch.float)
+
         self.commands = torch.zeros(self.num_envs, self.cfg.commands.num_commands, dtype=torch.float,
                                     device=self.device, requires_grad=False)  # x vel, y vel, yaw vel, heading
         self.commands_scale = torch.tensor([self.obs_scales.lin_vel, self.obs_scales.lin_vel, self.obs_scales.ang_vel],

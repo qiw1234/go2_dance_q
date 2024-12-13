@@ -129,6 +129,13 @@ class LeggedRobotCfg(BaseConfig):
         push_robots = True
         push_interval_s = 0.5
         max_push_vel_xy = 0.2  # 1.
+
+        delay_update_global_steps = 4000
+        action_delay = False  # False True
+        action_curr_step = [0, 1, 2]  # [1, 1] [1, 2]
+        action_delay_view = 1  # 有viewer时(打开渲染)的delay
+        action_buf_len = 8
+
         # # dynamic randomization
         # action_delay = 0.5
         # # pd的随机化还没加上
