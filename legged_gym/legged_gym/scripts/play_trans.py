@@ -68,15 +68,18 @@ def load_policy(robot_name) -> dict:
         task_list = ['panda7_fixed_arm_beat', 'panda7_fixed_arm_swing', 'panda7_fixed_arm_trot',
                      'panda7_fixed_arm_turn_and_jump', 'panda7_fixed_arm_wave']
     elif robot_name == 'panda_fixed_gripper':
-        path_list = [
-            #        "legged_gym/log/panda_fixed_gripper/keep_the_beat/model_3000.pt",
-                     "legged_gym/log/panda7_fixed_gripper/swing/model_9100.pt",
-                     "legged_gym/log/panda7_fixed_gripper/trot/model_3600.pt",
-                     "legged_gym/log/panda7_fixed_gripper/turn_and_jump/model_8650.pt",
-                     "legged_gym/log/panda7_fixed_gripper/wave/model_10000.pt"
+        path_list = ["legged_gym/log/panda7_fixed_gripper/beat/model_10500.pt", # 目前没用到
+                     "legged_gym/log/panda7_fixed_gripper/swing/model_10500.pt",
+                     "legged_gym/log/panda7_fixed_gripper/trot/model_8350.pt",
+                     "legged_gym/log/panda7_fixed_gripper/turn_and_jump/model_8650.pt", #目前没用到
+                     "legged_gym/log/panda7_fixed_gripper/wave/model_9000.pt",
+                     "legged_gym/log/panda7_fixed_gripper/spacetrot/model_10500.pt", #目前没用到
+                     # "legged_gym/log/panda7_fixed_gripper/arm_with_leg/model_10500.pt", #目前没用到
+                     "legged_gym/log/panda7_fixed_gripper/pace/model_10500.pt", #目前没用到
                      ]
-        task_list = ['panda7_fixed_gripper_swing', 'panda7_fixed_gripper_trot',
-                     'panda7_fixed_gripper_turn_and_jump', 'panda7_fixed_gripper_wave']
+        task_list = ['panda7_fixed_gripper_beat', 'panda7_fixed_gripper_swing', 'panda7_fixed_gripper_trot',
+                     'panda7_fixed_gripper_turn_and_jump', 'panda7_fixed_gripper_wave', 'panda7_fixed_gripper_spacetrot',
+                     'panda7_fixed_gripper_pace']
 
     for i, load_path in enumerate(path_list):
         env_cfg = task_registry.env_cfgs[task_list[i]]
@@ -102,8 +105,8 @@ def play(args):
     env_cfg.noise.add_noise = False
     env_cfg.domain_rand.randomize_friction = False
     env_cfg.domain_rand.push_robots = False
-    env_cfg.env.dance_sequence = [0, 0, 1, 3, 0, 1, 2, 1, 3, 1, 0, 1, 2, 1, 3, 1]
-    # env_cfg.env.dance_sequence = [0, 0, 1, 1, 1, 1, 1, 1, 1, 1]
+    # env_cfg.env.dance_sequence = [2, 4, 2, 0, 4, 0, 2, 4, 2, 4, 0, 2, 4, 0]*5
+    env_cfg.env.dance_sequence = [2, 2, 0, 4]*25
 
     # prepare environment
     env, _ = task_registry.make_env(name=args.task, args=args, env_cfg=env_cfg)
@@ -140,7 +143,7 @@ def play(args):
         for task_id in range(len(ppo_runner.dance_task_name_list)):
             task_buf = ppo_runner.env.traj_idxs == task_id
             dance_actions[task_buf] = policy_dict[ppo_runner.dance_task_name_list[task_id]](obs[task_buf].detach())
-
+        print(ppo_runner.env.traj_idxs)
         # trans_mask = env.episode_time > env.motion_loader.trajectory_lens[env.traj_idxs]/10
         actions = dance_actions
         # actions[trans_mask] += policy_trans(obs.detach())[trans_mask]

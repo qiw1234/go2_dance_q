@@ -455,6 +455,7 @@ class LeggedRobot(BaseTask):
             for i in range(len(props)):
                 self.dof_pos_limits[i, 0] = props["lower"][i].item()
                 self.dof_pos_limits[i, 1] = props["upper"][i].item()
+                # print([props["lower"][i].item(), props["upper"][i].item()])
                 self.dof_vel_limits[i] = props["velocity"][i].item()
                 self.torque_limits[i] = props["effort"][i].item()
                 # soft limits

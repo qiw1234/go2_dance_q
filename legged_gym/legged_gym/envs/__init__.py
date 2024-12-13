@@ -66,6 +66,7 @@ from .panda7.panda7_config import panda7FixedGripperSpaceTrotCfg, panda7FixedGri
 from .panda7.panda7_config import panda7FixedGripperTurnAndJumpCfgPPO,panda7FixedGripperTurnAndJumpCfg
 from .panda7.panda7_config import panda7FixedGripperSwingCfg,panda7FixedGripperSwingCfgPPO
 from .panda7.panda7_config import panda7FixedGripperTrotCfg,panda7FixedGripperTrotCfgPPO
+from .panda7.panda7_config import panda7FixedGripperPaceCfg,panda7FixedGripperPaceCfgPPO
 from .panda7.panda7_config import panda7FixedGripperWaveCfg,panda7FixedGripperWaveCfgPPO
 from .panda7.panda7_config import panda7FixedGripperTransCfg, panda7FixedGripperTransCfgPPO
 from .panda7.panda_fixed_gripper_trans import LeggedRobotPandaFixedGripperTrans
@@ -110,6 +111,8 @@ task_registry.register( "panda7_fixed_gripper_swing", LeggedRobot,
                         panda7FixedGripperSwingCfg(), panda7FixedGripperSwingCfgPPO() )
 task_registry.register( "panda7_fixed_gripper_trot", LeggedRobot,
                         panda7FixedGripperTrotCfg(), panda7FixedGripperTrotCfgPPO() )
+task_registry.register( "panda7_fixed_gripper_pace", LeggedRobot,
+                        panda7FixedGripperPaceCfg(), panda7FixedGripperPaceCfgPPO() )
 task_registry.register( "panda7_fixed_gripper_wave", LeggedRobot,
                         panda7FixedGripperWaveCfg(), panda7FixedGripperWaveCfgPPO() )
 task_registry.register( "panda7_fixed_gripper_trans", LeggedRobotPandaFixedGripperTrans,

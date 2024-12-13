@@ -72,6 +72,7 @@ vx = 1
 ax = vx*cpg.T*cpg.beta
 ay = 0
 az = 0.08
+az2 = 0.01
 for i in range(4):
     for j in range(num_row):
         if phase[j,i]<0:
@@ -79,14 +80,15 @@ for i in range(4):
             toe_pos[j, 3*i+2] = CPG.endEffectorPos_z(az,p)
         else:
             p = phase[j,i]/np.pi
-            toe_pos[j,3*i] = 0
+            toe_pos[j,3*i+2] = CPG.endEffectorPos_z(az2,p)
+
 
         toe_pos[j,3*i] = CPG.endEffectorPos_xy(ax,p)
         toe_pos[j,3*i+1] = CPG.endEffectorPos_xy(ay,p)
 
-# plt.figure()
-# plt.plot(toe_pos[:,0], toe_pos[:,2], linewidth=5)
-# plt.show()
+plt.figure()
+plt.plot(toe_pos[:,0], toe_pos[:,2], linewidth=5)
+plt.show()
 # 足端相对质心的坐标
 toe_pos += panda7.toe_pos_init
 q = ca.SX.sym('q', 3, 1)
