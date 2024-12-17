@@ -497,8 +497,9 @@ class panda7FixedGripperTurnAndJumpCfgPPO(pandaCfgPPO):
 class panda7FixedGripperSpaceTrotCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
         class scales(panda7FixedGripperCfg.rewards.scales):
-            feet_air_time = 1.
-            leg_num_contact = -1.
+            feet_air_time = 3.
+            leg_num_contact = -2.
+            feet_contact_time = 3.
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
@@ -507,11 +508,11 @@ class panda7FixedGripperSpaceTrotCfg(panda7FixedGripperCfg):
             track_root_rot = 1
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 6
+            track_dof_pos = 10
             track_dof_vel = 0
             track_toe_pos = 10
             # 机械臂
-            track_arm_dof_pos = 5
+            track_arm_dof_pos = 8
             track_griper_dof_pos = 0
             track_arm_dof_vel = 0
             track_arm_pos = 0
