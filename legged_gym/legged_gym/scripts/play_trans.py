@@ -106,7 +106,7 @@ def play(args):
     env_cfg.domain_rand.randomize_friction = False
     env_cfg.domain_rand.push_robots = False
     # env_cfg.env.dance_sequence = [2, 4, 2, 0, 4, 0, 2, 4, 2, 4, 0, 2, 4, 0]*5
-    # env_cfg.env.dance_sequence = [2, 2, 0, 4]*25
+    env_cfg.env.dance_sequence = [2, 2, 0, 4]*25
 
     # prepare environment
     env, _ = task_registry.make_env(name=args.task, args=args, env_cfg=env_cfg)

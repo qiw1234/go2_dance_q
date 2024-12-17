@@ -255,7 +255,12 @@ class LeggedRobot(BaseTask):
             # 这里计算出来的时间都是结束的时间，不合理
             # init_times = self.episode_length_buf[env_ids].cpu().numpy() / self.max_episode_length * self.max_episode_length_s
             # frames = self.motion_loader.get_full_frame_at_time_batch(traj_idxs, init_times)
-            frames = self.motion_loader.get_full_frame_batch(len(env_ids))
+            if self.cfg.domain_rand.RSI_traj_rand:
+                frames = self.motion_loader.get_full_frame_batch(len(env_ids))
+            else:
+                time = self.episode_length_buf.cpu().numpy() / self.max_episode_length * self.max_episode_length_s
+                traj_idxs = np.random.choice(self.action_id, size=self.num_envs, replace=True)
+                frames = self.motion_loader.get_full_frame_at_time_batch(traj_idxs, time)
             self._reset_dofs_amp(env_ids, frames)
             self._reset_root_states_amp(env_ids, frames)
 
@@ -295,7 +300,8 @@ class LeggedRobot(BaseTask):
         """
         self.dof_pos[env_ids] = torch.cat((self.motion_loader.get_joint_pose_batch(frames),
                                            self.motion_loader.get_arm_joint_pos_batch(frames)), dim=1)
-        self.dof_pos[env_ids] += torch_rand_float(-0.15, 0.15, (len(env_ids), self.num_dof), device=self.device)
+        if self.cfg.domain_rand.RSI_rand:
+            self.dof_pos[env_ids] += torch_rand_float(-0.05, 0.05, (len(env_ids), self.num_dof), device=self.device)
         self.dof_vel[env_ids] = torch.cat((self.motion_loader.get_joint_vel_batch(frames),
                                            self.motion_loader.get_arm_joint_vel_batch(frames)), dim=1)
         env_ids_int32 = env_ids.to(dtype=torch.int32)
@@ -316,7 +322,8 @@ class LeggedRobot(BaseTask):
         # 记录初始位置
         self.origin_xy[env_ids, :] = root_pos
         self.root_states[env_ids, :3] = root_pos
-        self.root_states[env_ids, :2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
+        if self.cfg.domain_rand.RSI_rand:
+            self.root_states[env_ids, :2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
         root_orn = self.motion_loader.get_root_rot_batch(frames)
         self.root_states[env_ids, 3:7] = root_orn
         self.root_states[env_ids, 7:10] = quat_rotate(root_orn,
@@ -1157,16 +1164,18 @@ class LeggedRobot(BaseTask):
     def _reward_feet_air_time(self):
         # Reward long steps
         # Need to filter the contacts because the contact reporting of PhysX is unreliable on meshes
-        contact = self.contact_forces[:, self.feet_indices, 2] > 1.
+        contact = self.contact_forces[:, self.feet_indices, 2] > 5.
         contact_filt = torch.logical_or(contact, self.last_contacts)
         self.last_contacts = contact
         first_contact = (self.feet_air_time > 0.) * contact_filt
         self.feet_air_time += self.dt
-        rew_airTime = torch.sum((self.feet_air_time - 0.5) * first_contact,
+        rew_airTime = torch.sum((self.feet_air_time - 0.12) * first_contact,
                                 dim=1)  # reward only on first contact with the ground
-        rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1  #no reward for zero command
+        # rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1  #no reward for zero command
         self.feet_air_time *= ~contact_filt
-        return rew_airTime
+        return 50*rew_airTime
+
+
 
     def _reward_stumble(self):
         # Penalize feet hitting vertical surfaces
@@ -1240,6 +1249,14 @@ class LeggedRobot(BaseTask):
 
     def _reward_original_xy(self):
         return torch.exp(-10*torch.sum(torch.square(self.base_pos[:, :2] - self.origin_xy[:, :2]), dim=1))
+
+    def _reward_leg_num_contact(self):
+        # 惩罚奇数腿触地
+        contact = self.contact_forces[:, self.feet_indices, 2] > 5.
+        leg_num_contact = torch.sum(contact, dim=1)
+        # 选出奇数触地腿的env
+        mask = leg_num_contact % 2
+        return mask
 
 #------------------------arm imitation rewards---------------------------------------
     def _reward_track_arm_dof_pos(self):
