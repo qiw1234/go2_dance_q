@@ -74,10 +74,14 @@ def play(args):
     env_cfg.terrain.num_rows = 1
     env_cfg.terrain.num_cols = 1
     env_cfg.terrain.curriculum = False
-    env_cfg.noise.add_noise = False
+    env_cfg.noise.add_noise = True
     env_cfg.domain_rand.randomize_friction = False
     env_cfg.domain_rand.push_robots = False
     # env_cfg.env.debug = True
+    env_cfg.domain_rand.RSI_rand = False
+    env_cfg.domain_rand.RSI_traj_rand = False
+
+
 
     # prepare environment
     env, _ = task_registry.make_env(name=args.task, args=args, env_cfg=env_cfg)
@@ -99,7 +103,7 @@ def play(args):
     robot_index = 0 # which robot is used for logging
     joint_index = 1 # which joint is used for logging
     start_state_log = 0
-    stop_state_log = 400 # number of steps before plotting states
+    stop_state_log = 200 # number of steps before plotting states
     stop_rew_log = env.max_episode_length + 1 # number of steps before print average episode rewards
     camera_position = np.array(env_cfg.viewer.pos, dtype=np.float64)
     camera_vel = np.array([1., 1., 0.])
@@ -141,18 +145,24 @@ def play(args):
                     'base_vel_z': env.base_lin_vel[robot_index, 2].item(),
                     'base_vel_yaw': env.base_ang_vel[robot_index, 2].item(),
                     'contact_forces_z': env.contact_forces[robot_index, env.feet_indices, 2].cpu().numpy(),
-                    'foot_pos_0_x' : env.toe_pos_world[robot_index, 0].item(),
-                    'foot_pos_0_y': env.toe_pos_world[robot_index, 1].item(),
-                    'foot_pos_0_z': env.toe_pos_world[robot_index, 2].item(),
-                    'foot_pos_1_x': env.toe_pos_world[robot_index, 3].item(),
-                    'foot_pos_1_y': env.toe_pos_world[robot_index, 4].item(),
-                    'foot_pos_1_z': env.toe_pos_world[robot_index, 5].item(),
+                    'foot_pos_0_x' : env.toe_pos_body[robot_index, 0].item(),
+                    'foot_pos_0_y': env.toe_pos_body[robot_index, 1].item(),
+                    'foot_pos_0_z': env.toe_pos_body[robot_index, 2].item(),
+                    'foot_pos_1_x': env.toe_pos_body[robot_index, 3].item(),
+                    'foot_pos_1_y': env.toe_pos_body[robot_index, 4].item(),
+                    'foot_pos_1_z': env.toe_pos_body[robot_index, 5].item(),
                     'foot_pos_2_x': env.toe_pos_world[robot_index, 6].item(),
                     'foot_pos_2_y': env.toe_pos_world[robot_index, 7].item(),
                     'foot_pos_2_z': env.toe_pos_world[robot_index, 8].item(),
                     'foot_pos_3_x': env.toe_pos_world[robot_index, 9].item(),
                     'foot_pos_3_y': env.toe_pos_world[robot_index, 10].item(),
                     'foot_pos_3_z': env.toe_pos_world[robot_index, 11].item(),
+                    'ref_foot_pos_0x':env.frames[robot_index,13].item(),
+                    'ref_foot_pos_0y': env.frames[robot_index,14].item(),
+                    'ref_foot_pos_0z': env.frames[robot_index,15].item(),
+                    'ref_foot_pos_1x': env.frames[robot_index,16].item(),
+                    'ref_foot_pos_1y': env.frames[robot_index,17].item(),
+                    'ref_foot_pos_1z': env.frames[robot_index,18].item(),
                     'base_pos_x' : env.base_pos[robot_index, 0].item(),
                     'base_pos_y': env.base_pos[robot_index, 1].item(),
                     'base_pos_z': env.base_pos[robot_index, 2].item(),

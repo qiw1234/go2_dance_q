@@ -3,6 +3,8 @@ import utils
 import casadi as ca
 import CPG
 import matplotlib.pyplot as plt
+import os
+import json
 
 # 使用CPG模型设计trot步态，使用hopf振荡器获得周期性的相位信号，根据这个相位信号计算足端轨迹
 
@@ -14,9 +16,9 @@ panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.287854, -0.481
                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828]
 panda7 = utils.QuadrupedRobot(l=0.65, w=0.225, l1=0.126375, l2=0.34, l3=0.34,
                               lb=panda_lb, ub=panda_ub, toe_pos_init=panda_toe_pos_init)
-num_row = 100
+num_row = 200
 num_col = 72
-fps = 50
+fps = 100
 
 ref = np.ones((num_row - 1, num_col))
 root_pos = np.zeros((num_row, 3))
@@ -60,6 +62,10 @@ phase = np.arctan2(hopf_signal[:,4:8], hopf_signal[:,0:4])
 #
 # plt.show()
 
+if gait == 'spacetrot':
+    # np.savetxt('phase.csv', phase, delimiter=',')
+    phase = np.loadtxt('phase.csv', delimiter=',')
+
 plt.figure()
 plt.plot(t, phase[:,0], linewidth=6)
 plt.plot(t, phase[:,1], linewidth=6)
@@ -71,22 +77,31 @@ plt.show()
 vx = 1
 ax = vx*cpg.T*cpg.beta
 ay = 0
-az = 0.08
+az = 0.2
+az2 = 0.01
 for i in range(4):
     for j in range(num_row):
         if phase[j,i]<0:
             p = -phase[j,i]/np.pi
-            toe_pos[j, 3*i+2] = CPG.endEffectorPos_z(az,p)
+            toe_pos[j, 3*i+2] = CPG.endEffectorPos_z(az, p)
         else:
             p = phase[j,i]/np.pi
-            toe_pos[j,3*i] = 0
+            if gait == 'spacetrot':
+                toe_pos[j, 3*i+2] = CPG.endEffectorPos_z(az2, p)
+            else:
+                toe_pos[j, 3 * i + 2] = 0
+        if gait == 'spacetrot':
+            toe_pos[j, 3*i] = CPG.endEffectorPos_xy_spacetrot(ax, p)
+            toe_pos[j, 3*i+1] = CPG.endEffectorPos_xy_spacetrot(ay, p)
+        else:
+            toe_pos[j, 3*i] = CPG.endEffectorPos_xy(ax, p)
+            toe_pos[j, 3*i+1] = CPG.endEffectorPos_xy(ay, p)
 
-        toe_pos[j,3*i] = CPG.endEffectorPos_xy(ax,p)
-        toe_pos[j,3*i+1] = CPG.endEffectorPos_xy(ay,p)
-
-# plt.figure()
-# plt.plot(toe_pos[:,0], toe_pos[:,2], linewidth=5)
-# plt.show()
+plt.figure()
+plt.plot(toe_pos[:,0], toe_pos[:,2], linewidth=5)
+plt.plot(t, toe_pos[:, 0], linewidth=5, marker='o')
+plt.plot(t, toe_pos[:, 2], linewidth=5, marker='*')
+plt.show()
 # 足端相对质心的坐标
 toe_pos += panda7.toe_pos_init
 q = ca.SX.sym('q', 3, 1)
@@ -112,13 +127,17 @@ for i in range(num_row - 1):
     dof_vel[i,:] = (dof_pos[i+1,:] - dof_pos[i,:]) * fps
 
 # 质心位置
-# x = vx*t
-x=0
+if gait != 'spacetrot':
+    x = vx * t
+else:
+    x=0
 root_pos[:,0] = x
 root_pos[:,2] = 0.55
 # 质心速度
-# root_lin_vel[:,0] = vx
-root_lin_vel[:,0] = vx
+if gait != 'spacetrot':
+    root_lin_vel[:,0] = vx
+else:
+    root_lin_vel[:,0] = 0
 # 机身方向
 root_rot[:,3] = 1
 # 机身角速度默认为0
@@ -145,12 +164,12 @@ ref[:, 56:64] = arm_dof_pos[:num_row - 1, :]
 ref[:, 64:72] = arm_dof_vel
 
 # 太空步
-gait = 'spacetrot'
-# # 导出完整轨迹
+# gait = 'spacetrot'
+# 导出完整轨迹
 outfile = 'output_panda/panda_'+gait+'.txt'
 np.savetxt(outfile, ref, delimiter=',')
 
-# # 导出fixed arm轨迹
+# 导出fixed arm轨迹
 outfile = 'output_panda_fixed_arm/panda_'+gait+'.txt'
 np.savetxt(outfile, ref[:, :49], delimiter=',')
 
@@ -159,3 +178,14 @@ outfile = 'output_panda_fixed_gripper/panda_'+gait+'.txt'
 out = np.hstack((ref[:, :56], ref[:, 56:62], ref[:, 64:70]))
 np.savetxt(outfile, out, delimiter=',')
 
+# 保存json
+files = 'output_panda_fixed_gripper'
+file = "panda_spacetrot.txt"
+name = file.split('.')[0]
+motion = np.loadtxt(os.path.join(files,file), delimiter=',')
+json_data={
+    'frame_duration':1/fps,
+    'frames':motion.tolist()
+}
+with open(files+'_json/'+name+'.json', 'w') as f:
+    json.dump(json_data, f, indent=4)

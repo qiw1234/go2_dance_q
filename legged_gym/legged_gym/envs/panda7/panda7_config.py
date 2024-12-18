@@ -278,11 +278,11 @@ class panda7FixedGripperCfg(pandaCfg):
         # PD Drive parameters:
         control_type = 'P'
         stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
-                     'joint1': 150., 'joint2': 150., 'joint3': 100,
+                     'joint1': 150., 'joint2': 150., 'joint3': 150,
                      'joint4': 20., 'joint5': 15., 'joint6': 10.}  # [N*m/rad]# 20  15  10
         damping = {'hip': 2.0, 'thigh': 2.0, 'calf': 2.0,
                    'joint1': 2., 'joint2': 2, 'joint3': 2,
-                   'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.01}  # [N*m*s/rad] 0.8 1 1
+                   'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.1}  # [N*m*s/rad] 0.8 1 1
 
         # stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
         #              'joint1': 150., 'joint2': 600., 'joint3': 150,
@@ -302,6 +302,7 @@ class panda7FixedGripperCfg(pandaCfg):
     class env(pandaCfg.env):
         num_actions = 18
         num_observations = 60
+        motion_files = "opti_traj/output_panda_fixed_gripper_json"
 
 
 class panda7FixedGripperBeatCfg(panda7FixedGripperCfg):
@@ -325,7 +326,8 @@ class panda7FixedGripperBeatCfg(panda7FixedGripperCfg):
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_beat.txt"
+        # motion_files = "opti_traj/output_panda_fixed_gripper/panda_beat.txt"
+        motion_name = 'beat'
 
 
 class panda7FixedGripperBeatCfgPPO(pandaCfgPPO):
@@ -339,21 +341,24 @@ class panda7FixedGripperTrotCfg(panda7FixedGripperCfg):
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            track_root_pos = 0
-            track_root_rot = 0
-            track_lin_vel_ref = 0
-            track_ang_vel_ref = 0
-            track_dof_pos = 3
-            track_dof_vel = 3
-            track_toe_pos = 8
+            track_root_pos = 1
+            track_root_height = 0
+            track_root_rot = 1
+            track_lin_vel_ref = 1
+            track_ang_vel_ref = 1
+            track_dof_pos = 5
+            track_dof_vel = 1
+            track_toe_pos = 5
             # 机械臂
-            track_arm_dof_pos = 0
-            track_arm_dof_vel = 5
-            track_arm_pos = 5
+            track_arm_dof_pos = 3
+            track_griper_dof_pos = 0
+            track_arm_dof_vel = 0
+            track_arm_pos = 0
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_trot.txt"
+        # motion_files = "opti_traj/output_panda_fixed_gripper/panda_trot.txt"
+        motion_name = 'trot'
 
 
 class panda7FixedGripperTrotCfgPPO(pandaCfgPPO):
@@ -366,23 +371,24 @@ class panda7FixedGripperPaceCfg(panda7FixedGripperCfg):
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            track_root_pos = 0
+            track_root_pos = 1
             track_root_height = 0
-            track_root_rot = 0
-            track_lin_vel_ref = 0
-            track_ang_vel_ref = 0
-            track_dof_pos = 3
-            track_dof_vel = 3
-            track_toe_pos = 8
+            track_root_rot = 1
+            track_lin_vel_ref = 1
+            track_ang_vel_ref = 1
+            track_dof_pos = 5
+            track_dof_vel = 1
+            track_toe_pos = 5
             # 机械臂
-            track_arm_dof_pos = 1
-            track_griper_dof_pos = 5
+            track_arm_dof_pos = 3
+            track_griper_dof_pos = 0
             track_arm_dof_vel = 0
             track_arm_pos = 0
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_pace.txt"
+        # motion_files = "opti_traj/output_panda_fixed_gripper/panda_pace.txt"
+        motion_name = 'pace'
 
 
 class panda7FixedGripperPaceCfgPPO(pandaCfgPPO):
@@ -406,14 +412,14 @@ class panda7FixedGripperSwingCfg(panda7FixedGripperCfg):
             track_dof_vel = 1
             track_toe_pos = 10
             # 机械臂
-            track_arm_dof_pos = 1
+            track_arm_dof_pos = 10
             track_griper_dof_pos = 0
-            track_arm_dof_vel = 2
+            track_arm_dof_vel = 0
             track_arm_pos = 0
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_swing.txt"
+        motion_name = 'swing'
 
 
 class panda7FixedGripperSwingCfgPPO(pandaCfgPPO):
@@ -436,14 +442,15 @@ class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
             track_dof_vel = 0
             track_toe_pos = 10
             # 机械臂
-            track_arm_dof_pos = 2
+            track_arm_dof_pos = 10
             track_griper_dof_pos = 0
-            track_arm_dof_vel = 1
+            track_arm_dof_vel = 0
             track_arm_pos = 0
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_wave.txt"
+        # motion_files = "opti_traj/output_panda_fixed_gripper/panda_wave.txt"
+        motion_name = 'wave'
 
 
 class panda7FixedGripperWaveCfgPPO(pandaCfgPPO):
@@ -470,14 +477,15 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
             # jump reward
             jump = 5.
             # 机械臂
-            track_arm_dof_pos = 2
+            track_arm_dof_pos = 10
             track_griper_dof_pos = 0
             track_arm_dof_vel = 0
             track_arm_pos = 0
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_turn_and_jump.txt"
+        # motion_files = "opti_traj/output_panda_fixed_gripper/panda_turn_and_jump.txt"
+        motion_name = 'turn_and_jump'
 
 
 
@@ -489,31 +497,39 @@ class panda7FixedGripperTurnAndJumpCfgPPO(pandaCfgPPO):
 class panda7FixedGripperSpaceTrotCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
         class scales(panda7FixedGripperCfg.rewards.scales):
+            feet_air_time = 3.
+            leg_num_contact = -2.
+            feet_contact_time = 3.
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            track_root_pos = 1
+            track_root_pos = 3
             track_root_height = 0
             track_root_rot = 1
-            track_lin_vel_ref = 1
-            track_ang_vel_ref = 1
-            track_dof_pos = 5
-            track_dof_vel = 1
-            track_toe_pos = 5
+            track_lin_vel_ref = 0
+            track_ang_vel_ref = 0
+            track_dof_pos = 10
+            track_dof_vel = 0
+            track_toe_pos = 10
             # 机械臂
-            track_arm_dof_pos = 3
+            track_arm_dof_pos = 8
             track_griper_dof_pos = 0
             track_arm_dof_vel = 0
             track_arm_pos = 0
             track_arm_rot = 0
 
     class env(panda7FixedGripperCfg.env):
-        motion_files = "opti_traj/output_panda_fixed_gripper/panda_spacetrot.txt"
+        # motion_files = "opti_traj/output_panda_fixed_gripper/panda_spacetrot.txt"
+        motion_name = 'spacetrot'
 
 
 class panda7FixedGripperSpaceTrotCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_spacetrot'
+        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_spacetrot/Dec15_17-59-23_/model_8000.pt'
+        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_spacetrot/Dec15_10-37-34_/model_29400.pt' # 滑步
+
+
 
 #----------------------panda7 fixed gripper trans config---------------------------
 class panda7FixedGripperTransCfg(panda7FixedGripperCfg):
@@ -528,10 +544,14 @@ class panda7FixedGripperTransCfg(panda7FixedGripperCfg):
     class env(panda7FixedGripperCfg.env):
         motion_files = "opti_traj/output_panda_fixed_gripper_json"
         dance_sequence = None
+        # RSI = False
+        motion_name = 'spacetrot' # 这里随便写一个，用于选择轨迹，实际上没用
+        episode_length_s = 20
 
 class panda7FixedGripperTransCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_trans'
         resume_path = 'legged_gym/logs/panda7_fixed_gripper_turn_and_jump/Dec11_20-30-49_/model_750.pt' # 随便给个路径就行，这个路径的文件不用
-        dance_task_list = ['panda7_fixed_gripper_wave', 'panda7_fixed_gripper_trot', 'panda7_fixed_gripper_turn_and_jump',
-                           'panda7_fixed_gripper_swing']
+        dance_task_list = ['panda7_fixed_gripper_wave', 'panda7_fixed_gripper_spacetrot', 'panda7_fixed_gripper_trot',
+                           'panda7_fixed_gripper_turn_and_jump',
+                           'panda7_fixed_gripper_swing', 'panda7_fixed_gripper_beat', 'panda7_fixed_gripper_pace',]

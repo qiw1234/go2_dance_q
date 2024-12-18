@@ -122,6 +122,9 @@ class BJTUDance:
         self.action_history_buf = torch.zeros(self.action_buf_len, self.num_acts, device=self.device, dtype=torch.float)
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device, dtype=torch.float)
         
+        # p_gains = [150.,150.,150., 150.,150.,150.,  150.,150.,150.,  150.,150.,150.,  150.,600.,150., 20.,15.,10., 10.,10.]
+        # d_gains = [2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2., 0.1,1.,1., 1.,1.]
+        p_gains = [150.,150.,150., 150.,150.,150.,  150.,150.,150.,  150.,150.,150.,  150.,150.,150., 20.,15.,10., 10.,10.]
         p_gains = [150.,150.,150., 150.,150.,150.,  150.,150.,150.,  150.,150.,150.,  150.,150.,150., 20.,15.,10., 10.,10.]
         d_gains = [2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2., 0.1,0.1,0.1, 0.1,0.1]
         self.p_gains = to_torch(p_gains[0:self.num_acts], device=self.device, requires_grad=False)

@@ -127,54 +127,62 @@ class Logger:
         # a.legend()
 
         # plot root position
-        # fig, axs = plt.subplots(nb_rows, nb_cols)
-        # a = axs[0, 0]
-        # if log["base_pos_x"]: a.plot(time, log["base_pos_x"], label='base_pos_x')
-        # if log["base_pos_y"]: a.plot(time, log["base_pos_y"], label='base_pos_y')
-        # if log["base_pos_z"]: a.plot(time, log["base_pos_z"], label='base_pos_z')
-        # plt.rcParams['xtick.labelsize'] = 20
-        # a.set(xlabel='time [s]', ylabel='Position [m]', title='base pos')
-        # # plot foot 1 position
-        # a = axs[0, 1]
-        # if log["foot_pos_1_x"]: a.plot(time, log["foot_pos_1_x"], label='foot_pos_1_x')
-        # if log["foot_pos_1_y"]: a.plot(time, log["foot_pos_1_y"], label='foot_pos_1_y')
-        # if log["foot_pos_1_z"]: a.plot(time, log["foot_pos_1_z"], label='foot_pos_1_z')
-        # plt.rcParams['xtick.labelsize'] = 20
-        # a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos 1')
-        # # plot foot 2 position
-        # a = axs[0, 2]
-        # if log["foot_pos_2_x"]: a.plot(time, log["foot_pos_2_x"], label='foot_pos_2_x')
-        # if log["foot_pos_2_y"]: a.plot(time, log["foot_pos_2_y"], label='foot_pos_2_y')
-        # if log["foot_pos_2_z"]: a.plot(time, log["foot_pos_2_z"], label='foot_pos_2_z')
-        # plt.rcParams['xtick.labelsize'] = 20
-        # a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos 2')
+        fig, axs = plt.subplots(2, 2)
+        a = axs[0, 0]
+        if log["base_pos_x"]: a.plot(time, log["base_pos_x"], label='base_pos_x')
+        if log["base_pos_y"]: a.plot(time, log["base_pos_y"], label='base_pos_y')
+        if log["base_pos_z"]: a.plot(time, log["base_pos_z"], label='base_pos_z')
+        plt.rcParams['xtick.labelsize'] = 20
+        a.set(xlabel='time [s]', ylabel='Position [m]', title='base pos')
+        # plot foot 1 position
+        a = axs[0, 1]
+        a.plot(time, log["foot_pos_1_x"], label='foot_pos_1_x', c='r')
+        a.plot(time, log["foot_pos_1_y"], label='foot_pos_1_y', c='g')
+        a.plot(time, log["foot_pos_1_z"], label='foot_pos_1_z', c='b')
+        a.plot(time, log["ref_foot_pos_1x"], label='ref_1x', linestyle='--', c='r')
+        a.plot(time, log["ref_foot_pos_1y"], label='ref_1y', linestyle='--', c='g')
+        a.plot(time, log["ref_foot_pos_1z"], label='ref_1z', linestyle='--', c='b')
+        plt.rcParams['xtick.labelsize'] = 20
+        a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos 1')
+        # plot foot 2 position
+        a = axs[1, 0]
+        a.plot(time, log["foot_pos_0_x"], label='foot_pos_0_x', c='r')
+        a.plot(time, log["foot_pos_0_y"], label='foot_pos_0_y', c='g')
+        a.plot(time, log["foot_pos_0_z"], label='foot_pos_0_z', c='b')
+        a.plot(time, log["ref_foot_pos_0x"], label='ref_0x', linestyle='--', c='r')
+        a.plot(time, log["ref_foot_pos_0y"], label='ref_0y', linestyle='--', c='g')
+        a.plot(time, log["ref_foot_pos_0z"], label='ref_0z', linestyle='--', c='b')
+        plt.rcParams['xtick.labelsize'] = 20
+        a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos 2')
+        a.legend()
         # # plot foot z position
-        # a = axs[1, 0]
+        # a = axs[1, 1]
         # a.plot(time, log["foot_pos_0_z"], label='foot_pos_0_z')
         # a.plot(time, log["foot_pos_1_z"], label='foot_pos_1_z')
         # a.plot(time, log["foot_pos_2_z"], label='foot_pos_2_z')
         # a.plot(time, log["foot_pos_3_z"], label='foot_pos_3_z')
         # plt.rcParams['xtick.labelsize'] = 20
         # a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos z')
+
         # plot arm dof pos
-        fig, a = plt.subplots()
-
-        a.plot(time, log["arm_dof_pos1"], label='arm_dof_pos1', c='r')
-        a.plot(time, log["arm_dof_pos2"], label='arm_dof_pos2', c='g')
-        a.plot(time, log["arm_dof_pos3"], label='arm_dof_pos3', c='b')
-        a.plot(time, log["arm_dof_pos4"], label='arm_dof_pos4', c='c')
-        a.plot(time, log["arm_dof_pos5"], label='arm_dof_pos5', c='y')
-        a.plot(time, log["arm_dof_pos6"], label='arm_dof_pos6', c='k')
-        a.plot(time, log["arm action 1"], label='arm action 1', linestyle='--', c='r')
-        a.plot(time, log["arm action 2"], label='arm action 2', linestyle='--', c='g')
-        a.plot(time, log["arm action 3"], label='arm action 3', linestyle='--', c='b')
-        a.plot(time, log["arm action 4"], label='arm action 4', linestyle='--', c='c')
-        a.plot(time, log["arm action 5"], label='arm action 5', linestyle='--', c='y')
-        a.plot(time, log["arm action 6"], label='arm action 6', linestyle='--', c='k')
-
-        plt.rcParams['xtick.labelsize'] = 20
-        a.set(xlabel='time [s]', ylabel='joint position[rad]', title='arm joint position')
-        a.legend()
+        # fig, a = plt.subplots()
+        #
+        # a.plot(time, log["arm_dof_pos1"], label='arm_dof_pos1', c='r')
+        # a.plot(time, log["arm_dof_pos2"], label='arm_dof_pos2', c='g')
+        # a.plot(time, log["arm_dof_pos3"], label='arm_dof_pos3', c='b')
+        # a.plot(time, log["arm_dof_pos4"], label='arm_dof_pos4', c='c')
+        # a.plot(time, log["arm_dof_pos5"], label='arm_dof_pos5', c='y')
+        # a.plot(time, log["arm_dof_pos6"], label='arm_dof_pos6', c='k')
+        # a.plot(time, log["arm action 1"], label='arm action 1', linestyle='--', c='r')
+        # a.plot(time, log["arm action 2"], label='arm action 2', linestyle='--', c='g')
+        # a.plot(time, log["arm action 3"], label='arm action 3', linestyle='--', c='b')
+        # a.plot(time, log["arm action 4"], label='arm action 4', linestyle='--', c='c')
+        # a.plot(time, log["arm action 5"], label='arm action 5', linestyle='--', c='y')
+        # a.plot(time, log["arm action 6"], label='arm action 6', linestyle='--', c='k')
+        #
+        # plt.rcParams['xtick.labelsize'] = 20
+        # a.set(xlabel='time [s]', ylabel='joint position[rad]', title='arm joint position')
+        # a.legend()
         # plt.figure()
         # plt.plot(time, log["arm_dof_pos6"])
         #
