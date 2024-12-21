@@ -72,7 +72,7 @@ def load_policy(robot_name) -> dict:
                      "legged_gym/log/panda7_fixed_gripper/swing/model_10500.pt",
                      "legged_gym/log/panda7_fixed_gripper/trot/model_8350.pt",
                      "legged_gym/log/panda7_fixed_gripper/turn_and_jump/model_3500.pt",
-                     "legged_gym/log/panda7_fixed_gripper/wave/model_10550.pt",
+                     "legged_gym/log/panda7_fixed_gripper/wave/model_27250.pt",
                      "legged_gym/log/panda7_fixed_gripper/spacetrot/model_10500.pt", #目前没用到
                      # "legged_gym/log/panda7_fixed_gripper/arm_with_leg/model_10500.pt", #目前没用到
                      "legged_gym/log/panda7_fixed_gripper/pace/model_10500.pt", #目前没用到
@@ -105,8 +105,9 @@ def play(args):
     env_cfg.noise.add_noise = False
     env_cfg.domain_rand.randomize_friction = False
     env_cfg.domain_rand.push_robots = False
+    # env_cfg.domain_rand.action_delay = False
     # env_cfg.env.dance_sequence = [2, 4, 2, 0, 4, 0, 2, 4, 2, 4, 0, 2, 4, 0]*5
-    env_cfg.env.dance_sequence = [2, 2, 0, 4]*25
+    env_cfg.env.dance_sequence = [0,]*25
 
     # prepare environment
     env, _ = task_registry.make_env(name=args.task, args=args, env_cfg=env_cfg)

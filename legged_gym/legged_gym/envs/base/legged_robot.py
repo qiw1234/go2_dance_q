@@ -119,6 +119,7 @@ class LeggedRobot(BaseTask):
         self.action_id = [id for id, name in enumerate(self.motion_loader.trajectory_names) if
                           self.cfg.env.motion_name in name]
         # self.action_id = 0
+        self.motion_loader.trajectory_lens[self.action_id[0]] = 60
         self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
@@ -156,7 +157,7 @@ class LeggedRobot(BaseTask):
             if self.device == 'cpu':
                 self.gym.fetch_results(self.sim, True)
             self.gym.refresh_dof_state_tensor(self.sim)
-            # print(f'torques:{self.torques}')
+        # print(f'torques:{self.torques}')
         self.post_physics_step()
 
         # return clipped obs, clipped states (None), rewards, dones and infos
@@ -260,8 +261,8 @@ class LeggedRobot(BaseTask):
             if self.cfg.domain_rand.RSI_traj_rand:
                 frames = self.motion_loader.get_full_frame_batch(len(env_ids))
             else:
-                time = self.episode_length_buf.cpu().numpy() / self.max_episode_length * self.max_episode_length_s
-                traj_idxs = np.random.choice(self.action_id, size=self.num_envs, replace=True)
+                time = np.zeros(len(env_ids),)
+                traj_idxs = np.random.choice(self.action_id, size=len(env_ids), replace=True)
                 frames = self.motion_loader.get_full_frame_at_time_batch(traj_idxs, time)
             self._reset_dofs_amp(env_ids, frames)
             self._reset_root_states_amp(env_ids, frames)
@@ -393,7 +394,7 @@ class LeggedRobot(BaseTask):
         self.obs_buf = torch.cat((self.base_ang_vel * self.obs_scales.ang_vel,  # 3   # 3
                                   self.projected_gravity,  # 3   # 6
                                   (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,  # 18   # 24
-                                  self.dof_vel * self.obs_scales.dof_vel,  # 18  # 42
+                                  # self.dof_vel * self.obs_scales.dof_vel,  # 18  # 42
                                   self.action_history_buf[:, -1],  # 18  # 60
                                   ), dim=-1)
 
@@ -459,6 +460,17 @@ class LeggedRobot(BaseTask):
 
             for s in range(len(props)):
                 props[s].friction = self.friction_coeffs[env_id]
+
+        if self.cfg.domain_rand.randomize_restitution:
+            if env_id==0:
+                # prepare restitution randomization
+                restitution_range = self.cfg.domain_rand.restitution_range
+                num_buckets = 64  # 64 256
+                bucket_ids = torch.randint(0, num_buckets, (self.num_envs, 1))
+                restitution_buckets = torch_rand_float(restitution_range[0], restitution_range[1], (num_buckets,1), device='cpu')
+                self.restitution_coeffs = restitution_buckets[bucket_ids]
+            for s in range(len(props)):
+                props[s].restitution = self.restitution_coeffs[env_id]
         return props
 
     def _process_dof_props(self, props, env_id):
@@ -492,16 +504,36 @@ class LeggedRobot(BaseTask):
         return props
 
     def _process_rigid_body_props(self, props, env_id):
-        # if env_id==0:
-        #     sum = 0
-        #     for i, p in enumerate(props):
-        #         sum += p.mass
-        #         print(f"Mass of body {i}: {p.mass} (before randomization)")
-        #     print(f"Total mass {sum} (before randomization)")
+        if env_id==0:
+            sum = 0
+            for i, p in enumerate(props):
+                sum += p.mass
+                print(f"Mass of body {i}: {p.mass} (before randomization)")
+            print(f"Total mass {sum} (before randomization)")
+
         # randomize base mass
         if self.cfg.domain_rand.randomize_base_mass:
             rng = self.cfg.domain_rand.added_mass_range
             props[0].mass += np.random.uniform(rng[0], rng[1])
+
+        # randomize base com
+        if self.cfg.domain_rand.randomize_base_com:
+            rng_com = self.cfg.domain_rand.added_com_range
+            rand_com = np.random.uniform(rng_com[0], rng_com[1], size=(3, ))
+            props[0].com += gymapi.Vec3(*rand_com)
+
+        # randomize links mass
+        if self.cfg.domain_rand.randomize_link_mass:
+            for i in range(1, len(props)):
+                rng_link_mass = self.cfg.domain_rand.added_link_mass_range
+                links_mass = np.random.uniform(rng_link_mass[0], rng_link_mass[1], size=(1, ))
+                props[i].mass += links_mass
+
+        if env_id == self.num_envs-1:
+            total_mass = 0
+            for i in range(0, len(props)):
+                total_mass += props[i].mass
+            print("URDF total mass after randomization: ", total_mass)
         return props
 
     def _post_physics_step_callback(self):
@@ -619,12 +651,17 @@ class LeggedRobot(BaseTask):
                                                      gymtorch.unwrap_tensor(env_ids_int32), len(env_ids_int32))
 
     def _push_robots(self):
-        """ Random pushes the robots. Emulates an impulse by setting a randomized base velocity. 
+        """ Random pushes the robots. Emulates an impulse by setting a randomized base velocity.
         """
-        max_vel = self.cfg.domain_rand.max_push_vel_xy
-        self.root_states[:, 7:9] = torch_rand_float(-max_vel, max_vel, (self.num_envs, 2),
-                                                    device=self.device)  # lin vel x/y
-        self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
+        if self.cfg.domain_rand.push_vel:
+            max_vel = self.cfg.domain_rand.max_push_vel_xy
+            self.root_states[:, 7:9] = torch_rand_float(-max_vel, max_vel, (self.num_envs, 2), device=self.device) # lin vel x/y
+        if self.cfg.domain_rand.push_ang:
+            max_angular = self.cfg.domain_rand.max_push_ang_vel
+            self.root_states[:, 10:13] = torch_rand_float(-max_angular, max_angular, (self.num_envs, 3), device=self.device) # ang vel
+        if self.cfg.domain_rand.push_vel or self.cfg.domain_rand.push_ang:
+            self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
+
 
     def _update_terrain_curriculum(self, env_ids):
         """ Implements the game-inspired curriculum.

@@ -66,7 +66,7 @@ class Logger:
         nb_rows = 3
         nb_cols = 3
         plt.rcParams['font.size'] = 20
-        # fig, axs = plt.subplots(nb_rows, nb_cols)
+        fig, axs = plt.subplots(nb_rows, nb_cols)
         for key, value in self.state_log.items():
             time = np.linspace(0, len(value)*self.dt, len(value))
             break
@@ -107,14 +107,14 @@ class Logger:
         # if log["base_vel_z"]: a.plot(time, log["base_vel_z"], label='measured')
         # a.set(xlabel='time [s]', ylabel='base lin vel [m/s]', title='Base velocity z')
         # a.legend()
-        # # plot contact forces
-        # a = axs[2, 0]
-        # if log["contact_forces_z"]:
-        #     forces = np.array(log["contact_forces_z"])
-        #     for i in range(forces.shape[1]):
-        #         a.plot(time, forces[:, i], label=f'force {i}')
-        # a.set(xlabel='time [s]', ylabel='Forces z [N]', title='Vertical Contact forces')
-        # a.legend()
+        # plot contact forces
+        a = axs[2, 0]
+        if log["contact_forces_z"]:
+            forces = np.array(log["contact_forces_z"])
+            for i in range(forces.shape[1]):
+                a.plot(time, forces[:, i], label=f'force {i}')
+        a.set(xlabel='time [s]', ylabel='Forces z [N]', title='Vertical Contact forces')
+        a.legend()
         # # plot torque/vel curves
         # a = axs[2, 1]
         # if log["dof_vel"]!=[] and log["dof_torque"]!=[]: a.plot(log["dof_vel"], log["dof_torque"], 'x', label='measured')
@@ -126,35 +126,35 @@ class Logger:
         # a.set(xlabel='time [s]', ylabel='Joint Torque [Nm]', title='Torque')
         # a.legend()
 
-        # plot root position
-        fig, axs = plt.subplots(2, 2)
-        a = axs[0, 0]
-        if log["base_pos_x"]: a.plot(time, log["base_pos_x"], label='base_pos_x')
-        if log["base_pos_y"]: a.plot(time, log["base_pos_y"], label='base_pos_y')
-        if log["base_pos_z"]: a.plot(time, log["base_pos_z"], label='base_pos_z')
-        plt.rcParams['xtick.labelsize'] = 20
-        a.set(xlabel='time [s]', ylabel='Position [m]', title='base pos')
-        # plot foot 1 position
-        a = axs[0, 1]
-        a.plot(time, log["foot_pos_1_x"], label='foot_pos_1_x', c='r')
-        a.plot(time, log["foot_pos_1_y"], label='foot_pos_1_y', c='g')
-        a.plot(time, log["foot_pos_1_z"], label='foot_pos_1_z', c='b')
-        a.plot(time, log["ref_foot_pos_1x"], label='ref_1x', linestyle='--', c='r')
-        a.plot(time, log["ref_foot_pos_1y"], label='ref_1y', linestyle='--', c='g')
-        a.plot(time, log["ref_foot_pos_1z"], label='ref_1z', linestyle='--', c='b')
-        plt.rcParams['xtick.labelsize'] = 20
-        a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos 1')
-        # plot foot 2 position
-        a = axs[1, 0]
-        a.plot(time, log["foot_pos_0_x"], label='foot_pos_0_x', c='r')
-        a.plot(time, log["foot_pos_0_y"], label='foot_pos_0_y', c='g')
-        a.plot(time, log["foot_pos_0_z"], label='foot_pos_0_z', c='b')
-        a.plot(time, log["ref_foot_pos_0x"], label='ref_0x', linestyle='--', c='r')
-        a.plot(time, log["ref_foot_pos_0y"], label='ref_0y', linestyle='--', c='g')
-        a.plot(time, log["ref_foot_pos_0z"], label='ref_0z', linestyle='--', c='b')
-        plt.rcParams['xtick.labelsize'] = 20
-        a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos 2')
-        a.legend()
+        # # plot root position
+        # fig, axs = plt.subplots(2, 2)
+        # a = axs[0, 0]
+        # if log["base_pos_x"]: a.plot(time, log["base_pos_x"], label='base_pos_x')
+        # if log["base_pos_y"]: a.plot(time, log["base_pos_y"], label='base_pos_y')
+        # if log["base_pos_z"]: a.plot(time, log["base_pos_z"], label='base_pos_z')
+        # plt.rcParams['xtick.labelsize'] = 20
+        # a.set(xlabel='time [s]', ylabel='Position [m]', title='base pos')
+        # # plot foot 1 position
+        # a = axs[0, 1]
+        # a.plot(time, log["foot_pos_1_x"], label='foot_pos_1_x', c='r')
+        # a.plot(time, log["foot_pos_1_y"], label='foot_pos_1_y', c='g')
+        # a.plot(time, log["foot_pos_1_z"], label='foot_pos_1_z', c='b')
+        # a.plot(time, log["ref_foot_pos_1x"], label='ref_1x', linestyle='--', c='r')
+        # a.plot(time, log["ref_foot_pos_1y"], label='ref_1y', linestyle='--', c='g')
+        # a.plot(time, log["ref_foot_pos_1z"], label='ref_1z', linestyle='--', c='b')
+        # plt.rcParams['xtick.labelsize'] = 20
+        # a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos 1')
+        # # plot foot 2 position
+        # a = axs[1, 0]
+        # a.plot(time, log["foot_pos_0_x"], label='foot_pos_0_x', c='r')
+        # a.plot(time, log["foot_pos_0_y"], label='foot_pos_0_y', c='g')
+        # a.plot(time, log["foot_pos_0_z"], label='foot_pos_0_z', c='b')
+        # a.plot(time, log["ref_foot_pos_0x"], label='ref_0x', linestyle='--', c='r')
+        # a.plot(time, log["ref_foot_pos_0y"], label='ref_0y', linestyle='--', c='g')
+        # a.plot(time, log["ref_foot_pos_0z"], label='ref_0z', linestyle='--', c='b')
+        # plt.rcParams['xtick.labelsize'] = 20
+        # a.set(xlabel='time [s]', ylabel='Position [m]', title='foot pos 2')
+        # a.legend()
         # # plot foot z position
         # a = axs[1, 1]
         # a.plot(time, log["foot_pos_0_z"], label='foot_pos_0_z')

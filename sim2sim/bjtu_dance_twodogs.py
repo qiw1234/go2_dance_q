@@ -15,8 +15,7 @@ from copy import deepcopy
 import yaml
 import ctypes
 
-
-model_path_swing = "./model/swing/model_10000.jit"
+model_path_swing = "./model/swing/model_6300.jit"
 model_path_turnjump = "./model/turnjump/model_7450.jit"
 
 
@@ -37,14 +36,14 @@ def limit(a, min_, max_):
     return value
 
 
-min_pos = [[-0.69, -0.78, -2.6-0.262],
-           [-0.87, -0.78, -2.6-0.262],
-           [-0.69, -0.78, -2.6-0.262],
-           [-0.87, -0.78, -2.6-0.262]]
-max_pos = [[0.87, 3.00, -0.45-0.262],
-           [0.69, 3.00, -0.45-0.262],
-           [0.87, 3.00, -0.45-0.262],
-           [0.69, 3.00, -0.45-0.262]]
+min_pos = [[-0.69, -0.78, -2.6 - 0.262],
+           [-0.87, -0.78, -2.6 - 0.262],
+           [-0.69, -0.78, -2.6 - 0.262],
+           [-0.87, -0.78, -2.6 - 0.262]]
+max_pos = [[0.87, 3.00, -0.45 - 0.262],
+           [0.69, 3.00, -0.45 - 0.262],
+           [0.87, 3.00, -0.45 - 0.262],
+           [0.69, 3.00, -0.45 - 0.262]]
 
 reindex_feet1 = [1, 0, 3, 2]
 max_effort = [160, 180, 572]
@@ -106,7 +105,8 @@ class BJTUDance:
                       "clip_actions": 2.5,
                       "clip_arm_actions": 1.2,
                       "action_scale": 0.25}
-        default_dof_pos = [0.1,0.8,-1.5,  -0.1,0.8,-1.5,  0.1,1.,-1.5,  -0.1,1.,-1.5, 0,0,0, 0,0,0, 0,0]  # LF RF LH RH
+        default_dof_pos = [0.1, 0.8, -1.5, -0.1, 0.8, -1.5, 0.1, 1., -1.5, -0.1, 1., -1.5, 0, 0, 0, 0, 0, 0, 0,
+                           0]  # LF RF LH RH
         self.default_dof_pos = to_torch(default_dof_pos[0:self.num_acts], device=self.device, requires_grad=False)
         self.dof_pos = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
         self.dof_vel = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
@@ -116,29 +116,29 @@ class BJTUDance:
 
         self.actor_state2 = torch.zeros(size=(self.num_obs,), device=self.device, requires_grad=False)
         self.actions2 = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
-        
+
         self.delay = 1
         self.action_buf_len = 3
         self.action_history_buf = torch.zeros(self.action_buf_len, self.num_acts, device=self.device, dtype=torch.float)
-        self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device, dtype=torch.float)
-        
-        # p_gains = [150.,150.,150., 150.,150.,150.,  150.,150.,150.,  150.,150.,150.,  150.,600.,150., 20.,15.,10., 10.,10.]
-        # d_gains = [2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2., 0.1,1.,1., 1.,1.]
-        p_gains = [150.,150.,150., 150.,150.,150.,  150.,150.,150.,  150.,150.,150.,  150.,150.,150., 20.,15.,10., 10.,10.]
-        p_gains = [150.,150.,150., 150.,150.,150.,  150.,150.,150.,  150.,150.,150.,  150.,150.,150., 20.,15.,10., 10.,10.]
-        d_gains = [2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2.,  2.,2.,2., 0.1,0.1,0.1, 0.1,0.1]
+        self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
+                                               dtype=torch.float)
+
+        p_gains = [150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 20., 15.,
+                   10., 10., 10.]
+        d_gains = [2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 0.1, 0.1, 0.1, 0.1, 0.1]
         self.p_gains = to_torch(p_gains[0:self.num_acts], device=self.device, requires_grad=False)
         self.d_gains = to_torch(d_gains[0:self.num_acts], device=self.device, requires_grad=False)
         self.torques = torch.zeros(self.num_acts, device=self.device, requires_grad=False)
         self.torques2 = torch.zeros(self.num_acts, device=self.device, requires_grad=False)
-        torque_limits = [160,180,572,  160,180,572,  160,180,572,  160,180,572,  100,100,100, 100,100,100, 100,100]
+        torque_limits = [160, 180, 572, 160, 180, 572, 160, 180, 572, 160, 180, 572, 100, 100, 100, 100, 100, 100, 100,
+                         100]
         self.torque_limits = to_torch(torque_limits[0:self.num_acts], device=self.device, requires_grad=False)
         # print("self.torque_limits: ", self.torque_limits)
 
         self.joint_qd = np.zeros((4, 3))
         self.joint_qd2 = np.zeros((4, 3))
-        self.joint_arm_d = np.zeros((self.num_acts-12,))
-        self.joint_arm_d2 = np.zeros((self.num_acts-12,))
+        self.joint_arm_d = np.zeros((self.num_acts - 12,))
+        self.joint_arm_d2 = np.zeros((self.num_acts - 12,))
 
         self.foot_pos = np.zeros((4, 3))
         self.stand_height = 0.52
@@ -148,7 +148,7 @@ class BJTUDance:
         self.shareinfo_feed = getsharememory_twodogs.ShareInfo()
         self._inferenceReady = False
         self.IPC_PROJ_ID = 0x5A0C0001  # key键值  50LEIREN:5A0164C9
-        self.SHM_SIZE = 2*1024*1024  # 共享内存大小
+        self.SHM_SIZE = 2 * 1024 * 1024  # 共享内存大小
         self.SEM_KEY_ID = 0x5C0C0001  # SEM key键值 50LEIREN:5C0164C9
         self.shmaddr, self.semaphore = 0, 0
 
@@ -163,7 +163,7 @@ class BJTUDance:
         self.key_pressed = None
         self.swing = 0
         self.model_select = 0
-        
+
         # 加载模型
         self.loadPolicy()
 
@@ -172,7 +172,7 @@ class BJTUDance:
         self.event.set()  # 设置事件，通知主线程处理
 
     def listen_keyboard(self):
-        keyboard.on_press(self.on_key_press)
+        keyboard.on_press(self.on_key_press)  # on_press会自动传入参数，keyboard的event，说明按了哪个按键
         while True:
             time.sleep(0.2)  # 模拟长时间运行
             # 都减15°
@@ -220,21 +220,21 @@ class BJTUDance:
         # PD controller
         torques = self.p_gains * (joint_qd - self.dof_pos) - self.d_gains * self.dof_vel
         return torch.clip(torques, -self.torque_limits, self.torque_limits)
-      
+
     def PutToDrive(self):
         for i in range(4):
             self.shareinfo_feed_send.servo_package.motor_enable[i] = 1
             self.shareinfo_feed_send.servo_package2.motor_enable[i] = 1
             for j in range(3):
-                self.shareinfo_feed_send.servo_package.kp[i][j] = self.p_gains[i*3+j]
-                self.shareinfo_feed_send.servo_package.kd[i][j] = self.d_gains[i*3+j]
+                self.shareinfo_feed_send.servo_package.kp[i][j] = self.p_gains[i * 3 + j]
+                self.shareinfo_feed_send.servo_package.kd[i][j] = self.d_gains[i * 3 + j]
                 self.shareinfo_feed_send.servo_package.joint_q_d[i][j] = self.joint_qd[i][j]
-                
-                self.shareinfo_feed_send.servo_package2.kp[i][j] = self.p_gains[i*3+j]
-                self.shareinfo_feed_send.servo_package2.kd[i][j] = self.d_gains[i*3+j]
+
+                self.shareinfo_feed_send.servo_package2.kp[i][j] = self.p_gains[i * 3 + j]
+                self.shareinfo_feed_send.servo_package2.kd[i][j] = self.d_gains[i * 3 + j]
                 self.shareinfo_feed_send.servo_package2.joint_q_d[i][j] = self.joint_qd2[i][j]
 
-        for k in range(self.num_acts-12):
+        for k in range(self.num_acts - 12):
             # self.shareinfo_feed_send.servo_package.joint_arm_d[k] = self.shareinfo_feed.sensor_package.joint_arm[k]
             self.shareinfo_feed_send.servo_package.joint_arm_d[k] = self.joint_arm_d[k]
             self.shareinfo_feed_send.servo_package2.joint_arm_d[k] = self.joint_arm_d2[k]
@@ -246,29 +246,32 @@ class BJTUDance:
             self.shareinfo_feed_send.servo_package2.kd_arm[k] = self.d_gains[12 + k]
             # print("joint_arm",self.shareinfo_feed.sensor_package2.joint_arm[k])
 
-        getsharememory_twodogs.PutToShareMem(self.shareinfo_feed_send, self.shareinfo_feed_send.ocu_package, self.shmaddr, self.semaphore)
-        getsharememory_twodogs.PutToShareMem(self.shareinfo_feed_send, self.shareinfo_feed_send.servo_package, self.shmaddr, self.semaphore)
-        getsharememory_twodogs.PutToShareMem(self.shareinfo_feed_send, self.shareinfo_feed_send.servo_package2, self.shmaddr, self.semaphore)
+        getsharememory_twodogs.PutToShareMem(self.shareinfo_feed_send, self.shareinfo_feed_send.ocu_package,
+                                             self.shmaddr, self.semaphore)
+        getsharememory_twodogs.PutToShareMem(self.shareinfo_feed_send, self.shareinfo_feed_send.servo_package,
+                                             self.shmaddr, self.semaphore)
+        getsharememory_twodogs.PutToShareMem(self.shareinfo_feed_send, self.shareinfo_feed_send.servo_package2,
+                                             self.shmaddr, self.semaphore)
 
     def PutToNet(self):
-        x, y, z, w = rpy2quaternion(self.shareinfo_feed.sensor_package.imu_euler[0], 
-                                    self.shareinfo_feed.sensor_package.imu_euler[1], 
+        x, y, z, w = rpy2quaternion(self.shareinfo_feed.sensor_package.imu_euler[0],
+                                    self.shareinfo_feed.sensor_package.imu_euler[1],
                                     self.shareinfo_feed.sensor_package.imu_euler[2])
         base_quat = to_torch([x, y, z, w], dtype=torch.float32, device=self.device).unsqueeze(0)
-        
+
         base_ang_vel_w = [self.shareinfo_feed.sensor_package.imu_wxyz[0],
-                          self.shareinfo_feed.sensor_package.imu_wxyz[1], 
+                          self.shareinfo_feed.sensor_package.imu_wxyz[1],
                           self.shareinfo_feed.sensor_package.imu_wxyz[2]]
         base_ang_vel_w = to_torch(base_ang_vel_w, dtype=torch.float32, device=self.device).unsqueeze(0)
         base_ang_vel = base_ang_vel_w
         # base_ang_vel = quat_rotate_inverse(base_quat, base_ang_vel_w).squeeze(0)
-        
+
         gravity_vec = to_torch([0, 0, -1], dtype=torch.float32, device=self.device).unsqueeze(0)
         projected_gravity = quat_rotate_inverse(base_quat, gravity_vec).squeeze(0)
-        
+
         self.actor_state[0:3] = base_ang_vel * self.scale["ang_vel"]
         self.actor_state[3:6] = projected_gravity
-        
+
         # print("base_quat: ", base_quat)
         # print("base_ang_vel: ", base_ang_vel)
         # print("projected_gravity: ", projected_gravity)
@@ -276,17 +279,17 @@ class BJTUDance:
 
         for i in range(4):  # LF RF LH RH <-- RF LF RH LH  reindex_feet1 = [1, 0, 3, 2]
             for j in range(3):
-                self.dof_pos[i*3+j] = self.shareinfo_feed.sensor_package.joint_q[reindex_feet1[i]][j]
-                self.dof_vel[i*3+j] = self.shareinfo_feed.sensor_package.joint_qd[reindex_feet1[i]][j]
-                
-        for i in range(self.num_acts-12):
-            self.dof_pos[12+i] = self.shareinfo_feed.sensor_package.joint_arm[i]
-            self.dof_vel[12+i] = self.shareinfo_feed.sensor_package.joint_arm_dq[i]  # 机械臂的关节角速度
-            
-        self.actor_state[6 : 6+self.num_acts] = (self.dof_pos - self.default_dof_pos) * self.scale["dof_pos"]
-        self.actor_state[6+self.num_acts : 6+self.num_acts*2] = self.dof_vel * self.scale["dof_vel"]
-        self.actor_state[6+self.num_acts*2 : 6+self.num_acts*3] = self.action_history_buf[-1]
-        
+                self.dof_pos[i * 3 + j] = self.shareinfo_feed.sensor_package.joint_q[reindex_feet1[i]][j]
+                self.dof_vel[i * 3 + j] = self.shareinfo_feed.sensor_package.joint_qd[reindex_feet1[i]][j]
+
+        for i in range(self.num_acts - 12):
+            self.dof_pos[12 + i] = self.shareinfo_feed.sensor_package.joint_arm[i]
+            self.dof_vel[12 + i] = self.shareinfo_feed.sensor_package.joint_arm_dq[i]  # 机械臂的关节角速度
+
+        self.actor_state[6: 6 + self.num_acts] = (self.dof_pos - self.default_dof_pos) * self.scale["dof_pos"]
+        self.actor_state[6 + self.num_acts: 6 + self.num_acts * 2] = self.dof_vel * self.scale["dof_vel"]
+        self.actor_state[6 + self.num_acts * 2: 6 + self.num_acts * 3] = self.action_history_buf[-1]
+
         # self.actor_state = torch.zeros(size=(self.num_obs,), device=self.device, requires_grad=False)
         # print("actor_state[6:42]: ", self.actor_state[6:42])
 
@@ -296,16 +299,18 @@ class BJTUDance:
         # print("actor_state[6+self.num_acts : 6+self.num_acts*2]: ", self.actor_state[6+self.num_acts : 6+self.num_acts*2])
         # print("actions: ", self.actions)
         # print("actor_state[6+self.num_acts : 6+self.num_acts*2]: ", self.actor_state[6+self.num_acts*2 : 6+self.num_acts*3])
-        
+
     def PutToNet2(self):
-        x2, y2, z2, w2 = rpy2quaternion(self.shareinfo_feed.sensor_package2.imu_euler[0], 
-                                        self.shareinfo_feed.sensor_package2.imu_euler[1], 
+        x2, y2, z2, w2 = rpy2quaternion(self.shareinfo_feed.sensor_package2.imu_euler[0],
+                                        self.shareinfo_feed.sensor_package2.imu_euler[1],
                                         self.shareinfo_feed.sensor_package2.imu_euler[2])
         base_quat2 = to_torch([x2, y2, z2, w2], dtype=torch.float32, device=self.device).unsqueeze(0)
 
     def inference_(self):
         last_vel = 0
         last_yaw = 0
+        counter = 0
+        actor_state = []
 
         while True:
             start_RL_Time = time.perf_counter()
@@ -323,6 +328,11 @@ class BJTUDance:
             self.PutToNet()
             self.PutToNet2()
 
+            # 将self.actor_state输出成文件
+            actor_state.append(self.actor_state.tolist())
+            if counter == 150:
+                np.savetxt('actor_state.csv', np.array(actor_state))
+            counter += 1
             # self.actor_state = torch.zeros(size=(self.num_obs,), device=self.device, requires_grad=False)
             # self.actor_state = torch.ones(size=(self.num_obs,), device=self.device, requires_grad=False)
             # self.actor_state = torch.randn(size=(self.num_obs,), device=self.device, requires_grad=False)
@@ -333,19 +343,19 @@ class BJTUDance:
                 actions2 = self.model_swing(self.actor_state2)
             # print("actions: \n", actions)
             # print("self.actor_state: ", self.actor_state)
-            
+
             actions.to(self.device)
             actions2.to(self.device)
             # print("self.action_history_buf1: \n", self.action_history_buf)
             self.action_history_buf = torch.cat([self.action_history_buf[1:], actions[None, :]], dim=0)
             self.action_history_buf2 = torch.cat([self.action_history_buf2[1:], actions2[None, :]], dim=0)
             # print("self.action_history_buf2: \n", self.action_history_buf)
-            
-            actions = self.action_history_buf[-self.delay-1]
-            actions2 = self.action_history_buf2[-self.delay-1]
-            
+
+            actions = self.action_history_buf[-self.delay - 1]
+            actions2 = self.action_history_buf2[-self.delay - 1]
+
             # print("actions: \n", actions)
-            
+
             clip_actions = self.scale["clip_actions"]
             clip_arm_actions = self.scale["clip_arm_actions"]
             self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
@@ -360,22 +370,22 @@ class BJTUDance:
 
             for i in range(4):
                 for j in range(3):
-                    self.joint_qd[reindex_feet1[i]][j] = joint_qd.tolist()[i*3+j]
-                    self.joint_qd2[reindex_feet1[i]][j] = joint_qd2.tolist()[i*3+j]
-                    
-            for i in range(self.num_acts-12):
+                    self.joint_qd[reindex_feet1[i]][j] = joint_qd.tolist()[i * 3 + j]
+                    self.joint_qd2[reindex_feet1[i]][j] = joint_qd2.tolist()[i * 3 + j]
+
+            for i in range(self.num_acts - 12):
                 self.joint_arm_d[i] = joint_qd.tolist()[12 + i]
                 self.joint_arm_d2[i] = joint_qd2.tolist()[12 + i]
-            
+
             self.torques = self._compute_torques(joint_qd).view(self.torques.shape)
             self.torques2 = self._compute_torques(joint_qd2).view(self.torques2.shape)
-            
+
             self.PutToDrive()
 
             last_time = time.perf_counter() - start_RL_Time
             # print("last_time: ", last_time)  # 大概 3 ms
             if (last_time > 0.02):
-                print("time over:", time.perf_counter()-start_RL_Time)
+                print("time over:", time.perf_counter() - start_RL_Time)
             if last_time < 0.02:
                 time.sleep(0.02 - last_time)  # 保证50Hz频率
 

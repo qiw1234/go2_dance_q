@@ -14,7 +14,7 @@ from convert_utils import *
 
 def nn_convert():
     device = torch.device('cpu')  # cpu cuda 在cuda设备上测试时PyTorch模型推理结果的精度受设备和库版本的影响较大
-    num_obs = 60  # 94 63
+    num_obs = 42  #60 94 63
     num_actions = 18  # 12 18
     actor_hidden_dims = [512, 256, 128]
     critic_hidden_dims = [512, 256, 128]
@@ -22,9 +22,12 @@ def nn_convert():
     policy.to(device)
     policy.eval()  # 模型置为评估模式
     
-    load_path = "../model/swing/model_10000"
-    # load_path = "../model/wave/model_6900"
+    # load_path = "../model/swing/model_6300"
+    # load_path = "../model/swing/model_4400"
+    load_path = "../model/wave/model_15000"
     # load_path = "../model/turnjump/model_7450"
+    # load_path = "../model/spacetrot/model_30000"
+    # load_path = "../model/trot/model_5750"
     
     # 加载模型参数
     pt_path =  load_path + ".pt"  # 模型路径 "../legged_gym/logs/panda7_fixed_arm_swing/Dec03_18-08-47_"
@@ -86,4 +89,5 @@ def nn_convert():
       
 
 if __name__ == '__main__':
+    os.environ["PATH"] = os.environ["PATH"] + ":/usr/local/cuda-11.4/bin/"  # adding this line
     nn_convert()

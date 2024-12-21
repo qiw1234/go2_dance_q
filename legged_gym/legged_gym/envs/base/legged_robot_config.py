@@ -123,16 +123,30 @@ class LeggedRobotCfg(BaseConfig):
 
     class domain_rand:
         randomize_friction = True
-        friction_range = [0.1, 2.0]
-        randomize_base_mass = False
-        added_mass_range = [0, 5]# [-1., 1.]
+        friction_range = [0.4, 2.0]
+
+        randomize_restitution = False  # True
+        restitution_range = [0.0, 0.4]
+
+        randomize_base_mass = True
+        added_mass_range = [-1., 5.]
+
+        randomize_base_com = False
+        added_com_range = [-0.2, 0.2]
+
+        randomize_link_mass = True
+        added_link_mass_range = [0.0, 0.2]
+
         push_robots = True
         push_interval_s = 0.5
-        max_push_vel_xy = 0.2  # 1.
+        push_vel = True
+        max_push_vel_xy = 1.  #0.2
+        push_ang = True
+        max_push_ang_vel = 0.6
 
         delay_update_global_steps = 2000
         action_delay = True  # False True
-        action_curr_step = [0, 1, 2, 1]  # [1, 1] [1, 2]
+        action_curr_step = [0, 1]  # [1, 1] [1, 2]
         action_delay_view = 1  # 有viewer时(打开渲染)的delay
         action_buf_len = 8
 
@@ -176,7 +190,7 @@ class LeggedRobotCfg(BaseConfig):
             lin_vel = 2.0
             ang_vel = 0.25
             dof_pos = 1.0
-            dof_vel = 0.05
+            dof_vel = 0.05  #0.05
             quat = 1.
             height_measurements = 5.0
         clip_observations = 100.
@@ -191,7 +205,7 @@ class LeggedRobotCfg(BaseConfig):
             dof_vel = 1.5
             lin_vel = 0.1
             ang_vel = 0.2
-            gravity = 0.05
+            gravity = 0.005
             height_measurements = 0.1
 
     # viewer camera:
@@ -201,7 +215,7 @@ class LeggedRobotCfg(BaseConfig):
         lookat = [11., 5, 3.]  # [m]
 
     class sim:
-        dt =  0.005
+        dt =  0.005 #0.005
         substeps = 1
         gravity = [0., 0. ,-9.81]  # [m/s^2]
         up_axis = 1  # 0 is y, 1 is z

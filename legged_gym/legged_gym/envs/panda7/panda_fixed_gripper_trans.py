@@ -19,8 +19,8 @@ from legged_gym.utils.math import quat_apply_yaw, wrap_to_pi, torch_rand_sqrt_fl
 from legged_gym.utils.helpers import class_to_dict
 from legged_gym.envs.go2.go2_dance_config import GO2DanceCfg_beat
 from legged_gym.motion_loader.motion_loader import motionLoader
-from .legged_robot_panda_fixed_gripper import LeggedRobotPandaFixedGripper
-
+# from .legged_robot_panda_fixed_gripper import LeggedRobotPandaFixedGripper
+from legged_gym.envs.base.legged_robot import LeggedRobot
 def get_euler_xyz_tensor(quat):
     r, p, w = get_euler_xyz(quat)
     # stack r, p, w in dim1
@@ -53,7 +53,7 @@ def euler_from_quaternion(quat_angle):
 
     return roll_x, pitch_y, yaw_z  # in radians
 
-class LeggedRobotPandaFixedGripperTrans(LeggedRobotPandaFixedGripper):
+class LeggedRobotPandaFixedGripperTrans(LeggedRobot):
     def __init__(self, cfg: GO2DanceCfg_beat, sim_params, physics_engine, sim_device, headless):
         super().__init__(cfg, sim_params, physics_engine, sim_device, headless)
         # 给定顺序就按照dance_sequence执行，如果没给定顺序就随机选择动作

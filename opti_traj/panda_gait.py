@@ -16,9 +16,9 @@ panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.287854, -0.481
                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828]
 panda7 = utils.QuadrupedRobot(l=0.65, w=0.225, l1=0.126375, l2=0.34, l3=0.34,
                               lb=panda_lb, ub=panda_ub, toe_pos_init=panda_toe_pos_init)
-num_row = 200
+num_row = 100
 num_col = 72
-fps = 100
+fps = 50
 
 ref = np.ones((num_row - 1, num_col))
 root_pos = np.zeros((num_row, 3))
@@ -37,7 +37,7 @@ hopf_signal = np.zeros((num_row,8))
 
 # CPG信号
 initPos = np.array([0.5, -0.5, -0.5, 0.5, 0, 0, 0, 0])
-gait = 'spacetrot'
+gait = 'trot' # trot spacetrot pace
 cpg = CPG.cpgBuilder(initPos, gait=gait)
 
 # 欧拉法获取振荡信号
@@ -77,7 +77,7 @@ plt.show()
 vx = 1
 ax = vx*cpg.T*cpg.beta
 ay = 0
-az = 0.2
+az = 0.08
 az2 = 0.01
 for i in range(4):
     for j in range(num_row):
@@ -179,13 +179,13 @@ out = np.hstack((ref[:, :56], ref[:, 56:62], ref[:, 64:70]))
 np.savetxt(outfile, out, delimiter=',')
 
 # 保存json
-files = 'output_panda_fixed_gripper'
-file = "panda_spacetrot.txt"
-name = file.split('.')[0]
-motion = np.loadtxt(os.path.join(files,file), delimiter=',')
-json_data={
-    'frame_duration':1/fps,
-    'frames':motion.tolist()
-}
-with open(files+'_json/'+name+'.json', 'w') as f:
-    json.dump(json_data, f, indent=4)
+# files = 'output_panda_fixed_gripper'
+# file = "panda_spacetrot.txt"
+# name = file.split('.')[0]
+# motion = np.loadtxt(os.path.join(files,file), delimiter=',')
+# json_data={
+#     'frame_duration':1/fps,
+#     'frames':motion.tolist()
+# }
+# with open(files+'_json/'+name+'.json', 'w') as f:
+#     json.dump(json_data, f, indent=4)

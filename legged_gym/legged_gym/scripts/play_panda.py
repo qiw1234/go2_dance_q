@@ -80,7 +80,11 @@ def play(args):
     # env_cfg.env.debug = True
     env_cfg.domain_rand.RSI_rand = False
     env_cfg.domain_rand.RSI_traj_rand = False
+    env_cfg.domain_rand.randomize_base_mass = False
+    env_cfg.noise.add_noise = False
+    # env_cfg.env.RSI = False
 
+    issave = True
 
 
     # prepare environment
@@ -110,11 +114,34 @@ def play(args):
     camera_direction = np.array(env_cfg.viewer.lookat) - np.array(env_cfg.viewer.pos)
     img_idx = 0
 
-
+    actor_state = []
+    torque = []
+    counter = 0
+    raisim_obs_path = 'sim2sim/BJ_Raisim/net/HSW/data/actor_state.csv'
+    obs_test_data = np.loadtxt(raisim_obs_path, delimiter=',')
+    obs_tensor = torch.from_numpy(obs_test_data).to(args.sim_device).float()
     for i in range(50*int(env.max_episode_length)):
+        # if i==0:
+        #     obs = obs_tensor[i, :].unsqueeze(dim=0)
+        # obs[:, 24:42] = obs_tensor[i, 24:42].unsqueeze(dim=0)
         actions = policy(obs.detach())
         # actions[:, 18:20] = 0
+        # print(f"obs:{obs.detach()}")
+        # print(f"action:{actions.detach()}")
+        # 将self.actor_state输出成文件
+        obs_flattened = obs.squeeze()
+        actor_state.append(obs_flattened.tolist())
+        torque_flattened = env.torques.squeeze()
+        torque.append(torque_flattened.tolist())
+        if issave and counter == 3000:
+            np.savetxt('sim2sim/BJ_Raisim/net/HSW/data/'+args.task.split('_')[-1]+'_obs.csv', np.array(actor_state), delimiter=",")
+            np.savetxt('sim2sim/BJ_Raisim/net/HSW/data/' + args.task.split('_')[-1] + '_torque.csv', np.array(torque),
+                       delimiter=",")
+            print('data has been saved')
+        counter += 1
         obs, _, rews, dones, infos = env.step(actions.detach())
+
+
         # if torch.max(actions.detach())>18:
         #     print(f"actions:{actions.detach()}")
         # print(env.dof_pos[:, 0:3])
