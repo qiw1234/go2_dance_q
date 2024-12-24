@@ -277,12 +277,19 @@ class panda7FixedGripperCfg(pandaCfg):
     class control(pandaCfg.control):
         # PD Drive parameters:
         control_type = 'P'
-        stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
+        stiffness = {'hip': 128, 'thigh': 144., 'calf': 458,
                      'joint1': 150., 'joint2': 150., 'joint3': 150,
-                     'joint4': 20., 'joint5': 15., 'joint6': 10.}  # [N*m/rad]# 20  15  10
-        damping = {'hip': 2.0, 'thigh': 2.0, 'calf': 2.0,
+                     'joint4': 20., 'joint5': 15., 'joint6': 10.}
+        damping = {'hip': 1.93, 'thigh': 2.16, 'calf': 1.28,
                    'joint1': 2., 'joint2': 2, 'joint3': 2,
-                   'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.1}  # [N*m*s/rad] 0.8 1 1
+                   'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.1}
+
+        # stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
+        #              'joint1': 150., 'joint2': 150., 'joint3': 150,
+        #              'joint4': 20., 'joint5': 15., 'joint6': 10.}  # [N*m/rad]# 20  15  10
+        # damping = {'hip': 2.0, 'thigh': 2.0, 'calf': 2.0,
+        #            'joint1': 2., 'joint2': 2, 'joint3': 2,
+        #            'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.1}  # [N*m*s/rad] 0.8 1 1
 
         # stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
         #              'joint1': 150., 'joint2': 600., 'joint3': 150,
@@ -302,6 +309,7 @@ class panda7FixedGripperCfg(pandaCfg):
     class env(pandaCfg.env):
         num_actions = 18
         num_observations = 42  #60
+        num_leg = 4
         motion_files = "opti_traj/output_panda_fixed_gripper_json"
 
 
@@ -404,7 +412,7 @@ class panda7FixedGripperSwingCfg(panda7FixedGripperCfg):
             track_root_pos = 0
             track_root_height = 0.5
             track_root_rot = 0.
-            orientation = 1.
+            orientation = -0.1
             tracking_yaw = 1.
             track_lin_vel_ref = 1
             track_ang_vel_ref = 1
@@ -530,6 +538,34 @@ class panda7FixedGripperSpaceTrotCfgPPO(pandaCfgPPO):
         # resume_path = 'legged_gym/logs/panda7_fixed_gripper_spacetrot/Dec15_10-37-34_/model_29400.pt' # 滑步
 
 class panda7FixedGripperStandCfg(panda7FixedGripperCfg):
+    class init_state(LeggedRobotCfg.init_state):
+        pos = [0.0, 0.0, 0.15]  # x,y,z [m]
+        default_joint_angles = {  # = target angles [rad] when action = 0.0
+            'FL_hip_joint': 0.125,  # [rad]
+            'RL_hip_joint': 0.125,  # [rad]
+            'FR_hip_joint': -0.125,  # [rad]
+            'RR_hip_joint': -0.125,  # [rad]
+
+            'FL_thigh_joint': 2.42,  # [rad]
+            'RL_thigh_joint': 2.42,  # [rad]
+            'FR_thigh_joint': 2.42,  # [rad]
+            'RR_thigh_joint': 2.42,  # [rad]
+
+            'FL_calf_joint': -2.42,  # [rad]
+            'RL_calf_joint': -2.42,  # [rad]
+            'FR_calf_joint': -2.42,  # [rad]
+            'RR_calf_joint': -2.42,  # [rad]
+
+            'arm_joint1': 0,
+            'arm_joint2': 0,
+            'arm_joint3': 0,
+            'arm_joint4': 0,
+            'arm_joint5': 0,
+            'arm_joint6': 0,
+            'arm_joint7': 0,
+            'arm_joint8': 0,
+        }
+
     class rewards(panda7FixedGripperCfg.rewards):
         class scales(panda7FixedGripperCfg.rewards.scales):
             feet_air_time = 0
@@ -555,6 +591,8 @@ class panda7FixedGripperStandCfg(panda7FixedGripperCfg):
 
     class env(panda7FixedGripperCfg.env):
         motion_name = 'stand'
+        RSI = False
+        check_contact = False
 
 
 class panda7FixedGripperStandCfgPPO(pandaCfgPPO):

@@ -75,11 +75,11 @@ def play(args):
     env_cfg.terrain.num_cols = 1
     env_cfg.terrain.curriculum = False
     env_cfg.noise.add_noise = True
-    env_cfg.domain_rand.randomize_friction = False
+    env_cfg.domain_rand.randomize_friction = True
     env_cfg.domain_rand.push_robots = False
     # env_cfg.env.debug = True
-    env_cfg.domain_rand.RSI_rand = False
-    env_cfg.domain_rand.RSI_traj_rand = False
+    # env_cfg.domain_rand.RSI_rand = False
+    # env_cfg.domain_rand.RSI_traj_rand = False
     env_cfg.domain_rand.randomize_base_mass = False
     env_cfg.noise.add_noise = False
     # env_cfg.env.RSI = False
@@ -116,6 +116,7 @@ def play(args):
 
     actor_state = []
     torque = []
+    base_euler = []
     counter = 0
     raisim_obs_path = 'sim2sim/BJ_Raisim/net/HSW/data/actor_state.csv'
     obs_test_data = np.loadtxt(raisim_obs_path, delimiter=',')
@@ -133,9 +134,13 @@ def play(args):
         actor_state.append(obs_flattened.tolist())
         torque_flattened = env.torques.squeeze()
         torque.append(torque_flattened.tolist())
+        base_euler_flattened = env.base_euler_xyz.squeeze()
+        base_euler.append(base_euler_flattened.tolist())
         if issave and counter == 3000:
             np.savetxt('sim2sim/BJ_Raisim/net/HSW/data/'+args.task.split('_')[-1]+'_obs.csv', np.array(actor_state), delimiter=",")
             np.savetxt('sim2sim/BJ_Raisim/net/HSW/data/' + args.task.split('_')[-1] + '_torque.csv', np.array(torque),
+                       delimiter=",")
+            np.savetxt('sim2sim/BJ_Raisim/net/HSW/data/' + args.task.split('_')[-1] + '_base_euler.csv', np.array(base_euler),
                        delimiter=",")
             print('data has been saved')
         counter += 1

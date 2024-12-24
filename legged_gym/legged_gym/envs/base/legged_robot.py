@@ -119,7 +119,7 @@ class LeggedRobot(BaseTask):
         self.action_id = [id for id, name in enumerate(self.motion_loader.trajectory_names) if
                           self.cfg.env.motion_name in name]
         # self.action_id = 0
-        self.motion_loader.trajectory_lens[self.action_id[0]] = 60
+        self.motion_loader.trajectory_lens[self.action_id[0]] = 5
         self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
@@ -222,8 +222,10 @@ class LeggedRobot(BaseTask):
     def check_termination(self):
         """ Check if environments need to be reset
         """
-        self.reset_buf = torch.any(torch.norm(self.contact_forces[:, self.termination_contact_indices, :], dim=-1) > 1.,
-                                   dim=1)
+        self.reset_buf = torch.zeros(self.num_envs, dtype=torch.int, device=self.device, requires_grad=False)
+        if self.cfg.env.check_contact:
+            self.reset_buf = torch.any(torch.norm(self.contact_forces[:, self.termination_contact_indices, :], dim=-1) > 1.,
+                                       dim=1)
         # 通过质心位置检测是否摔倒
         # self.reset_buf = torch.tensor(self.root_states[:, 2] < self.cfg.init_state.lowest_root_height)
         self.time_out_buf = self.episode_length_buf >= self.max_episode_length  # no terminal reward for time-outs
@@ -268,6 +270,11 @@ class LeggedRobot(BaseTask):
             self._reset_root_states_amp(env_ids, frames)
 
         self._resample_commands(env_ids)
+
+        # Randomize joint parameters
+        self.randomize_motor_props(env_ids)
+        self.randomize_dof_props(env_ids)
+        self._refresh_actor_dof_props(env_ids)
 
         # reset buffers
         self.last_actions[env_ids] = 0.
@@ -436,6 +443,108 @@ class LeggedRobot(BaseTask):
         self.gym.viewer_camera_look_at(self.viewer, None, cam_pos, cam_target)
 
     #------------- Callbacks --------------
+    def randomize_motor_props(self, env_ids):
+        if self.cfg.domain_rand.randomize_motor:
+            # Randomise the motor strength:
+            if self.cfg.domain_rand.randomize_torque:
+                torque_multiplier_range = self.cfg.domain_rand.torque_multiplier_range
+                self.torque_multi[env_ids] = torch_rand_float(torque_multiplier_range[0], torque_multiplier_range[1],
+                                                              (len(env_ids), self.num_actions), device=self.device)
+
+            if self.cfg.domain_rand.randomize_motor_offset:
+                min_offset, max_offset = self.cfg.domain_rand.motor_offset_range
+                self.motor_offsets[env_ids, :] = torch_rand_float(min_offset, max_offset,
+                                                                  (len(env_ids), self.num_actions), device=self.device)
+
+            # if self.cfg.domain_rand.randomize_gains:
+            #     p_gains_factor = self.cfg.domain_rand.stiffness_multiplier_range
+            #     self.p_gains_all[env_ids] = torch_rand_float(p_gains_factor[0], p_gains_factor[1],
+            #                                                  (len(env_ids), self.num_actions), device=self.device) * \
+            #                                 self.d_gains_all[env_ids]
+            #     d_gains_factor = self.cfg.domain_rand.damping_multiplier_range
+            #     self.d_gains_all[env_ids] = torch_rand_float(d_gains_factor[0], d_gains_factor[1],
+            #                                                  (len(env_ids), self.num_actions), device=self.device) * \
+            #                                 self.d_gains_all[env_ids]
+            #
+            # if self.cfg.domain_rand.randomize_coulomb_friction:
+            #     joint_coulomb_range = self.cfg.domain_rand.joint_coulomb_range
+            #     self.joint_coulomb[env_ids] = torch_rand_float(joint_coulomb_range[0], joint_coulomb_range[1],
+            #                                                    (len(env_ids), self.num_actions), device=self.device)
+            #     joint_viscous_range = self.cfg.domain_rand.joint_viscous_range
+            #     self.joint_viscous[env_ids] = torch_rand_float(joint_viscous_range[0], joint_viscous_range[1],
+            #                                                    (len(env_ids), self.num_actions), device=self.device)
+
+    def randomize_dof_props(self, env_ids):
+        # if self.cfg.domain_rand.randomize_joint_friction:
+        #     if self.cfg.domain_rand.randomize_joint_friction_each_joint:
+        #         for i in range(self.num_dof):
+        #             factor_key = f'joint_{i + 1}_friction_factor'
+        #             joint_friction_factor = getattr(self.cfg.domain_rand, factor_key)
+        #             self.joint_friction_factor[env_ids, i] = torch_rand_float(joint_friction_factor[0],
+        #                                                                       joint_friction_factor[1],
+        #                                                                       (len(env_ids), 1),
+        #                                                                       device=self.device).reshape(-1)
+        #     else:
+        #         joint_friction_factor = self.cfg.domain_rand.joint_friction_factor
+        #         self.joint_friction_factor[env_ids] = torch_rand_float(joint_friction_factor[0],
+        #                                                                joint_friction_factor[1],
+        #                                                                (len(env_ids), 1), device=self.device)
+
+        # if self.cfg.domain_rand.randomize_joint_damping:
+        #     if self.cfg.domain_rand.randomize_joint_damping_each_joint:
+        #         for i in range(self.num_dof):
+        #             factor_key = f'joint_{i + 1}_damping_factor'
+        #             joint_damping_factor = getattr(self.cfg.domain_rand, factor_key)
+        #             self.joint_damping_factor[env_ids, i] = torch_rand_float(joint_damping_factor[0],
+        #                                                                      joint_damping_factor[1],
+        #                                                                      (len(env_ids), 1),
+        #                                                                      device=self.device).reshape(-1)
+        #     else:
+        #         joint_damping_factor = self.cfg.domain_rand.joint_damping_factor
+        #         self.joint_damping_factor[env_ids] = torch_rand_float(joint_damping_factor[0],
+        #                                                               joint_damping_factor[1],
+        #                                                               (len(env_ids), 1), device=self.device)
+
+        if self.cfg.domain_rand.randomize_joint_armature:
+            if self.cfg.domain_rand.randomize_joint_armature_each_joint:
+                for i in range(self.num_dof):
+                    factor_key = f'joint_{i + 1}_armature_factor'
+                    joint_armature_factor = getattr(self.cfg.domain_rand, factor_key)
+                    self.joint_armature_factor[env_ids, i] = torch_rand_float(joint_armature_factor[0],
+                                                                              joint_armature_factor[1],
+                                                                              (len(env_ids), 1),
+                                                                              device=self.device).reshape(-1)
+            else:
+                joint_armature_factor = self.cfg.domain_rand.joint_armature_factor
+                self.joint_armature_factor[env_ids] = torch_rand_float(joint_armature_factor[0],
+                                                                       joint_armature_factor[1],
+                                                                       (len(env_ids), 1), device=self.device)
+
+    def _refresh_actor_dof_props(self, env_ids):
+        for env_id in env_ids:
+            dof_props = self.gym.get_actor_dof_properties(self.envs[env_id], 0)
+            for i in range(self.num_dof):
+                # if self.cfg.domain_rand.randomize_joint_friction:
+                #     if self.cfg.domain_rand.randomize_joint_friction_each_joint:
+                #         dof_props["friction"][i] = self.joint_friction[env_id, i] * self.joint_friction_factor[
+                #             env_id, i]
+                #     else:
+                #         dof_props["friction"][i] = self.joint_friction[env_id, i] * self.joint_friction_factor[
+                #             env_id, 0]
+                # if self.cfg.domain_rand.randomize_joint_damping:
+                #     if self.cfg.domain_rand.randomize_joint_damping_each_joint:
+                #         dof_props["damping"][i] = self.joint_damping[env_id, i] * self.joint_damping_factor[env_id, i]
+                #     else:
+                #         dof_props["damping"][i] = self.joint_damping[env_id, i] * self.joint_damping_factor[env_id, 0]
+                if self.cfg.domain_rand.randomize_joint_armature:
+                    if self.cfg.domain_rand.randomize_joint_armature_each_joint:
+                        dof_props["armature"][i] = self.joint_armature[env_id, i] * self.joint_armature_factor[
+                            env_id, i]
+                    else:
+                        dof_props["armature"][i] = self.joint_armature[env_id, i] * self.joint_armature_factor[
+                            env_id, 0]
+            self.gym.set_actor_dof_properties(self.envs[env_id], self.actor_handles[env_id], dof_props)
+
     def _process_rigid_shape_props(self, props, env_id):
         """ Callback allowing to store/change/randomize the rigid shape properties of each environment.
             Called During environment creation.
@@ -501,6 +610,31 @@ class LeggedRobot(BaseTask):
                 r = self.dof_pos_limits[i, 1] - self.dof_pos_limits[i, 0]
                 self.dof_pos_limits[i, 0] = m - 0.5 * r * self.cfg.rewards.soft_dof_pos_limit
                 self.dof_pos_limits[i, 1] = m + 0.5 * r * self.cfg.rewards.soft_dof_pos_limit
+
+        if env_id == 0:
+            try:
+                armature = props["armature"]
+            except KeyError:
+                raise ValueError("The 'armature' property is missing in props.")
+        for i in range(self.num_dof):
+            if props["armature"][i] is None or props["armature"][i] == 0:
+                if env_id==0:
+                    print(f"Armature at index {i} was not set. Assigned default value.")
+                if self.cfg.domain_rand.randomize_joint_armature:
+                    if self.cfg.domain_rand.randomize_joint_armature_each_joint:
+                        props["armature"][i] = self.joint_armature[env_id, i]
+                    else:
+                        props["armature"][i] = self.joint_armature[env_id, 0]
+                if self.cfg.domain_rand.joint_armature_value is not None:
+                    joint_armature_value = self.cfg.domain_rand.joint_armature_value
+                    for s in range(self.cfg.env.num_leg):
+                        props["armature"][0+s*3] = joint_armature_value[0]
+                        props["armature"][1+s*3] = joint_armature_value[1]
+                        props["armature"][2+s*3] = joint_armature_value[2]
+            else:
+                self.joint_armature[env_id, i] = props["armature"][i].item()
+                if env_id==0:
+                    print(f"Armature at index {i} already has a value: {props['armature'][i]}")
         return props
 
     def _process_rigid_body_props(self, props, env_id):
@@ -593,8 +727,14 @@ class LeggedRobot(BaseTask):
         actions_scaled = actions * self.action_scale
         control_type = self.cfg.control.control_type
         if control_type == "P":
-            torques = self.p_gains * (
-                    actions_scaled + self.default_dof_pos - self.dof_pos) - self.d_gains * self.dof_vel
+            # torques = self.p_gains * (
+            #         actions_scaled + self.default_dof_pos - self.dof_pos) - self.d_gains * self.dof_vel
+            if self.cfg.domain_rand.randomize_motor:  # TODO add strength to gain directly
+                # torques = self.motor_strength[0] * self.p_gains_all*(actions_scaled + self.default_dof_pos_all - self.dof_pos) - self.motor_strength[1] * self.d_gains_all*self.dof_vel
+                torques = (self.motor_strength[0] * self.p_gains_all * (actions_scaled + self.default_dof_pos - self.dof_pos + self.motor_offsets)
+                           - self.motor_strength[1] * self.d_gains_all * self.dof_vel - self.joint_coulomb  *  self.dof_vel - self.joint_viscous) * self.torque_multi
+            else:
+                torques = self.p_gains_all*(actions_scaled + self.default_dof_pos_all - self.dof_pos) - self.d_gains_all*self.dof_vel
             # print(f'actions:{actions_scaled[:, -4]}')
             # print(f'dof pos:{self.dof_pos[:, -4]}')
             # print(f'dof pos error:{actions_scaled[:, -4] - self.dof_pos[:, -4]}')
@@ -720,8 +860,9 @@ class LeggedRobot(BaseTask):
         noise_vec[0:3] = noise_scales.ang_vel * noise_level * self.obs_scales.ang_vel
         noise_vec[3:6] = noise_scales.gravity * noise_level
         noise_vec[6:24] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
-        noise_vec[24:42] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
-        noise_vec[42:60] = 0.  # previous actions
+        # noise_vec[24:42] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
+        # noise_vec[42:60] = 0.  # previous actions
+        noise_vec[24:42] = 0.
         if self.cfg.terrain.measure_heights:
             noise_vec[48:235] = noise_scales.height_measurements * noise_level * self.obs_scales.height_measurements
         return noise_vec
@@ -776,6 +917,9 @@ class LeggedRobot(BaseTask):
         self.last_dof_vel = torch.zeros_like(self.dof_vel)
         self.last_root_vel = torch.zeros_like(self.root_states[:, 7:13])  # 包含线速度和角速度
 
+        str_rng = self.cfg.domain_rand.motor_strength_range
+        self.motor_strength = (str_rng[1] - str_rng[0]) * torch.rand(2, self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False) + str_rng[0]
+
         self.action_history_buf = torch.zeros(self.num_envs, self.cfg.domain_rand.action_buf_len, self.num_dofs,
                                               device=self.device, dtype=torch.float)
 
@@ -802,6 +946,12 @@ class LeggedRobot(BaseTask):
 
         # joint positions offsets and PD gains
         self.default_dof_pos = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
+        self.default_dof_pos_all = torch.zeros(self.num_envs, self.num_dof, dtype=torch.float,
+                                               device=self.device, requires_grad=False)
+        self.p_gains_all = torch.zeros(self.num_envs,self.num_actions, dtype=torch.float,
+                                       device=self.device, requires_grad=False)
+        self.d_gains_all = torch.zeros(self.num_envs,self.num_actions, dtype=torch.float,
+                                       device=self.device, requires_grad=False)
         for i in range(self.num_dofs):
             name = self.dof_names[i]
             angle = self.cfg.init_state.default_joint_angles[name]
@@ -818,6 +968,22 @@ class LeggedRobot(BaseTask):
                 if self.cfg.control.control_type in ["P", "V"]:
                     print(f"PD gain of joint {name} were not defined, setting them to zero")
         self.default_dof_pos = self.default_dof_pos.unsqueeze(0)
+        self.default_dof_pos_all[:] = self.default_dof_pos[0]
+        self.p_gains = self.p_gains.unsqueeze(0)
+        self.p_gains_all[:] = self.p_gains[0]
+        self.d_gains = self.d_gains.unsqueeze(0)
+        self.d_gains_all[:] = self.d_gains[0]
+
+        self.torque_multi = torch.ones(self.num_envs, self.num_actions, dtype=torch.float, device=self.device,
+                                       requires_grad=False)
+        self.motor_offsets = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device,
+                                         requires_grad=False)
+        self.joint_coulomb = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device,
+                                         requires_grad=False)
+        self.joint_viscous = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device,
+                                         requires_grad=False)
+        self.randomize_motor_props(torch.arange(self.num_envs, device=self.device))
+
         # 定义参考动作帧
         self.frames = None
         # 定义初始位置
@@ -951,6 +1117,21 @@ class LeggedRobot(BaseTask):
         self.base_init_state = to_torch(base_init_state_list, device=self.device, requires_grad=False)
         start_pose = gymapi.Transform()
         start_pose.p = gymapi.Vec3(*self.base_init_state[:3])
+
+        # prepare armature randomization
+        self.joint_armature = torch.zeros(self.num_envs, self.num_dof, device=self.device)
+        if self.cfg.domain_rand.randomize_joint_armature:
+            joint_armature_range = self.cfg.domain_rand.joint_armature_range
+            self.joint_armature = torch_rand_float(joint_armature_range[0], joint_armature_range[1],
+                                                   (self.num_envs, self.num_dof), device=self.device)
+            if self.cfg.domain_rand.randomize_joint_armature_each_joint:
+                self.joint_armature_factor = torch.ones(self.num_envs, self.num_dof, dtype=torch.float,
+                                                        device=self.device, requires_grad=False)
+            else:
+                self.joint_armature_factor = torch.ones(self.num_envs, 1, dtype=torch.float,
+                                                        device=self.device, requires_grad=False)
+        self.randomize_dof_props(torch.arange(self.num_envs, device=self.device))
+
 
         self._get_env_origins()
         env_lower = gymapi.Vec3(0., 0., 0.)

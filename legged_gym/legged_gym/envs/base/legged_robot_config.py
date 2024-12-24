@@ -41,6 +41,7 @@ class LeggedRobotCfg(BaseConfig):
         send_timeouts = True # send time out information to the algorithm
         episode_length_s = 6 # episode length in seconds
         debug = False
+        check_contact = True
 
     class terrain:
         mesh_type = 'plane' # "heightfield" # none, plane, heightfield or trimesh
@@ -123,15 +124,28 @@ class LeggedRobotCfg(BaseConfig):
 
     class domain_rand:
         randomize_friction = True
-        friction_range = [0.4, 2.0]
+        friction_range = [0.2, 1.5] #[0.4, 2.0]
 
-        randomize_restitution = False  # True
+        randomize_restitution = True  # True
         restitution_range = [0.0, 0.4]
+
+        randomize_joint_armature = True
+        randomize_joint_armature_each_joint = False
+        joint_armature_range = [0.001, 0.06]  # Factor [0.0001, 0.05] [0.001, 0.1]
+        joint_armature_factor = [0.8, 1.2]
+        joint_armature_value = [0.0354, 0.022, 0.0513]
+
+        randomize_motor = True  # 力矩随机化的总开关
+        motor_strength_range = [0.9, 1.1]  # [0.8,1.2]
+        randomize_torque = False
+        torque_multiplier_range = [0.8, 1.2]
+        randomize_motor_offset = False
+        motor_offset_range = [-0.035, 0.035]  # Offset to add to the motor angles
 
         randomize_base_mass = True
         added_mass_range = [-1., 5.]
 
-        randomize_base_com = False
+        randomize_base_com = True
         added_com_range = [-0.2, 0.2]
 
         randomize_link_mass = True
@@ -153,10 +167,7 @@ class LeggedRobotCfg(BaseConfig):
         RSI_rand = False   # 参考轨迹基础上添加随机化
         RSI_traj_rand = True  # 初始轨迹随机化
 
-        # # dynamic randomization
-        # action_delay = 0.5
-        # # pd的随机化还没加上
-        # action_noise = 0.02
+
 
     class rewards:
 
@@ -268,7 +279,7 @@ class LeggedRobotCfgPPO(BaseConfig):
         max_iterations = 15000 # number of policy updates
 
         # logging
-        save_interval = 50 # check for potential saves every this many iterations
+        save_interval = 500 # check for potential saves every this many iterations
         experiment_name = 'test'
         run_name = ''
         # load and resume
