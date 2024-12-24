@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import os
 import json
 
-# 使用CPG模型设计trot步态，使用hopf振荡器获得周期性的相位信号，根据这个相位信号计算足端轨迹
+# 使用CPG模型设计左右平移的pace步态，使用hopf振荡器获得周期性的相位信号，根据这个相位信号计算足端轨迹
 
 # 实例化panda7
 # panda7的关节上下限
@@ -16,7 +16,7 @@ panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.287854, -0.481
                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828]
 panda7 = utils.QuadrupedRobot(l=0.65, w=0.225, l1=0.126375, l2=0.34, l3=0.34,
                               lb=panda_lb, ub=panda_ub, toe_pos_init=panda_toe_pos_init)
-num_row = 100
+num_row = 800
 num_col = 72
 fps = 50
 
@@ -50,6 +50,20 @@ for i in range(num_row):
     hopf_signal[i] = temp.flatten()
 # 相位
 phase = np.arctan2(hopf_signal[:,4:8], hopf_signal[:,0:4])
+# 微操一下相位
+phase[:] = 0
+# 右侧腿
+phase[:40, 0] = phase[:40, 2] = np.linspace(3.14, -3.14, 40)
+phase[40:80, 0] = phase[40:80, 2] = np.linspace(3.14, -3.14, 40)
+phase[80:100, 0] = phase[80:100, 2] = -3.14
+# 左侧腿
+phase[:20, 1] = phase[:20, 3] = np.linspace(0, -3.14, 20)
+phase[20:60, 1] = phase[20:60, 3] = np.linspace(3.14, -3.14, 40)
+phase[60:80, 1] = phase[60:80, 3] = np.linspace(3.14, 0, 20)
+phase[80:100, 1] = phase[80:100, 3] = 0
+
+for k in range(7):
+    phase[100*(k+1):100*(k+2),:] = phase[:100,:]
 
 # print(phase)
 # plt.figure()
@@ -71,14 +85,21 @@ plt.plot(t, phase[:,0], linewidth=6, c='g')
 plt.plot(t, phase[:,1], linewidth=6, c='b')
 plt.plot(t, phase[:,2], linewidth=2, c='r')
 plt.plot(t, phase[:,3], linewidth=2, c='y')
-plt.show()
+
 
 # 足端位置
 vx = 0
-vy = 0.5
+
+vy = np.zeros((num_row, ))
+vy[:80] =  0.6
+vy[100:180] = -0.6
+for k in range(3):
+    vy[200*(k+1):200*(k+2)] = vy[:200]
+
+
 ax = vx*cpg.T*cpg.beta
 ay = vy*cpg.T*cpg.beta
-az = 0.08
+az = 0.1
 az2 = 0.01
 for i in range(4):
     for j in range(num_row):
@@ -96,11 +117,11 @@ for i in range(4):
             toe_pos[j, 3*i+1] = CPG.endEffectorPos_xy_spacetrot(ay, p)
         else:
             toe_pos[j, 3*i] = CPG.endEffectorPos_xy(ax, p)
-            toe_pos[j, 3*i+1] = CPG.endEffectorPos_xy(ay, p)
+            toe_pos[j, 3*i+1] = CPG.endEffectorPos_xy(ay[j], p)
 
 plt.figure()
-plt.plot(toe_pos[:,0], toe_pos[:,2], linewidth=5)
-plt.plot(t, toe_pos[:, 0], linewidth=5, marker='o')
+plt.plot(toe_pos[:,1], toe_pos[:,2], linewidth=5)
+plt.plot(t, toe_pos[:, 1], linewidth=5, marker='o')
 plt.plot(t, toe_pos[:, 2], linewidth=5, marker='*')
 plt.show()
 # 足端相对质心的坐标
@@ -140,7 +161,7 @@ root_pos[:,2] = 0.55
 # 质心速度
 if gait != 'spacetrot':
     root_lin_vel[:,0] = vx
-    root_lin_vel[:, 1] = vy
+    root_lin_vel[:, 1] = vy[:num_row-1]
 else:
     root_lin_vel[:,0] = 0
     root_lin_vel[:, 1] = 0

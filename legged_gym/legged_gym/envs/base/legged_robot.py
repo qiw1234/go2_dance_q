@@ -119,7 +119,7 @@ class LeggedRobot(BaseTask):
         self.action_id = [id for id, name in enumerate(self.motion_loader.trajectory_names) if
                           self.cfg.env.motion_name in name]
         # self.action_id = 0
-        self.motion_loader.trajectory_lens[self.action_id[0]] = 5
+        # self.motion_loader.trajectory_lens[self.action_id[0]] = 5
         self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 

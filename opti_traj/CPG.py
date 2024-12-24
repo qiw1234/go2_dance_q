@@ -45,7 +45,7 @@ class cpgBuilder:
             self.phase = [0, np.pi, np.pi, 0]
         elif self.gait == 'pace':
             self.beta = 0.5
-            self.T = 0.5
+            self.T = 0.8
             self.phase = [0, np.pi, 0, np.pi]
         elif self.gait == 'bound':
             self.beta = 0.4

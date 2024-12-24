@@ -84,7 +84,7 @@ def play(args):
     env_cfg.noise.add_noise = False
     # env_cfg.env.RSI = False
 
-    issave = True
+    issave = False
 
 
     # prepare environment
