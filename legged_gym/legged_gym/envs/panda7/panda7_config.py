@@ -379,16 +379,16 @@ class panda7FixedGripperPaceCfg(panda7FixedGripperCfg):
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            track_root_pos = 1
+            track_root_pos = 3
             track_root_height = 0
             track_root_rot = 1
-            track_lin_vel_ref = 1
-            track_ang_vel_ref = 1
-            track_dof_pos = 5
+            track_lin_vel_ref = 0
+            track_ang_vel_ref = 0
+            track_dof_pos = 10
             track_dof_vel = 1
-            track_toe_pos = 5
+            track_toe_pos = 10
             # 机械臂
-            track_arm_dof_pos = 3
+            track_arm_dof_pos = 10
             track_griper_dof_pos = 0
             track_arm_dof_vel = 0
             track_arm_pos = 0
@@ -396,7 +396,7 @@ class panda7FixedGripperPaceCfg(panda7FixedGripperCfg):
 
     class env(panda7FixedGripperCfg.env):
         # motion_files = "opti_traj/output_panda_fixed_gripper/panda_pace.txt"
-        motion_name = 'pace'
+        motion_name = 'panda_pace'
 
 
 class panda7FixedGripperPaceCfgPPO(pandaCfgPPO):

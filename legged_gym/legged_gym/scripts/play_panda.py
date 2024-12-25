@@ -83,8 +83,10 @@ def play(args):
     env_cfg.domain_rand.randomize_base_mass = False
     env_cfg.noise.add_noise = False
     # env_cfg.env.RSI = False
+    randomize_joint_armature = False
+    randomize_motor = False
 
-    issave = False
+    issave = True
 
 
     # prepare environment
