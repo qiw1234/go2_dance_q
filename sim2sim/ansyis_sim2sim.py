@@ -20,10 +20,10 @@ isaacgym_base_euler_path = 'BJ_Raisim/net/HSW/data/swing_base_euler.csv'
 
 
 plot_raisim = True
-plot_isaacgym = True
+plot_isaacgym = False
 
 start = 0
-end = 100
+end = 500
 
 default_dof_pos = [0.1, 0.8, -1.5, -0.1, 0.8, -1.5, 0.1, 1., -1.5, -0.1, 1., -1.5, 0, 0, 0, 0, 0, 0]
 

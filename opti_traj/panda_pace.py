@@ -128,21 +128,21 @@ plt.show()
 toe_pos += panda7.toe_pos_init
 q = ca.SX.sym('q', 3, 1)
 
-# for j in range(4):
-#     for i in range(num_row):
-#         # print(j,i)
-#         # toe_pos是质心系下的足端轨迹，所以欧拉角和质心都是[0, 0, 0]
-#         pos = panda7.transrpy(q, j, [0, 0, 0], [0, 0, 0]) @ panda7.toe
-#         cost = 500*ca.dot((toe_pos[i, 3*j:3*j+3] - pos[:3]), (toe_pos[i, 3*j:3*j+3] - pos[:3]))
-#         # cost = 500 * dot(([0.179183, -0.172606, 0] - pos[:3]), ([0.179183, -0.172606, 0] - pos[:3]))
-#         nlp = {'x': q, 'f': cost}
-#         S = ca.nlpsol('S', 'ipopt', nlp)
-#         r = S(x0 = [0.1, 0.8, -1.5], lbx = panda7.lb[3*j:3*j+3], ubx = panda7.ub[3*j:3*j+3])
-#         q_opt = r['x']
-#         # print(q_opt)
-#         # toe_pos_v = go2.transrpy(q_opt, j, [0, 0, 0], [0, 0, 0]) @ go2.toe
-#         # print(toe_pos_v, toe_pos[i, :3])
-#         dof_pos[i, 3*j:3*j+3] = q_opt.T
+for j in range(4):
+    for i in range(num_row):
+        # print(j,i)
+        # toe_pos是质心系下的足端轨迹，所以欧拉角和质心都是[0, 0, 0]
+        pos = panda7.transrpy(q, j, [0, 0, 0], [0, 0, 0]) @ panda7.toe
+        cost = 500*ca.dot((toe_pos[i, 3*j:3*j+3] - pos[:3]), (toe_pos[i, 3*j:3*j+3] - pos[:3]))
+        # cost = 500 * dot(([0.179183, -0.172606, 0] - pos[:3]), ([0.179183, -0.172606, 0] - pos[:3]))
+        nlp = {'x': q, 'f': cost}
+        S = ca.nlpsol('S', 'ipopt', nlp)
+        r = S(x0 = [0.1, 0.8, -1.5], lbx = panda7.lb[3*j:3*j+3], ubx = panda7.ub[3*j:3*j+3])
+        q_opt = r['x']
+        # print(q_opt)
+        # toe_pos_v = go2.transrpy(q_opt, j, [0, 0, 0], [0, 0, 0]) @ go2.toe
+        # print(toe_pos_v, toe_pos[i, :3])
+        dof_pos[i, 3*j:3*j+3] = q_opt.T
 
 # 关节角速度
 for i in range(num_row - 1):
@@ -150,13 +150,12 @@ for i in range(num_row - 1):
 
 # 质心位置
 if gait != 'spacetrot':
-    x = vx * t
-    y = vy * t
+    for i in range(num_row-1):
+        root_pos[i+1:,0] = vx/fps + root_pos[i, 0]
+        root_pos[i+1:,1] = vy[i]/fps + root_pos[i, 1]
 else:
-    x = 0
-    y = 0
-root_pos[:,0] = x
-root_pos[:,1] = y
+    root_pos[:,0] = 0
+    root_pos[:,1] = 0
 root_pos[:,2] = 0.55
 # 质心速度
 if gait != 'spacetrot':

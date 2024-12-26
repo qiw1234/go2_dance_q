@@ -36,8 +36,8 @@ arm_dof_vel = np.zeros((num_row-1, 8))
 hopf_signal = np.zeros((num_row,8))
 
 # CPG信号
-initPos = np.array([-0.5, 0.5, -0.5, 0.5, 0, 0, 0, 0])
-gait = 'pace' # trot spacetrot pace 改步态的时候initPos也需要改
+initPos = np.array([-0.5, 0.5, 0.5, -0.5, 0, 0, 0, 0])
+gait = 'trot' # trot spacetrot pace 改步态的时候initPos也需要改
 cpg = CPG.cpgBuilder(initPos, gait=gait)
 
 # 欧拉法获取振荡信号
@@ -74,11 +74,11 @@ plt.plot(t, phase[:,3], linewidth=2, c='y')
 plt.show()
 
 # 足端位置
-vx = 0
-vy = 0.5
+vx = 0.8
+vy = 0
 ax = vx*cpg.T*cpg.beta
 ay = vy*cpg.T*cpg.beta
-az = 0.08
+az = 0.12
 az2 = 0.01
 for i in range(4):
     for j in range(num_row):

@@ -66,7 +66,7 @@ class Logger:
         nb_rows = 3
         nb_cols = 3
         plt.rcParams['font.size'] = 20
-        fig, axs = plt.subplots(nb_rows, nb_cols)
+        # fig, axs = plt.subplots(nb_rows, nb_cols)
         for key, value in self.state_log.items():
             time = np.linspace(0, len(value)*self.dt, len(value))
             break
@@ -132,6 +132,9 @@ class Logger:
         if log["base_pos_x"]: a.plot(time, log["base_pos_x"], label='base_pos_x')
         if log["base_pos_y"]: a.plot(time, log["base_pos_y"], label='base_pos_y')
         if log["base_pos_z"]: a.plot(time, log["base_pos_z"], label='base_pos_z')
+        a.plot(time, log["ref_base_pos_x"], label='ref_base_pos_x', linestyle='--')
+        a.plot(time, log["ref_base_pos_y"], label='ref_base_pos_y', linestyle='--')
+        a.plot(time, log["ref_base_pos_z"], label='ref_base_pos_z', linestyle='--')
         plt.rcParams['xtick.labelsize'] = 20
         a.set(xlabel='time [s]', ylabel='Position [m]', title='base pos')
         # plot foot 1 position

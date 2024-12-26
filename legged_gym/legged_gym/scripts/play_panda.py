@@ -70,7 +70,7 @@ def load_policy() -> dict:
 def play(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     # override some parameters for testing
-    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 1)
+    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 10)
     env_cfg.terrain.num_rows = 1
     env_cfg.terrain.num_cols = 1
     env_cfg.terrain.curriculum = False
@@ -78,15 +78,15 @@ def play(args):
     env_cfg.domain_rand.randomize_friction = True
     env_cfg.domain_rand.push_robots = False
     # env_cfg.env.debug = True
-    # env_cfg.domain_rand.RSI_rand = False
-    # env_cfg.domain_rand.RSI_traj_rand = False
+    env_cfg.domain_rand.RSI_rand = False
+    env_cfg.domain_rand.RSI_traj_rand = False
     env_cfg.domain_rand.randomize_base_mass = False
     env_cfg.noise.add_noise = False
-    # env_cfg.env.RSI = False
-    randomize_joint_armature = False
-    randomize_motor = False
+    env_cfg.env.RSI = False
+    # env_cfg.domain_rand.randomize_joint_armature = False
+    # env_cfg.domain_rand.randomize_motor = False
 
-    issave = True
+    issave = False
 
 
     # prepare environment
@@ -109,7 +109,7 @@ def play(args):
     robot_index = 0 # which robot is used for logging
     joint_index = 1 # which joint is used for logging
     start_state_log = 0
-    stop_state_log = 200 # number of steps before plotting states
+    stop_state_log = 500 # number of steps before plotting states
     stop_rew_log = env.max_episode_length + 1 # number of steps before print average episode rewards
     camera_position = np.array(env_cfg.viewer.pos, dtype=np.float64)
     camera_vel = np.array([1., 1., 0.])
@@ -200,6 +200,9 @@ def play(args):
                     'base_pos_x' : env.base_pos[robot_index, 0].item(),
                     'base_pos_y': env.base_pos[robot_index, 1].item(),
                     'base_pos_z': env.base_pos[robot_index, 2].item(),
+                    'ref_base_pos_x':env.frames[robot_index,0].item(),
+                    'ref_base_pos_y': env.frames[robot_index, 1].item(),
+                    'ref_base_pos_z': env.frames[robot_index, 2].item(),
                     'arm_dof_pos1':env.dof_pos[robot_index, 12].item(),
                     'arm_dof_pos2': env.dof_pos[robot_index, 13].item(),
                     'arm_dof_pos3': env.dof_pos[robot_index, 14].item(),
