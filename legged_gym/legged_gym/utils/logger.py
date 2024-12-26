@@ -129,9 +129,9 @@ class Logger:
         # plot root position
         fig, axs = plt.subplots(2, 2)
         a = axs[0, 0]
-        if log["base_pos_x"]: a.plot(time, log["base_pos_x"], label='base_pos_x')
-        if log["base_pos_y"]: a.plot(time, log["base_pos_y"], label='base_pos_y')
-        if log["base_pos_z"]: a.plot(time, log["base_pos_z"], label='base_pos_z')
+        # if log["base_pos_x"]: a.plot(time, log["base_pos_x"], label='base_pos_x')
+        # if log["base_pos_y"]: a.plot(time, log["base_pos_y"], label='base_pos_y')
+        # if log["base_pos_z"]: a.plot(time, log["base_pos_z"], label='base_pos_z')
         a.plot(time, log["ref_base_pos_x"], label='ref_base_pos_x', linestyle='--')
         a.plot(time, log["ref_base_pos_y"], label='ref_base_pos_y', linestyle='--')
         a.plot(time, log["ref_base_pos_z"], label='ref_base_pos_z', linestyle='--')

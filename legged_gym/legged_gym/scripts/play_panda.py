@@ -85,7 +85,7 @@ def play(args):
     # env_cfg.env.RSI = False
     env_cfg.domain_rand.randomize_joint_armature = False
     env_cfg.domain_rand.randomize_motor = False
-
+    # env_cfg.env.check_contact = False
     issave = False
 
 
@@ -109,7 +109,7 @@ def play(args):
     robot_index = 0 # which robot is used for logging
     joint_index = 1 # which joint is used for logging
     start_state_log = 0
-    stop_state_log = 500 # number of steps before plotting states
+    stop_state_log = 300 # number of steps before plotting states
     stop_rew_log = env.max_episode_length + 1 # number of steps before print average episode rewards
     camera_position = np.array(env_cfg.viewer.pos, dtype=np.float64)
     camera_vel = np.array([1., 1., 0.])
