@@ -91,15 +91,15 @@ plt.plot(t, phase[:,3], linewidth=2, c='y')
 vx = 0
 
 vy = np.zeros((num_row, ))
-vy[:80] =  0.6
-vy[100:180] = -0.6
+vy[:80] =  1.2
+vy[100:180] = -1.2
 for k in range(3):
     vy[200*(k+1):200*(k+2)] = vy[:200]
 
 
 ax = vx*cpg.T*cpg.beta
 ay = vy*cpg.T*cpg.beta
-az = 0.1
+az = 0.12
 az2 = 0.01
 for i in range(4):
     for j in range(num_row):

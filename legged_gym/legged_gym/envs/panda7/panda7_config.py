@@ -433,7 +433,7 @@ class panda7FixedGripperSwingCfg(panda7FixedGripperCfg):
 class panda7FixedGripperSwingCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_swing'
-        resume_path = 'legged_gym/logs/panda7_fixed_gripper_swing//Dec22_22-40-46_/model_14000.pt'
+        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_swing//Dec22_22-40-46_/model_14000.pt'
 
 class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):

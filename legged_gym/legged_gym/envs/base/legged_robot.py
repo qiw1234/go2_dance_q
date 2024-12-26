@@ -613,30 +613,30 @@ class LeggedRobot(BaseTask):
                 self.dof_pos_limits[i, 0] = m - 0.5 * r * self.cfg.rewards.soft_dof_pos_limit
                 self.dof_pos_limits[i, 1] = m + 0.5 * r * self.cfg.rewards.soft_dof_pos_limit
 
-        if env_id == 0:
-            try:
-                armature = props["armature"]
-            except KeyError:
-                raise ValueError("The 'armature' property is missing in props.")
-        for i in range(self.num_dof):
-            if props["armature"][i] is None or props["armature"][i] == 0:
-                if env_id==0:
-                    print(f"Armature at index {i} was not set. Assigned default value.")
-                if self.cfg.domain_rand.randomize_joint_armature:
-                    if self.cfg.domain_rand.randomize_joint_armature_each_joint:
-                        props["armature"][i] = self.joint_armature[env_id, i]
-                    else:
-                        props["armature"][i] = self.joint_armature[env_id, 0]
-                if self.cfg.domain_rand.joint_armature_value is not None:
-                    joint_armature_value = self.cfg.domain_rand.joint_armature_value
-                    for s in range(self.cfg.env.num_leg):
-                        props["armature"][0+s*3] = joint_armature_value[0]
-                        props["armature"][1+s*3] = joint_armature_value[1]
-                        props["armature"][2+s*3] = joint_armature_value[2]
-            else:
-                self.joint_armature[env_id, i] = props["armature"][i].item()
-                if env_id==0:
-                    print(f"Armature at index {i} already has a value: {props['armature'][i]}")
+        # if env_id == 0:
+        #     try:
+        #         armature = props["armature"]
+        #     except KeyError:
+        #         raise ValueError("The 'armature' property is missing in props.")
+        # for i in range(self.num_dof):
+        #     if props["armature"][i] is None or props["armature"][i] == 0:
+        #         if env_id==0:
+        #             print(f"Armature at index {i} was not set. Assigned default value.")
+        #         if self.cfg.domain_rand.randomize_joint_armature:
+        #             if self.cfg.domain_rand.randomize_joint_armature_each_joint:
+        #                 props["armature"][i] = self.joint_armature[env_id, i]
+        #             else:
+        #                 props["armature"][i] = self.joint_armature[env_id, 0]
+        #         if self.cfg.domain_rand.joint_armature_value is not None:
+        #             joint_armature_value = self.cfg.domain_rand.joint_armature_value
+        #             for s in range(self.cfg.env.num_leg):
+        #                 props["armature"][0+s*3] = joint_armature_value[0]
+        #                 props["armature"][1+s*3] = joint_armature_value[1]
+        #                 props["armature"][2+s*3] = joint_armature_value[2]
+        #     else:
+        #         self.joint_armature[env_id, i] = props["armature"][i].item()
+        #         if env_id==0:
+        #             print(f"Armature at index {i} already has a value: {props['armature'][i]}")
         return props
 
     def _process_rigid_body_props(self, props, env_id):

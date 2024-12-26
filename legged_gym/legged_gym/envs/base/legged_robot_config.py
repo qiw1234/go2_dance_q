@@ -152,7 +152,7 @@ class LeggedRobotCfg(BaseConfig):
         added_link_mass_range = [0.0, 0.2]
 
         push_robots = True
-        push_interval_s = 0.5
+        push_interval_s = 15
         push_vel = True
         max_push_vel_xy = 1.  #0.2
         push_ang = True
