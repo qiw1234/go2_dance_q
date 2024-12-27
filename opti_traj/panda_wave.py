@@ -25,7 +25,7 @@ panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.287854, -0.481
 #                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828] # 关节角度-0.4
 panda7 = utils.QuadrupedRobot(l=0.65, w=0.225, l1=0.126375, l2=0.34, l3=0.34,
                               lb=panda_lb, ub=panda_ub, toe_pos_init=panda_toe_pos_init)
-num_row = 80
+num_row = 90
 num_col = 72
 fps = 50
 
@@ -54,6 +54,7 @@ root_pos[:, 2] = 0.55
 # 姿态
 q0 = [0, 0, 0, 1]
 q1 = [0, np.sin(-np.pi / 24), 0, np.cos(-np.pi / 24)]
+root_rot[:] = q0
 end = 10
 for i in range(end):
     frac = i / (end - 1)
@@ -62,7 +63,7 @@ start = end
 end = 70
 root_rot[start: end, :] = root_rot[start - 1, :]
 start = end
-end = num_row
+end = 80
 for i in range(start, end):
     frac = (i - start) / (end - start)
     root_rot[i, :] = quaternion_slerp(q1, q0, frac)
@@ -95,9 +96,9 @@ dof_pos[30:40, :3] = np.linspace(q_FR_2, q_FR_3, 10)
 dof_pos[40:50, :3] = np.linspace(q_FR_3, q_FR_2, 10)
 dof_pos[50:60, :3] = np.linspace(q_FR_2, q_FR_3, 10)
 dof_pos[60:70, :3] = np.linspace(q_FR_3, q_FR_0, 10)
-dof_pos[70:80, :3] = q_FR_0
+dof_pos[70:, :3] = q_FR_0
 # 左前腿关节角度
-dof_pos[:, 3:6] = q_FL_1
+dof_pos[:, 3:6] = q_FL_0
 dof_pos[:4, 3:6] = np.linspace(q_FL_0, q_FL_2, 4)
 dof_pos[4:10, 3:6] = np.linspace(q_FL_2, q_FL_1, 6)
 dof_pos[70:76, 3:6] = np.linspace(q_FL_1, q_FL_2, 6)
@@ -106,7 +107,7 @@ dof_pos[76:80, 3:6] = np.linspace(q_FL_2, q_FL_0, 4)
 # 计算足端位置在质心坐标系的坐标
 for i in range(toe_pos.shape[0]):
     toe_pos[i, :3] = np.transpose(casadi.DM(panda7.transrpy(dof_pos[i, :3], 0, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3])
-    toe_pos[i, 3:6] = np.transpose(utils.quaternion2rotm(root_rot[i,:])) @ toe_pos[i, 3:6]
+    toe_pos[i, 3:6] = np.transpose(casadi.DM(panda7.transrpy(dof_pos[i, 3:6], 1, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3])
     toe_pos[i, 6:9] = np.transpose(utils.quaternion2rotm(root_rot[i,:])) @ toe_pos[i, 6:9]
     toe_pos[i, 9:12] = np.transpose(utils.quaternion2rotm(root_rot[i,:])) @ toe_pos[i, 9:12]
 
