@@ -129,6 +129,10 @@ class LeggedRobotCfg(BaseConfig):
         randomize_restitution = True  # True
         restitution_range = [0.0, 0.4]
 
+        randomize_joint_friction = False
+
+        randomize_joint_damping = False
+
         randomize_joint_armature = True
         randomize_joint_armature_each_joint = False
         joint_armature_range = [0.001, 0.06]  # Factor [0.0001, 0.05] [0.001, 0.1]

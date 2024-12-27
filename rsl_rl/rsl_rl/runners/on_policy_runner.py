@@ -274,7 +274,7 @@ class OnPolicyRunner:
             self.writer.add_scalar('Train/mean_reward/time', statistics.mean(locs['rewbuffer']), self.tot_time)
             self.writer.add_scalar('Train/mean_episode_length/time', statistics.mean(locs['lenbuffer']), self.tot_time)
 
-        str = f" \033[1m {self.log_dir.split('/')[-2]} Learning iteration {locs['it']}/{self.current_learning_iteration + locs['num_learning_iterations']} \033[0m "
+        str = f" \033[1m {self.log_dir.split('/')[-2]} Learning iteration {locs['it']}/{locs['tot_iter']} \033[0m "
 
         if len(locs['rewbuffer']) > 0:
             log_string = (f"""{'#' * width}\n"""

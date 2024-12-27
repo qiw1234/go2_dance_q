@@ -121,7 +121,7 @@ class LeggedRobot(BaseTask):
         if len(self.action_id)>1:
             raise ValueError("select trajs more than 1")
         # self.action_id = 0
-        # self.motion_loader.trajectory_lens[self.action_id[0]] = 5
+        self.motion_loader.trajectory_lens[self.action_id[0]] = 5
         self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
@@ -276,7 +276,9 @@ class LeggedRobot(BaseTask):
         # Randomize joint parameters
         self.randomize_motor_props(env_ids)
         self.randomize_dof_props(env_ids)
-        self._refresh_actor_dof_props(env_ids)
+        if self.cfg.domain_rand.randomize_joint_armature | self.cfg.domain_rand.randomize_joint_friction \
+            | self.cfg.domain_rand.randomize_joint_damping:
+            self._refresh_actor_dof_props(env_ids)
 
         # reset buffers
         self.last_actions[env_ids] = 0.
@@ -733,7 +735,7 @@ class LeggedRobot(BaseTask):
             #         actions_scaled + self.default_dof_pos - self.dof_pos) - self.d_gains * self.dof_vel
             if self.cfg.domain_rand.randomize_motor:  # TODO add strength to gain directly
                 # torques = self.motor_strength[0] * self.p_gains_all*(actions_scaled + self.default_dof_pos_all - self.dof_pos) - self.motor_strength[1] * self.d_gains_all*self.dof_vel
-                torques = (self.motor_strength[0] * self.p_gains_all * (actions_scaled + self.default_dof_pos - self.dof_pos + self.motor_offsets)
+                torques = (self.motor_strength[0] * self.p_gains_all * (actions_scaled + self.default_dof_pos_all - self.dof_pos + self.motor_offsets)
                            - self.motor_strength[1] * self.d_gains_all * self.dof_vel - self.joint_coulomb  *  self.dof_vel - self.joint_viscous) * self.torque_multi
             else:
                 torques = self.p_gains_all*(actions_scaled + self.default_dof_pos_all - self.dof_pos) - self.d_gains_all*self.dof_vel

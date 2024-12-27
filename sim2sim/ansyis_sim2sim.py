@@ -7,12 +7,12 @@ raisim_torque_path = 'BJ_Raisim/net/HSW/data/torques.csv'
 raisim_base_euler_path = 'BJ_Raisim/net/HSW/data/base_euler.csv'
 
 # isaac gym
-pose = 'swing'
+pose = 'wave'
 isaacgym_obs_path = 'BJ_Raisim/net/HSW/data/'+pose+'_obs.csv'
 isaacgym_torque_path = 'BJ_Raisim/net/HSW/data/'+pose+'_torque.csv'
 isaacgym_base_euler_path = 'BJ_Raisim/net/HSW/data/'+pose+'_base_euler.csv'
 
-plot_raisim = False
+plot_raisim = True
 plot_isaacgym = True
 
 start = 0
@@ -33,13 +33,13 @@ raisim_torques = raisim_torques[start:end, :]
 
 raisim_ang_vel = raisim_obs[start:end, 0:3]
 raisim_projected_gravity = raisim_obs[start:end, 3: 6]
-raisim_dof_pos = raisim_obs[start:end, 6:24]
-raisim_actions = raisim_obs[start:end, 42:60]
+raisim_dof_pos = raisim_obs[start:end, 6:24] + default_dof_pos
+raisim_actions = raisim_obs[start:end, 42:60] + default_dof_pos - raisim_dof_pos
 
 isaacgym_ang_vel = isaacgym_obs[start:end, 0:3]
 isaacgym_projected_gravity = isaacgym_obs[start:end, 3: 6]
 isaacgym_dof_pos = isaacgym_obs[start:end, 6:24] + default_dof_pos
-isaacgym_actions = isaacgym_obs[start:end, 24:42]*0.25 + default_dof_pos - isaacgym_dof_pos
+isaacgym_actions = isaacgym_obs[start:end, 42:60]*0.25 + default_dof_pos - isaacgym_dof_pos
 
 nb_rows = 3
 nb_cols = 3
