@@ -138,10 +138,11 @@ class OnPolicyRunner:
             if self.log_dir is not None:
                 self.log(locals())
             if it % self.save_interval == 0:
+                self.current_learning_iteration = it
                 self.save(os.path.join(self.log_dir, 'model_{}.pt'.format(it)))
             ep_infos.clear()
         
-        self.current_learning_iteration += num_learning_iterations
+        self.current_learning_iteration = it+1
         self.save(os.path.join(self.log_dir, 'model_{}.pt'.format(self.current_learning_iteration)))
 
     def learn_trans(self, dance_task:dict, num_learning_iterations, init_at_random_ep_len=False):

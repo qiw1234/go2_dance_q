@@ -403,7 +403,7 @@ class LeggedRobot(BaseTask):
         self.obs_buf = torch.cat((self.base_ang_vel * self.obs_scales.ang_vel,  # 3   # 3
                                   self.projected_gravity,  # 3   # 6
                                   (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,  # 18   # 24
-                                  # self.dof_vel * self.obs_scales.dof_vel,  # 18  # 42
+                                  self.dof_vel * 0,  # 18  # 42
                                   self.action_history_buf[:, -1],  # 18  # 60
                                   ), dim=-1)
 
@@ -862,9 +862,8 @@ class LeggedRobot(BaseTask):
         noise_vec[0:3] = noise_scales.ang_vel * noise_level * self.obs_scales.ang_vel
         noise_vec[3:6] = noise_scales.gravity * noise_level
         noise_vec[6:24] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
-        # noise_vec[24:42] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
-        # noise_vec[42:60] = 0.  # previous actions
-        noise_vec[24:42] = 0.
+        noise_vec[24:42] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
+        noise_vec[42:60] = 0.  # previous actions
         if self.cfg.terrain.measure_heights:
             noise_vec[48:235] = noise_scales.height_measurements * noise_level * self.obs_scales.height_measurements
         return noise_vec

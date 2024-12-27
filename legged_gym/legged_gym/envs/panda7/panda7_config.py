@@ -277,19 +277,19 @@ class panda7FixedGripperCfg(pandaCfg):
     class control(pandaCfg.control):
         # PD Drive parameters:
         control_type = 'P'
-        stiffness = {'hip': 128, 'thigh': 144., 'calf': 458,
-                     'joint1': 150., 'joint2': 150., 'joint3': 150,
-                     'joint4': 20., 'joint5': 15., 'joint6': 10.}
-        damping = {'hip': 1.93, 'thigh': 2.16, 'calf': 1.28,
-                   'joint1': 2., 'joint2': 2, 'joint3': 2,
-                   'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.1}
-
-        # stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
+        # stiffness = {'hip': 128, 'thigh': 144., 'calf': 458,
         #              'joint1': 150., 'joint2': 150., 'joint3': 150,
-        #              'joint4': 20., 'joint5': 15., 'joint6': 10.}  # [N*m/rad]# 20  15  10
-        # damping = {'hip': 2.0, 'thigh': 2.0, 'calf': 2.0,
+        #              'joint4': 20., 'joint5': 15., 'joint6': 10.}
+        # damping = {'hip': 1.93, 'thigh': 2.16, 'calf': 1.28,
         #            'joint1': 2., 'joint2': 2, 'joint3': 2,
-        #            'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.1}  # [N*m*s/rad] 0.8 1 1
+        #            'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.1}
+
+        stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
+                     'joint1': 150., 'joint2': 150., 'joint3': 150,
+                     'joint4': 20., 'joint5': 15., 'joint6': 10.}  # [N*m/rad]# 20  15  10
+        damping = {'hip': 2.0, 'thigh': 2.0, 'calf': 2.0,
+                   'joint1': 2., 'joint2': 2, 'joint3': 2,
+                   'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.1}  # [N*m*s/rad] 0.8 1 1
 
         # stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
         #              'joint1': 150., 'joint2': 600., 'joint3': 150,
@@ -308,7 +308,7 @@ class panda7FixedGripperCfg(pandaCfg):
 
     class env(pandaCfg.env):
         num_actions = 18
-        num_observations = 42  #60
+        num_observations = 60  #60
         num_leg = 4
         motion_files = "opti_traj/output_panda_fixed_gripper_json"
 
@@ -372,6 +372,7 @@ class panda7FixedGripperTrotCfg(panda7FixedGripperCfg):
 class panda7FixedGripperTrotCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_trot'
+        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_trot/Dec26_22-45-05_/model_23000.pt'
 
 class panda7FixedGripperPaceCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
