@@ -86,7 +86,7 @@ def play(args):
     env_cfg.domain_rand.randomize_joint_armature = False
     env_cfg.domain_rand.randomize_motor = False
     # env_cfg.env.check_contact = False
-    issave = False
+    issave = True
 
 
     # prepare environment
@@ -132,11 +132,11 @@ def play(args):
         # print(f"obs:{obs.detach()}")
         # print(f"action:{actions.detach()}")
         # 将self.actor_state输出成文件
-        obs_flattened = obs.squeeze()
+        obs_flattened = obs[0,].squeeze()
         actor_state.append(obs_flattened.tolist())
-        torque_flattened = env.torques.squeeze()
+        torque_flattened = env.torques[0,].squeeze()
         torque.append(torque_flattened.tolist())
-        base_euler_flattened = env.base_euler_xyz.squeeze()
+        base_euler_flattened = env.base_euler_xyz[0,].squeeze()
         base_euler.append(base_euler_flattened.tolist())
         if issave and counter == 3000:
             np.savetxt('sim2sim/BJ_Raisim/net/HSW/data/'+args.task.split('_')[-1]+'_obs.csv', np.array(actor_state), delimiter=",")

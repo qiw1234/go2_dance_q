@@ -277,19 +277,19 @@ class panda7FixedGripperCfg(pandaCfg):
     class control(pandaCfg.control):
         # PD Drive parameters:
         control_type = 'P'
-        # stiffness = {'hip': 128, 'thigh': 144., 'calf': 458,
-        #              'joint1': 150., 'joint2': 150., 'joint3': 150,
-        #              'joint4': 20., 'joint5': 15., 'joint6': 10.}
-        # damping = {'hip': 1.93, 'thigh': 2.16, 'calf': 1.28,
-        #            'joint1': 2., 'joint2': 2, 'joint3': 2,
-        #            'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.1}
-
-        stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
+        stiffness = {'hip': 62., 'thigh': 72., 'calf': 229.,
                      'joint1': 150., 'joint2': 150., 'joint3': 150,
                      'joint4': 20., 'joint5': 15., 'joint6': 10.}  # [N*m/rad]# 20  15  10
         damping = {'hip': 2.0, 'thigh': 2.0, 'calf': 2.0,
                    'joint1': 2., 'joint2': 2, 'joint3': 2,
                    'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.1}  # [N*m*s/rad] 0.8 1 1
+
+        # stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
+        #              'joint1': 150., 'joint2': 150., 'joint3': 150,
+        #              'joint4': 20., 'joint5': 15., 'joint6': 10.}  # [N*m/rad]# 20  15  10
+        # damping = {'hip': 2.0, 'thigh': 2.0, 'calf': 2.0,
+        #            'joint1': 2., 'joint2': 2, 'joint3': 2,
+        #            'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.1}  # [N*m*s/rad] 0.8 1 1
 
         # stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
         #              'joint1': 150., 'joint2': 600., 'joint3': 150,
