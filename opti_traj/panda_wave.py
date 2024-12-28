@@ -101,6 +101,7 @@ dof_pos[70:, :3] = q_FR_0
 dof_pos[:, 3:6] = q_FL_0
 dof_pos[:4, 3:6] = np.linspace(q_FL_0, q_FL_2, 4)
 dof_pos[4:10, 3:6] = np.linspace(q_FL_2, q_FL_1, 6)
+dof_pos[10:70, 3:6] = q_FL_1
 dof_pos[70:76, 3:6] = np.linspace(q_FL_1, q_FL_2, 6)
 dof_pos[76:80, 3:6] = np.linspace(q_FL_2, q_FL_0, 4)
 

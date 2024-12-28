@@ -278,7 +278,8 @@ class panda7FixedGripperCfg(pandaCfg):
         # PD Drive parameters:
         control_type = 'P'
         # 'hip': 128, 'thigh': 144., 'calf': 458,
-        stiffness = {'hip': 62., 'thigh': 72., 'calf': 229.,
+        # 'hip': 62., 'thigh': 72., 'calf': 229.,
+        stiffness = {'hip': 128, 'thigh': 144., 'calf': 458,
                      'joint1': 150., 'joint2': 150., 'joint3': 150,
                      'joint4': 20., 'joint5': 15., 'joint6': 10.}  # [N*m/rad]# 20  15  10
         damping = {'hip': 2.0, 'thigh': 2.0, 'calf': 2.0,
@@ -452,6 +453,7 @@ class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
             track_dof_pos = 1.5
             track_dof_vel = 0
             track_toe_pos = 10
+            track_LF_toe_pos = 10
             # 机械臂
             track_arm_dof_pos = 5
             track_griper_dof_pos = 0
@@ -477,16 +479,16 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            track_root_pos = 1
+            track_root_pos = 5
             track_root_height = 0
             track_root_rot = 1
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
             track_dof_pos = 0
             track_dof_vel = 0
-            track_toe_pos = 5
+            track_toe_pos = 10
             # jump reward
-            jump = 5.
+            jump = 10.
             # 机械臂
             track_arm_dof_pos = 10
             track_griper_dof_pos = 0

@@ -121,7 +121,7 @@ class LeggedRobot(BaseTask):
         if len(self.action_id)>1:
             raise ValueError("select trajs more than 1")
         # self.action_id = 0
-        self.motion_loader.trajectory_lens[self.action_id[0]] = 3
+        # self.motion_loader.trajectory_lens[self.action_id[0]] = 5
         self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
@@ -1465,6 +1465,11 @@ class LeggedRobot(BaseTask):
         # print(f'ref toe pos {self.frames[:, 13:25]}')
         # print(f'toe pos {self.toe_pos_body}')
         # print(50*'*')
+        return temp
+
+    def _reward_track_LF_toe_pos(self):
+        # 跟踪左前腿末端执行器的相对位置
+        temp = torch.exp(-100 * torch.sum(torch.square(self.frames[:, 13:16] - self.toe_pos_body[:,0:3]), dim=1))
         return temp
 
     def _reward_track_dof_pos(self):
