@@ -129,17 +129,29 @@ class LeggedRobotCfg(BaseConfig):
         randomize_restitution = True  # True
         restitution_range = [0.0, 0.4]
 
+        use_default_friction = True  # 是否使用URDF默认的关节摩擦值
+        use_random_friction_value = False  # 否则 使用随机的关节摩擦值或者指定值
+        joint_friction_range = [0.001, 0.05]  # 随机值范围[0.01, 1.15]
+        joint_friction_value = 0.01  # 指定值
         randomize_joint_friction = False
+        randomize_joint_friction_each_joint = False
+        joint_friction_factor = [0.8, 1.2]
 
+        use_default_damping = True  # 是否使用URDF默认的阻尼值
+        use_random_damping_value = False  # 否则 使用随机的阻尼值或者指定值
+        joint_damping_range = [0.1, 5.]  # 随机值范围
+        joint_damping_value = 2.  # 指定值
         randomize_joint_damping = False
+        randomize_joint_damping_each_joint = False
+        joint_damping_factor = [0.8, 1.2]
 
-        randomize_joint_armature = False
+        randomize_joint_armature = True
         randomize_joint_armature_each_joint = False
         joint_armature_range = [0.001, 0.06]  # Factor [0.0001, 0.05] [0.001, 0.1]
         joint_armature_factor = [0.8, 1.2]
         joint_armature_value = [0.0355, 0.0220, 0.1289]  # [0.0354, 0.022, 0.0513] 新电机[0.0355, 0.0220, 0.1289]
 
-        randomize_motor = False  # 力矩随机化的总开关
+        randomize_motor = True  # 力矩随机化的总开关
         motor_strength_range = [0.9, 1.1]  # [0.8,1.2]
         randomize_torque = False
         torque_multiplier_range = [0.8, 1.2]

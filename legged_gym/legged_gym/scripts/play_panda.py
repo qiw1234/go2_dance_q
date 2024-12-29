@@ -79,12 +79,14 @@ def play(args):
     env_cfg.domain_rand.push_robots = False
 
     # env_cfg.env.debug = True
-    # env_cfg.domain_rand.RSI_traj_rand = False
+    env_cfg.domain_rand.RSI_traj_rand = False
     env_cfg.domain_rand.randomize_base_mass = False
     env_cfg.noise.add_noise = False
-    # env_cfg.env.RSI = False
-    env_cfg.domain_rand.randomize_joint_armature = False
-    env_cfg.domain_rand.randomize_motor = False
+    env_cfg.env.RSI = False
+    # env_cfg.domain_rand.randomize_joint_armature = False
+    # env_cfg.domain_rand.randomize_motor = False
+    env_cfg.domain_rand.action_delay = False
+
     # env_cfg.env.check_contact = False
 
     issave = True

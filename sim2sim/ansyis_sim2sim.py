@@ -16,7 +16,7 @@ plot_raisim = True
 plot_isaacgym = True
 
 start = 0
-end = 500
+end = 200
 
 default_dof_pos = [0.1, 0.8, -1.5, -0.1, 0.8, -1.5, 0.1, 1., -1.5, -0.1, 1., -1.5, 0, 0, 0, 0, 0, 0]
 
@@ -34,13 +34,13 @@ raisim_torques = raisim_torques[start:end, :]
 raisim_ang_vel = raisim_obs[start:end, 0:3]
 raisim_projected_gravity = raisim_obs[start:end, 3: 6]
 raisim_dof_pos = raisim_obs[start:end, 6:24] + default_dof_pos
-raisim_actions = raisim_obs[start:end, 42:60]*0.25 + default_dof_pos - raisim_dof_pos
-# raisim_actions = raisim_obs[start:end, 42:60]
+raisim_actions = raisim_obs[start:end, 42:60]*0.25 + default_dof_pos
+# raisim_actions = raisim_obs[start:end, 30:42]
 
 isaacgym_ang_vel = isaacgym_obs[start:end, 0:3]
 isaacgym_projected_gravity = isaacgym_obs[start:end, 3: 6]
 isaacgym_dof_pos = isaacgym_obs[start:end, 6:24] + default_dof_pos
-isaacgym_actions = isaacgym_obs[start:end, 42:60]*0.25 + default_dof_pos - isaacgym_dof_pos
+isaacgym_actions = isaacgym_obs[start:end, 42:60]*0.25 + default_dof_pos
 
 nb_rows = 3
 nb_cols = 3
