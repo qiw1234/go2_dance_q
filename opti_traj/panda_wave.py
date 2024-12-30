@@ -88,15 +88,17 @@ dof_pos[70:80, :3] = np.linspace(q_FR_1, q_FR_2, 10)
 dof_pos[80:100, :3] = np.linspace(q_FR_2, q_FR_3, 20)
 dof_pos[100:120, :3] = np.linspace(q_FR_3, q_FR_2, 20)
 dof_pos[120:140, :3] = np.linspace(q_FR_2, q_FR_3, 20)
-dof_pos[140:190, :3] = np.linspace(q_FR_3, q_FR_0, 50)
-dof_pos[190:210, :3] = q_FR_0
+dof_pos[140:160, :3] = np.linspace(q_FR_3, q_FR_2, 20)
+dof_pos[160:180, :3] = np.linspace(q_FR_2, q_FR_3, 20)
+dof_pos[180:200, :3] = np.linspace(q_FR_3, q_FR_2, 20)
+dof_pos[200:210, :3] = np.linspace(q_FR_2, q_FR_1, 10)
 # 左前腿关节角度
 dof_pos[:, 3:6] = q_FL_0
 dof_pos[:8, 3:6] = np.linspace(q_FL_0, q_FL_2, 8)
 dof_pos[8:20, 3:6] = np.linspace(q_FL_2, q_FL_1, 12)
-dof_pos[20:190, 3:6] = q_FL_1
-dof_pos[190:202, 3:6] = np.linspace(q_FL_1, q_FL_2, 12)
-dof_pos[202:210, 3:6] = np.linspace(q_FL_2, q_FL_0, 8)
+dof_pos[20:, 3:6] = q_FL_1
+# dof_pos[190:202, 3:6] = np.linspace(q_FL_1, q_FL_2, 12)
+# dof_pos[202:210, 3:6] = np.linspace(q_FL_2, q_FL_0, 8)
 
 # 计算足端位置在质心坐标系的坐标
 for i in range(toe_pos.shape[0]):

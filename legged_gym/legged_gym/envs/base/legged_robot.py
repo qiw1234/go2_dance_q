@@ -121,7 +121,7 @@ class LeggedRobot(BaseTask):
         if len(self.action_id)>1:
             raise ValueError("select trajs more than 1")
         # self.action_id = 0
-        # self.motion_loader.trajectory_lens[self.action_id[0]] = 10
+        self.motion_loader.trajectory_lens[self.action_id[0]] = 6
         self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
@@ -341,8 +341,8 @@ class LeggedRobot(BaseTask):
         # 记录初始位置
         self.origin_xy[env_ids, :] = root_pos
         self.root_states[env_ids, :3] = root_pos
-        if self.cfg.domain_rand.RSI_rand:
-            self.root_states[env_ids, :2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
+        # if self.cfg.domain_rand.RSI_rand:
+        #     self.root_states[env_ids, :2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
         root_orn = self.motion_loader.get_root_rot_batch(frames)
         self.root_states[env_ids, 3:7] = root_orn
         self.root_states[env_ids, 7:10] = quat_rotate(root_orn,
