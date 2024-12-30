@@ -54,20 +54,13 @@ root_pos[:, 2] = 0.52
 # 姿态
 q0 = [0, 0, 0, 1]
 q1 = [0, np.sin(-np.pi / 24), 0, np.cos(-np.pi / 24)]
-root_rot[:] = q0
+root_rot[:] = q1
 end = 20 #0.4s
 for i in range(end):
     frac = (i+1) / (end - 1)
     root_rot[i, :] = quaternion_slerp(q0, q1, frac)
 start = end
 end = 190
-root_rot[start: end, :] = root_rot[start - 1, :]
-start = end
-end = 210
-for i in range(start, end):
-    frac = (i - start + 1) / (end - start)
-    root_rot[i, :] = quaternion_slerp(q1, q0, frac)
-
 
 # 四元数的导数
 for i in range(num_row-1):
