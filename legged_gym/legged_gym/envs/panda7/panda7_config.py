@@ -279,12 +279,6 @@ class panda7FixedGripperCfg(pandaCfg):
         control_type = 'P'
         # 'hip': 128, 'thigh': 144., 'calf': 458,
         # 'hip': 62., 'thigh': 72., 'calf': 229.,
-        # stiffness = {'hip': 128, 'thigh': 144., 'calf': 458,
-        #              'joint1': 150., 'joint2': 150., 'joint3': 150,
-        #              'joint4': 20., 'joint5': 15., 'joint6': 10.}  # [N*m/rad]# 20  15  10
-        # damping = {'hip': 2.0, 'thigh': 2.0, 'calf': 2.0,
-        #            'joint1': 2., 'joint2': 2, 'joint3': 2,
-        #            'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.1}  # [N*m*s/rad] 0.8 1 1
 
         stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
                      'joint1': 150., 'joint2': 150., 'joint3': 150,
@@ -293,17 +287,11 @@ class panda7FixedGripperCfg(pandaCfg):
                    'joint1': 2., 'joint2': 2, 'joint3': 2,
                    'joint4': 0.1, 'joint5': 0.1, 'joint6': 0.1}  # [N*m*s/rad] 0.8 1 1
 
-        # stiffness = {'hip': 150., 'thigh': 150., 'calf': 150.,
-        #              'joint1': 150., 'joint2': 600., 'joint3': 150,
-        #              'joint4': 20., 'joint5': 15., 'joint6': 10.}  # [N*m/rad]# 20  15  10
-        # damping = {'hip': 2.0, 'thigh': 2.0, 'calf': 2.0,
-        #            'joint1': 2., 'joint2': 2, 'joint3': 2,
-        #            'joint4': 0.1, 'joint5': 1., 'joint6': 1}  # [N*m*s/rad] 0.8 1 1
 
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.25
         # decimation: Number of control action updates @ sim DT per policy DT
-        decimation = 4
+        decimation = 4 # 50Hz
 
     class asset(pandaCfg.asset):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_fixed_gripper.urdf'
@@ -417,10 +405,10 @@ class panda7FixedGripperSwingCfg(panda7FixedGripperCfg):
             track_root_rot = 0.
             orientation = -0.1
             tracking_yaw = 1.
-            track_lin_vel_ref = 1
-            track_ang_vel_ref = 1
-            track_dof_pos = 1
-            track_dof_vel = 1
+            track_lin_vel_ref = 0
+            track_ang_vel_ref = 0
+            track_dof_pos = 5
+            track_dof_vel = 0
             track_toe_pos = 10
             # 机械臂
             track_arm_dof_pos = 10
@@ -436,7 +424,7 @@ class panda7FixedGripperSwingCfg(panda7FixedGripperCfg):
 class panda7FixedGripperSwingCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_swing'
-        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_swing//Dec22_22-40-46_/model_14000.pt'
+        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_swing/Dec28_12-06-32_/model_34500.pt'
 
 class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):

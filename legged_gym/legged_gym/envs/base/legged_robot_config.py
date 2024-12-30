@@ -42,6 +42,7 @@ class LeggedRobotCfg(BaseConfig):
         episode_length_s = 6 # episode length in seconds
         debug = False
         check_contact = True
+        num_leg = 4
 
     class terrain:
         mesh_type = 'plane' # "heightfield" # none, plane, heightfield or trimesh
@@ -131,32 +132,44 @@ class LeggedRobotCfg(BaseConfig):
 
         use_default_friction = True  # 是否使用URDF默认的关节摩擦值
         use_random_friction_value = False  # 否则 使用随机的关节摩擦值或者指定值
-        joint_friction_range = [0.001, 0.05]  # 随机值范围[0.01, 1.15]
-        joint_friction_value = 0.01  # 指定值
+        joint_friction_range = [0.0, 0.5]  # 随机值范围[0.01, 1.15]
+        joint_friction_value = 0.3  # 指定值
         randomize_joint_friction = False
         randomize_joint_friction_each_joint = False
         joint_friction_factor = [0.8, 1.2]
 
         use_default_damping = True  # 是否使用URDF默认的阻尼值
-        use_random_damping_value = False  # 否则 使用随机的阻尼值或者指定值
+        use_random_damping_value = True  # 否则 使用随机的阻尼值或者指定值
         joint_damping_range = [0.1, 5.]  # 随机值范围
-        joint_damping_value = 2.  # 指定值
+        joint_damping_value = 0.01  # 指定值
         randomize_joint_damping = False
         randomize_joint_damping_each_joint = False
         joint_damping_factor = [0.8, 1.2]
 
-        randomize_joint_armature = True
+        use_default_armature = True  # 是否使用URDF默认的转子惯量值
+        use_random_armature_value = True  # 否则 使用随机的转子惯量值或者指定值
+        joint_armature_range = [0.01, 0.2]  # 随机值范围
+        joint_armature_value = [0.0355, 0.0220, 0.1289]  # 指定值 [0.0354, 0.022, 0.0513] 新电机[0.0355, 0.0220, 0.1289]
+        randomize_joint_armature = False
         randomize_joint_armature_each_joint = False
-        joint_armature_range = [0.001, 0.06]  # Factor [0.0001, 0.05] [0.001, 0.1]
         joint_armature_factor = [0.8, 1.2]
-        joint_armature_value = [0.0355, 0.0220, 0.1289]  # [0.0354, 0.022, 0.0513] 新电机[0.0355, 0.0220, 0.1289]
 
-        randomize_motor = True  # 力矩随机化的总开关
-        motor_strength_range = [0.9, 1.1]  # [0.8,1.2]
-        randomize_torque = False
+        randomize_motor = True  # PD部分的随机化 等价于PD的随机化 也是所有力矩部分随机化的总开关
+        motor_strength_range = [0.8, 1.2]  # [0.8, 1.2]
+
+        randomize_torque = True  # 力矩整体的随机化
         torque_multiplier_range = [0.8, 1.2]
-        randomize_motor_offset = False
+
+        randomize_motor_offset = False  # 位置偏差随机化
         motor_offset_range = [-0.035, 0.035]  # Offset to add to the motor angles
+
+        randomize_gains = False
+        stiffness_multiplier_range = [0.8, 1.2]  # Factor [0.8, 1.2] [0.2, 2] [0.5, 1.5]
+        damping_multiplier_range = [0.8, 1.2]
+
+        randomize_coulomb_friction = False
+        joint_coulomb_range = [0.1, 1.0]
+        joint_viscous_range = [0.1, 0.9]
 
         randomize_base_mass = True
         added_mass_range = [-1., 5.]
@@ -228,7 +241,7 @@ class LeggedRobotCfg(BaseConfig):
         add_noise = True
         noise_level = 1.0 # scales other values
         class noise_scales:
-            dof_pos = 0.01
+            dof_pos = 0.08  #0.01
             dof_vel = 1.5
             lin_vel = 0.1
             ang_vel = 0.2
@@ -242,7 +255,7 @@ class LeggedRobotCfg(BaseConfig):
         lookat = [11., 5, 3.]  # [m]
 
     class sim:
-        dt =  0.005 #0.005
+        dt =  0.005 #0.005 200Hz
         substeps = 1
         gravity = [0., 0. ,-9.81]  # [m/s^2]
         up_axis = 1  # 0 is y, 1 is z

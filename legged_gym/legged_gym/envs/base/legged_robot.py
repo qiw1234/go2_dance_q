@@ -121,7 +121,7 @@ class LeggedRobot(BaseTask):
         if len(self.action_id)>1:
             raise ValueError("select trajs more than 1")
         # self.action_id = 0
-        self.motion_loader.trajectory_lens[self.action_id[0]] = 5
+        # self.motion_loader.trajectory_lens[self.action_id[0]] = 10
         self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
@@ -152,7 +152,11 @@ class LeggedRobot(BaseTask):
         self.actions[:, -12:] = torch.clip(self.actions[:, -12:], -clip_arm_actions, clip_arm_actions).to(self.device)
         # step physics and render each frame
         self.render()
-        for _ in range(self.cfg.control.decimation):
+
+        # self.gym.sync_frame_time(self.sim)
+
+        for i in range(self.cfg.control.decimation):
+            # if i == 0|2:
             self.torques = self._compute_torques(self.actions).view(self.torques.shape)
             self.gym.set_dof_actuation_force_tensor(self.sim, gymtorch.unwrap_tensor(self.torques))
             self.gym.simulate(self.sim)
@@ -405,7 +409,7 @@ class LeggedRobot(BaseTask):
         self.obs_buf = torch.cat((self.base_ang_vel * self.obs_scales.ang_vel,  # 3   # 3
                                   self.projected_gravity,  # 3   # 6
                                   (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,  # 18   # 24
-                                  self.dof_vel * 0,  # 18  # 42
+                                  self.dof_vel * self.obs_scales.dof_vel,  # 18  # 42
                                   self.action_history_buf[:, -1],  # 18  # 60
                                   ), dim=-1)
 
@@ -460,54 +464,54 @@ class LeggedRobot(BaseTask):
                 self.motor_offsets[env_ids, :] = torch_rand_float(min_offset, max_offset,
                                                                   (len(env_ids), self.num_actions), device=self.device)
 
-            # if self.cfg.domain_rand.randomize_gains:
-            #     p_gains_factor = self.cfg.domain_rand.stiffness_multiplier_range
-            #     self.p_gains_all[env_ids] = torch_rand_float(p_gains_factor[0], p_gains_factor[1],
-            #                                                  (len(env_ids), self.num_actions), device=self.device) * \
-            #                                 self.d_gains_all[env_ids]
-            #     d_gains_factor = self.cfg.domain_rand.damping_multiplier_range
-            #     self.d_gains_all[env_ids] = torch_rand_float(d_gains_factor[0], d_gains_factor[1],
-            #                                                  (len(env_ids), self.num_actions), device=self.device) * \
-            #                                 self.d_gains_all[env_ids]
-            #
-            # if self.cfg.domain_rand.randomize_coulomb_friction:
-            #     joint_coulomb_range = self.cfg.domain_rand.joint_coulomb_range
-            #     self.joint_coulomb[env_ids] = torch_rand_float(joint_coulomb_range[0], joint_coulomb_range[1],
-            #                                                    (len(env_ids), self.num_actions), device=self.device)
-            #     joint_viscous_range = self.cfg.domain_rand.joint_viscous_range
-            #     self.joint_viscous[env_ids] = torch_rand_float(joint_viscous_range[0], joint_viscous_range[1],
-            #                                                    (len(env_ids), self.num_actions), device=self.device)
+            if self.cfg.domain_rand.randomize_gains:
+                p_gains_factor = self.cfg.domain_rand.stiffness_multiplier_range
+                self.p_gains_all[env_ids] = torch_rand_float(p_gains_factor[0], p_gains_factor[1],
+                                                             (len(env_ids), self.num_actions), device=self.device) * \
+                                            self.d_gains_all[env_ids]
+                d_gains_factor = self.cfg.domain_rand.damping_multiplier_range
+                self.d_gains_all[env_ids] = torch_rand_float(d_gains_factor[0], d_gains_factor[1],
+                                                             (len(env_ids), self.num_actions), device=self.device) * \
+                                            self.d_gains_all[env_ids]
+
+            if self.cfg.domain_rand.randomize_coulomb_friction:
+                joint_coulomb_range = self.cfg.domain_rand.joint_coulomb_range
+                self.joint_coulomb[env_ids] = torch_rand_float(joint_coulomb_range[0], joint_coulomb_range[1],
+                                                               (len(env_ids), self.num_actions), device=self.device)
+                joint_viscous_range = self.cfg.domain_rand.joint_viscous_range
+                self.joint_viscous[env_ids] = torch_rand_float(joint_viscous_range[0], joint_viscous_range[1],
+                                                               (len(env_ids), self.num_actions), device=self.device)
 
     def randomize_dof_props(self, env_ids):
-        # if self.cfg.domain_rand.randomize_joint_friction:
-        #     if self.cfg.domain_rand.randomize_joint_friction_each_joint:
-        #         for i in range(self.num_dof):
-        #             factor_key = f'joint_{i + 1}_friction_factor'
-        #             joint_friction_factor = getattr(self.cfg.domain_rand, factor_key)
-        #             self.joint_friction_factor[env_ids, i] = torch_rand_float(joint_friction_factor[0],
-        #                                                                       joint_friction_factor[1],
-        #                                                                       (len(env_ids), 1),
-        #                                                                       device=self.device).reshape(-1)
-        #     else:
-        #         joint_friction_factor = self.cfg.domain_rand.joint_friction_factor
-        #         self.joint_friction_factor[env_ids] = torch_rand_float(joint_friction_factor[0],
-        #                                                                joint_friction_factor[1],
-        #                                                                (len(env_ids), 1), device=self.device)
+        if self.cfg.domain_rand.randomize_joint_friction:
+            if self.cfg.domain_rand.randomize_joint_friction_each_joint:
+                for i in range(self.num_dof):
+                    factor_key = f'joint_{i + 1}_friction_factor'
+                    joint_friction_factor = getattr(self.cfg.domain_rand, factor_key)
+                    self.joint_friction_factor[env_ids, i] = torch_rand_float(joint_friction_factor[0],
+                                                                              joint_friction_factor[1],
+                                                                              (len(env_ids), 1),
+                                                                              device=self.device).reshape(-1)
+            else:
+                joint_friction_factor = self.cfg.domain_rand.joint_friction_factor
+                self.joint_friction_factor[env_ids] = torch_rand_float(joint_friction_factor[0],
+                                                                       joint_friction_factor[1],
+                                                                       (len(env_ids), 1), device=self.device)
 
-        # if self.cfg.domain_rand.randomize_joint_damping:
-        #     if self.cfg.domain_rand.randomize_joint_damping_each_joint:
-        #         for i in range(self.num_dof):
-        #             factor_key = f'joint_{i + 1}_damping_factor'
-        #             joint_damping_factor = getattr(self.cfg.domain_rand, factor_key)
-        #             self.joint_damping_factor[env_ids, i] = torch_rand_float(joint_damping_factor[0],
-        #                                                                      joint_damping_factor[1],
-        #                                                                      (len(env_ids), 1),
-        #                                                                      device=self.device).reshape(-1)
-        #     else:
-        #         joint_damping_factor = self.cfg.domain_rand.joint_damping_factor
-        #         self.joint_damping_factor[env_ids] = torch_rand_float(joint_damping_factor[0],
-        #                                                               joint_damping_factor[1],
-        #                                                               (len(env_ids), 1), device=self.device)
+        if self.cfg.domain_rand.randomize_joint_damping:
+            if self.cfg.domain_rand.randomize_joint_damping_each_joint:
+                for i in range(self.num_dof):
+                    factor_key = f'joint_{i + 1}_damping_factor'
+                    joint_damping_factor = getattr(self.cfg.domain_rand, factor_key)
+                    self.joint_damping_factor[env_ids, i] = torch_rand_float(joint_damping_factor[0],
+                                                                             joint_damping_factor[1],
+                                                                             (len(env_ids), 1),
+                                                                             device=self.device).reshape(-1)
+            else:
+                joint_damping_factor = self.cfg.domain_rand.joint_damping_factor
+                self.joint_damping_factor[env_ids] = torch_rand_float(joint_damping_factor[0],
+                                                                      joint_damping_factor[1],
+                                                                      (len(env_ids), 1), device=self.device)
 
         if self.cfg.domain_rand.randomize_joint_armature:
             if self.cfg.domain_rand.randomize_joint_armature_each_joint:
@@ -528,18 +532,18 @@ class LeggedRobot(BaseTask):
         for env_id in env_ids:
             dof_props = self.gym.get_actor_dof_properties(self.envs[env_id], 0)
             for i in range(self.num_dof):
-                # if self.cfg.domain_rand.randomize_joint_friction:
-                #     if self.cfg.domain_rand.randomize_joint_friction_each_joint:
-                #         dof_props["friction"][i] = self.joint_friction[env_id, i] * self.joint_friction_factor[
-                #             env_id, i]
-                #     else:
-                #         dof_props["friction"][i] = self.joint_friction[env_id, i] * self.joint_friction_factor[
-                #             env_id, 0]
-                # if self.cfg.domain_rand.randomize_joint_damping:
-                #     if self.cfg.domain_rand.randomize_joint_damping_each_joint:
-                #         dof_props["damping"][i] = self.joint_damping[env_id, i] * self.joint_damping_factor[env_id, i]
-                #     else:
-                #         dof_props["damping"][i] = self.joint_damping[env_id, i] * self.joint_damping_factor[env_id, 0]
+                if self.cfg.domain_rand.randomize_joint_friction:
+                    if self.cfg.domain_rand.randomize_joint_friction_each_joint:
+                        dof_props["friction"][i] = self.joint_friction[env_id, i] * self.joint_friction_factor[
+                            env_id, i]
+                    else:
+                        dof_props["friction"][i] = self.joint_friction[env_id, i] * self.joint_friction_factor[
+                            env_id, 0]
+                if self.cfg.domain_rand.randomize_joint_damping:
+                    if self.cfg.domain_rand.randomize_joint_damping_each_joint:
+                        dof_props["damping"][i] = self.joint_damping[env_id, i] * self.joint_damping_factor[env_id, i]
+                    else:
+                        dof_props["damping"][i] = self.joint_damping[env_id, i] * self.joint_damping_factor[env_id, 0]
                 if self.cfg.domain_rand.randomize_joint_armature:
                     if self.cfg.domain_rand.randomize_joint_armature_each_joint:
                         dof_props["armature"][i] = self.joint_armature[env_id, i] * self.joint_armature_factor[
@@ -615,30 +619,59 @@ class LeggedRobot(BaseTask):
                 self.dof_pos_limits[i, 0] = m - 0.5 * r * self.cfg.rewards.soft_dof_pos_limit
                 self.dof_pos_limits[i, 1] = m + 0.5 * r * self.cfg.rewards.soft_dof_pos_limit
 
-        # if env_id == 0:
-        #     try:
-        #         armature = props["armature"]
-        #     except KeyError:
-        #         raise ValueError("The 'armature' property is missing in props.")
-        # for i in range(self.num_dof):
-        #     if props["armature"][i] is None or props["armature"][i] == 0:
-        #         if env_id==0:
-        #             print(f"Armature at index {i} was not set. Assigned default value.")
-        #         if self.cfg.domain_rand.randomize_joint_armature:
-        #             if self.cfg.domain_rand.randomize_joint_armature_each_joint:
-        #                 props["armature"][i] = self.joint_armature[env_id, i]
-        #             else:
-        #                 props["armature"][i] = self.joint_armature[env_id, 0]
-        #         if self.cfg.domain_rand.joint_armature_value is not None:
-        #             joint_armature_value = self.cfg.domain_rand.joint_armature_value
-        #             for s in range(self.cfg.env.num_leg):
-        #                 props["armature"][0+s*3] = joint_armature_value[0]
-        #                 props["armature"][1+s*3] = joint_armature_value[1]
-        #                 props["armature"][2+s*3] = joint_armature_value[2]
-        #     else:
-        #         self.joint_armature[env_id, i] = props["armature"][i].item()
-        #         if env_id==0:
-        #             print(f"Armature at index {i} already has a value: {props['armature'][i]}")
+        # 关节摩擦
+        for i in range(self.num_dof):
+            if self.cfg.domain_rand.use_default_friction:
+                if env_id == 0:
+                    print(f"Joint {i} use default friction value: {props['friction'][i]}")
+            else:
+                if self.cfg.domain_rand.use_random_friction_value:
+                    if self.cfg.domain_rand.randomize_joint_friction_each_joint:
+                        props["friction"][i] = self.joint_friction[env_id, i]
+                    else:
+                        props["friction"][i] = self.joint_friction[env_id, 0]
+                else:
+                    props["friction"][i] = self.cfg.domain_rand.joint_friction_value
+                if env_id == 0:
+                    print(f"Joint {i} use specified friction value: {props['friction'][i]}")
+            self.joint_friction[env_id, i] = props["friction"][i].item()
+        # 关节阻尼
+        for i in range(self.num_dof):
+            if self.cfg.domain_rand.use_default_damping:
+                if env_id == 0:
+                    print(f"Joint {i} use default damping value: {props['damping'][i]}")
+            else:
+                if self.cfg.domain_rand.use_random_damping_value:
+                    if self.cfg.domain_rand.randomize_joint_damping_each_joint:
+                        props["damping"][i] = self.joint_damping[env_id, i]
+                    else:
+                        props["damping"][i] = self.joint_damping[env_id, 0]
+                else:
+                    props["damping"][i] = self.cfg.domain_rand.joint_damping_value
+                if env_id == 0:
+                    print(f"Joint {i} use specified damping value: {props['damping'][i]}")
+            self.joint_damping[env_id, i] = props["damping"][i].item()
+        # 电机转子惯量
+        for i in range(self.num_dof):
+            if self.cfg.domain_rand.use_default_armature:
+                if env_id == 0:
+                    print(f"Joint {i} use default armature value: {props['armature'][i]}")
+            else:
+                if self.cfg.domain_rand.use_random_armature_value:
+                      if self.cfg.domain_rand.randomize_joint_armature_each_joint:
+                          props["armature"][i] = self.joint_armature[env_id, i]
+                      else:
+                          props["armature"][i] = self.joint_armature[env_id, 0]
+                else:
+                      if i==0:
+                          joint_armature_value = self.cfg.domain_rand.joint_armature_value
+                          for s in range(self.cfg.env.num_leg):
+                              props["armature"][0+s*3] = joint_armature_value[0]
+                              props["armature"][1+s*3] = joint_armature_value[1]
+                              props["armature"][2+s*3] = joint_armature_value[2]
+                if env_id == 0:
+                    print(f"Joint {i} use specified armature value: {props['armature'][i]}")
+            self.joint_armature[env_id, i] = props["armature"][i].item()
         return props
 
     def _process_rigid_body_props(self, props, env_id):
@@ -763,6 +796,8 @@ class LeggedRobot(BaseTask):
         """
         self.dof_pos[env_ids] = self.default_dof_pos * torch_rand_float(0.5, 1.5, (len(env_ids), self.num_dof),
                                                                         device=self.device)
+        # self.dof_pos[env_ids] = self.default_dof_pos
+        # self.dof_pos[env_ids] = torch.tensor([0.1, 0.6, -1.4, -0.1, 0.6, -1.4, 0.1, 0.6, -1.4, -0.1, 0.6, -1.4,0,0,0,0,0,0],device=self.device)
         self.dof_vel[env_ids] = 0.
 
         env_ids_int32 = env_ids.to(dtype=torch.int32)
@@ -1121,6 +1156,34 @@ class LeggedRobot(BaseTask):
         start_pose = gymapi.Transform()
         start_pose.p = gymapi.Vec3(*self.base_init_state[:3])
 
+        # prepare friction randomization
+        if self.cfg.domain_rand.use_random_friction_value:
+            joint_friction_range = self.cfg.domain_rand.joint_friction_range
+            self.joint_friction = torch_rand_float(joint_friction_range[0], joint_friction_range[1],
+                                                  (self.num_envs, self.num_dof), device=self.device)
+        else:
+            self.joint_friction = torch.zeros(self.num_envs, self.num_dof, device=self.device)
+        if self.cfg.domain_rand.randomize_joint_friction:
+            if self.cfg.domain_rand.randomize_joint_friction_each_joint:
+                self.joint_friction_factor = torch.ones(self.num_envs, self.num_dof, dtype=torch.float,
+                                                        device=self.device, requires_grad=False)
+            else:
+                self.joint_friction_factor = torch.ones(self.num_envs, 1, dtype=torch.float,
+                                                        device=self.device, requires_grad=False)
+        # prepare damping randomization
+        if self.cfg.domain_rand.use_random_damping_value:
+            joint_damping_range = self.cfg.domain_rand.joint_damping_range
+            self.joint_damping = torch_rand_float(joint_damping_range[0], joint_damping_range[1],
+                                                  (self.num_envs, self.num_dof), device=self.device)
+        else:
+            self.joint_damping = torch.zeros(self.num_envs, self.num_dof, device=self.device)
+        if self.cfg.domain_rand.randomize_joint_damping:
+            if self.cfg.domain_rand.randomize_joint_damping_each_joint:
+                self.joint_damping_factor = torch.ones(self.num_envs, self.num_dof, dtype=torch.float,
+                                                       device=self.device, requires_grad=False)
+            else:
+                self.joint_damping_factor = torch.ones(self.num_envs, 1, dtype=torch.float,
+                                                       device=self.device, requires_grad=False)
         # prepare armature randomization
         self.joint_armature = torch.zeros(self.num_envs, self.num_dof, device=self.device)
         if self.cfg.domain_rand.randomize_joint_armature:

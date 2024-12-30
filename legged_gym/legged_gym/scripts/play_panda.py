@@ -70,7 +70,7 @@ def load_policy() -> dict:
 def play(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     # override some parameters for testing
-    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 10)
+    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 1)
     env_cfg.terrain.num_rows = 1
     env_cfg.terrain.num_cols = 1
     env_cfg.terrain.curriculum = False
@@ -85,9 +85,12 @@ def play(args):
     env_cfg.env.RSI = False
     # env_cfg.domain_rand.randomize_joint_armature = False
     # env_cfg.domain_rand.randomize_motor = False
-    env_cfg.domain_rand.action_delay = False
+    # env_cfg.domain_rand.action_delay = False
 
-    # env_cfg.env.check_contact = False
+    # env_cfg.domain_rand.use_default_friction = False
+    # env_cfg.domain_rand.use_default_damping = False
+
+    env_cfg.env.check_contact = False
 
     issave = True
 
@@ -127,7 +130,7 @@ def play(args):
     obs_test_data = np.loadtxt(raisim_obs_path, delimiter=',')
     obs_tensor = torch.from_numpy(obs_test_data).to(args.sim_device).float()
     for i in range(50*int(env.max_episode_length)):
-        # if i==0:
+        # if i in range(200,500):
         #     obs = obs_tensor[i, :].unsqueeze(dim=0)
         # obs[:, 24:42] = obs_tensor[i, 24:42].unsqueeze(dim=0)
         actions = policy(obs.detach())
@@ -141,7 +144,7 @@ def play(args):
         torque.append(torque_flattened.tolist())
         base_euler_flattened = env.base_euler_xyz[0,].squeeze()
         base_euler.append(base_euler_flattened.tolist())
-        if issave and counter == 3000:
+        if issave and counter == 1000:
             np.savetxt('sim2sim/BJ_Raisim/net/HSW/data/'+args.task.split('_')[-1]+'_obs.csv', np.array(actor_state), delimiter=",")
             np.savetxt('sim2sim/BJ_Raisim/net/HSW/data/' + args.task.split('_')[-1] + '_torque.csv', np.array(torque),
                        delimiter=",")
