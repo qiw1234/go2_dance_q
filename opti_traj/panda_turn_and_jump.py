@@ -19,7 +19,7 @@ panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.287854, -0.481
                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828]
 panda7 = utils.QuadrupedRobot(l=0.65, w=0.225, l1=0.126375, l2=0.34, l3=0.34,
                               lb=panda_lb, ub=panda_ub, toe_pos_init=panda_toe_pos_init)
-num_row = 80
+num_row = 280
 num_col = 72
 fps = 50
 
@@ -48,8 +48,9 @@ def h_1(t):
 # 质心轨迹
 for i in range(20):
     root_pos[i, 2] = h_1(i / 50) + 0.55
+root_pos[20:70, 2] = 0.55
 for i in range(3):
-    root_pos[20 * (i + 1):20 * (i + 2), :] = root_pos[:20, :]
+    root_pos[70 * (i + 1):70 * (i + 2), :] = root_pos[:70, :]
 # 质心线速度
 for i in range(num_row - 1):
     root_lin_vel[i, :] = (root_pos[i + 1, :] - root_pos[i, :]) * fps
@@ -59,30 +60,47 @@ q1 = [0, 0, 0, 1]  # [x,y,z,w]
 q2 = [0, 0, np.sin(-np.pi / 12), np.cos(-np.pi / 12)]
 q3 = [0, 0, np.sin(np.pi / 12), np.cos(np.pi / 12)]
 interval = 20
+interval2 = 50
 start = 0
 end = start + interval
 
 for i in range(end):
-    frac = i / end
+    frac = (i + 1 - start) / (end - start)
     root_rot[i, :] = quaternion_slerp(q1, q2, frac)
 
 start = end
+end = start + interval2
+root_rot[start:end, :] = q2
+
+start = end
 end = start + interval
 for i in range(start, end):
-    frac = (i - start) / (end - start)
+    frac = (i + 1 - start) / (end - start)
     root_rot[i, :] = quaternion_slerp(q2, q3, frac)
 
 start = end
-end = start + interval
-for i in range(start, end):
-    frac = (i - start) / (end - start)
-    root_rot[i, :] = quaternion_slerp(q3, q2, frac)
+end = start + interval2
+root_rot[start:end, :] = q3
 
 start = end
 end = start + interval
 for i in range(start, end):
-    frac = (i - start) / (end - start)
+    frac = (i + 1 - start) / (end - start)
+    root_rot[i, :] = quaternion_slerp(q3, q2, frac)
+
+start = end
+end = start + interval2
+root_rot[start:end, :] = q2
+
+start = end
+end = start + interval
+for i in range(start, end):
+    frac = (i + 1 - start) / (end - start)
     root_rot[i, :] = quaternion_slerp(q2, q1, frac)
+
+start = end
+end = start + interval2
+root_rot[start:end, :] = q1
 
 # 四元数的导数
 for i in range(num_row - 1):
@@ -125,7 +143,7 @@ toepos_1 = get_toepos(-np.pi / 6)
 # 左转30°的足端位置
 toepos_2 = get_toepos(np.pi / 6)
 
-# 世界系下足端轨迹，这里的世界系是固定在初始root处的世界坐标系
+# 世界系下足端轨迹，这里说的世界系是固定在初始root处的世界坐标系
 delta_h = h_1(4 / 50)
 for i in range(5):
     toe_pos_world[i, :] = toepos_0
@@ -135,31 +153,31 @@ for i in range(5, 15):
     toe_pos_world[i, :] = get_toepos(angle[i - 5])
     toe_pos_world[i, 2] = toe_pos_world[i, 5] = toe_pos_world[i, 8] = toe_pos_world[i, 11] = root_pos[i, 2] - delta_h + panda7.toe_pos_init[2]
 
-for i in range(15, 25):
+for i in range(15, 75):
     toe_pos_world[i, :] = toepos_1
 
 angle = np.linspace(-np.pi / 6, np.pi / 6, 10)
-for i in range(25, 35):
-    toe_pos_world[i, :] = get_toepos(angle[i - 25])
+for i in range(75, 85):
+    toe_pos_world[i, :] = get_toepos(angle[i - 75])
     toe_pos_world[i, 2] = toe_pos_world[i, 5] = toe_pos_world[i, 8] = toe_pos_world[i, 11] = root_pos[i, 2] - delta_h + panda7.toe_pos_init[2]
 
-for i in range(35, 45):
+for i in range(85, 145):
     toe_pos_world[i, :] = toepos_2
 
 angle = np.linspace(np.pi / 6, -np.pi / 6, 10)
-for i in range(45, 55):
-    toe_pos_world[i, :] = get_toepos(angle[i - 45])
+for i in range(145, 155):
+    toe_pos_world[i, :] = get_toepos(angle[i - 145])
     toe_pos_world[i, 2] = toe_pos_world[i, 5] = toe_pos_world[i, 8] = toe_pos_world[i, 11] = root_pos[i, 2] - delta_h + panda7.toe_pos_init[2]
 
-for i in range(55, 65):
+for i in range(155, 215):
     toe_pos_world[i, :] = toepos_1
 
 angle = np.linspace(-np.pi / 6, 0, 10)
-for i in range(65, 75):
-    toe_pos_world[i, :] = get_toepos(angle[i - 65])
+for i in range(215, 225):
+    toe_pos_world[i, :] = get_toepos(angle[i - 215])
     toe_pos_world[i, 2] = toe_pos_world[i, 5] = toe_pos_world[i, 8] = toe_pos_world[i, 11] = root_pos[i, 2] - delta_h + panda7.toe_pos_init[2]
 
-for i in range(75, 80):
+for i in range(225, 280):
     toe_pos_world[i, :] = toepos_0
 
 # 质心系的足端位置
