@@ -121,7 +121,7 @@ class LeggedRobot(BaseTask):
         if len(self.action_id)>1:
             raise ValueError("select trajs more than 1")
         # self.action_id = 0
-        self.motion_loader.trajectory_lens[self.action_id[0]] = 6
+        # self.motion_loader.trajectory_lens[self.action_id[0]] = 6
         self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
@@ -149,7 +149,7 @@ class LeggedRobot(BaseTask):
         clip_actions = self.cfg.normalization.clip_actions / self.cfg.control.action_scale
         self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
         clip_arm_actions = self.cfg.normalization.clip_arm_actions / self.cfg.control.action_scale
-        self.actions[:, -12:] = torch.clip(self.actions[:, -12:], -clip_arm_actions, clip_arm_actions).to(self.device)
+        self.actions[:, 12:] = torch.clip(self.actions[:, 12:], -clip_arm_actions, clip_arm_actions).to(self.device)
         # step physics and render each frame
         self.render()
 

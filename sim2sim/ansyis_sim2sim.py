@@ -49,6 +49,7 @@ fig, axs = plt.subplots(1, 2)
 
 # 机身角速度
 a = axs[0,]
+a.grid(True)
 if plot_raisim:
     a.plot(raisim_ang_vel[:, 0], label='raisim_ang_vel_x', c='r')
     a.plot(raisim_ang_vel[:, 1], label='raisim_ang_vel_y', c='g')
@@ -62,6 +63,7 @@ a.set(title='base ang vel')
 a.legend()
 # 投影重力
 a = axs[1,]
+a.grid(True)
 if plot_raisim:
     a.plot(raisim_projected_gravity[:, 0], label='raisim_g_x', c='r')
     a.plot(raisim_projected_gravity[:, 1], label='raisim_g_y', c='g')
@@ -76,6 +78,7 @@ a.legend()
 # 关节角度
 fig2, axs2 = plt.subplots(2, 2)
 a = axs2[0, 0]
+a.grid(True)
 if plot_raisim:
     a.plot(raisim_dof_pos[:, 0], label='raisim_LF_hip', c='r')
     a.plot(raisim_dof_pos[:, 1], label='raisim_LF_thigh', c='g')
@@ -89,6 +92,7 @@ a.set(title='dof pos')
 # a.legend()
 
 a = axs2[0, 1]
+a.grid(True)
 if plot_raisim:
     a.plot(raisim_dof_pos[:, 3], label='raisim_RF_hip', c='r')
     a.plot(raisim_dof_pos[:, 4], label='raisim_RF_thigh', c='g')
@@ -102,6 +106,7 @@ a.set(title='dof pos')
 # a.legend()
 
 a = axs2[1, 0]
+a.grid(True)
 if plot_raisim:
     a.plot(raisim_dof_pos[:, 6], label='raisim_LH_hip', c='r')
     a.plot(raisim_dof_pos[:, 7], label='raisim_LH_thigh', c='g')
@@ -115,6 +120,7 @@ a.set(title='dof pos')
 # a.legend()
 
 a = axs2[1, 1]
+a.grid(True)
 if plot_raisim:
     a.plot(raisim_dof_pos[:, 9], label='raisim_LH_hip', c='r')
     a.plot(raisim_dof_pos[:, 10], label='raisim_LH_thigh', c='g')
@@ -153,6 +159,7 @@ a.set(title='dof pos')
 # last_action
 fig3, axs3 = plt.subplots(2, 2)
 a = axs3[0, 0]
+a.grid(True)
 if plot_raisim:
     a.plot(raisim_actions[:, 0], label='raisim_LF_hip', c='r')
     a.plot(raisim_actions[:, 1], label='raisim_LF_thigh', c='g')
@@ -165,6 +172,7 @@ plt.rcParams['xtick.labelsize'] = 20
 a.set(title='actions')
 
 a = axs3[0, 1]
+a.grid(True)
 if plot_raisim:
     a.plot(raisim_actions[:, 3], label='raisim_RF_hip', c='r')
     a.plot(raisim_actions[:, 4], label='raisim_RF_thigh', c='g')
@@ -177,6 +185,7 @@ plt.rcParams['xtick.labelsize'] = 20
 a.set(title='actions')
 
 a = axs3[1, 0]
+a.grid(True)
 if plot_raisim:
     a.plot(raisim_actions[:, 6], label='raisim_LH_hip', c='r')
     a.plot(raisim_actions[:, 7], label='raisim_LH_thigh', c='g')
@@ -189,6 +198,7 @@ plt.rcParams['xtick.labelsize'] = 20
 a.set(title='actions')
 
 a = axs3[1, 1]
+a.grid(True)
 if plot_raisim:
     a.plot(raisim_actions[:, 9], label='raisim_RH_hip', c='r')
     a.plot(raisim_actions[:, 10], label='raisim_RH_thigh', c='g')
@@ -246,6 +256,7 @@ a.set(title='actions')
 # plot base_euler
 fig5, axs5 = plt.subplots()
 a = axs5
+a.grid(True)
 if plot_raisim:
     a.plot(raism_base_euler[:, 0], label='raisim_LF_hip', c='r')
     a.plot(raism_base_euler[:, 1], label='raisim_LF_thigh', c='g')
