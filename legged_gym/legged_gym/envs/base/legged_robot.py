@@ -1547,7 +1547,7 @@ class LeggedRobot(BaseTask):
         sim_jump_buf = self.rb_states[:, self.feet_indices, 2].view(self.num_envs, -1) > 0.06  # for panda7
         # print(ref_jump_buf)
         # print(self.rb_states[:, self.feet_indices, 2].view(self.num_envs, -1))
-        jump_buf = ref_jump_buf & sim_jump_buf[:, 0] & sim_jump_buf[:, 1] & sim_jump_buf[:, 2] & sim_jump_buf[:, 3]
+        jump_buf = torch.eq(ref_jump_buf, sim_jump_buf[:, 0] & sim_jump_buf[:, 1] & sim_jump_buf[:, 2] & sim_jump_buf[:, 3])
         return jump_buf
 
     def _reward_original_xy(self):
