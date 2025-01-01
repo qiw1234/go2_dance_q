@@ -60,7 +60,7 @@ q1 = [0, 0, 0, 1]  # [x,y,z,w]
 q2 = [0, 0, np.sin(-np.pi / 12), np.cos(-np.pi / 12)]
 q3 = [0, 0, np.sin(np.pi / 12), np.cos(np.pi / 12)]
 interval = 20
-interval2 = 50
+interval2 = 20
 start = 0
 end = start + interval
 

@@ -429,6 +429,7 @@ class panda7FixedGripperSwingCfgPPO(pandaCfgPPO):
 class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
         class scales(panda7FixedGripperCfg.rewards.scales):
+            rf_no_action = -1
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0

@@ -219,6 +219,7 @@ class LeggedRobot(BaseTask):
         self.compute_observations()  # in some cases a simulation step might be required to refresh some obs (for example body positions)
 
         self.last_actions[:] = self.actions[:]
+        self.last_dof_pos[:] = self.dof_pos[:]
         self.last_dof_vel[:] = self.dof_vel[:]
         self.last_root_vel[:] = self.root_states[:, 7:13]
 
@@ -287,6 +288,7 @@ class LeggedRobot(BaseTask):
         # reset buffers
         self.last_actions[env_ids] = 0.
         self.last_dof_vel[env_ids] = 0.
+        self.last_dof_pos[env_ids] = 0.
         self.feet_air_time[env_ids] = 0.
         self.feet_contact_time[env_ids] = 0.
         self.episode_length_buf[env_ids] = 0
@@ -953,6 +955,7 @@ class LeggedRobot(BaseTask):
         self.last_actions = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device,
                                         requires_grad=False)
         self.last_dof_vel = torch.zeros_like(self.dof_vel)
+        self.last_dof_pos = torch.zeros_like(self.dof_pos)
         self.last_root_vel = torch.zeros_like(self.root_states[:, 7:13])  # 包含线速度和角速度
 
         str_rng = self.cfg.domain_rand.motor_strength_range
@@ -1537,6 +1540,12 @@ class LeggedRobot(BaseTask):
 
     def _reward_track_dof_pos(self):
         return torch.exp(-5 * torch.sum(torch.square(self.frames[:, 25:37] - self.dof_pos[:, :12]), dim=1))
+
+    def _reward_rf_no_action(self):
+        "惩罚右前腿没有动作"
+        # no_action_buf = torch.sum(torch.square(self.dof_pos[:, 4:6] - self.last_dof_pos[:, 4:6]), dim=1)
+        no_action_buf = torch.sum(torch.square(self.dof_pos[:,4:6] - self.last_dof_pos[:,4:6]), dim=1)<0.005
+        return no_action_buf
 
     def _reward_track_dof_vel(self):
         return torch.exp(-0.1 * torch.sum(torch.square(self.frames[:, 37:49] - self.dof_vel[:, :12]), dim=1))
