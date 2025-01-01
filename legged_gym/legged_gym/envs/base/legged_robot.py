@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: Copyright (c) 2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
@@ -175,7 +175,7 @@ class LeggedRobot(BaseTask):
 
     def post_physics_step(self):
         """ check terminations, compute observations and rewards
-            calls self._post_physics_step_callback() for common computations 
+            calls self._post_physics_step_callback() for common computations
             calls self._draw_debug_vis() if needed
         """
         self.gym.refresh_actor_root_state_tensor(self.sim)
@@ -221,6 +221,7 @@ class LeggedRobot(BaseTask):
         self.last_actions[:] = self.actions[:]
         self.last_dof_pos[:] = self.dof_pos[:]
         self.last_dof_vel[:] = self.dof_vel[:]
+        self.last_torques[:] = self.torques[:]
         self.last_root_vel[:] = self.root_states[:, 7:13]
 
         if self.viewer and self.enable_viewer_sync and self.debug_viz:
@@ -289,6 +290,7 @@ class LeggedRobot(BaseTask):
         self.last_actions[env_ids] = 0.
         self.last_dof_vel[env_ids] = 0.
         self.last_dof_pos[env_ids] = 0.
+        self.last_torques[env_ids] = 0.
         self.feet_air_time[env_ids] = 0.
         self.feet_contact_time[env_ids] = 0.
         self.episode_length_buf[env_ids] = 0
@@ -713,7 +715,7 @@ class LeggedRobot(BaseTask):
         """ Callback called before computing terminations, rewards, and observations
             Default behaviour: Compute ang vel command based on target and heading, compute measured terrain heights and randomly push robots
         """
-        # 
+        #
         env_ids = (self.episode_length_buf % int(self.cfg.commands.resampling_time / self.dt) == 0).nonzero(
             as_tuple=False).flatten()
         self._resample_commands(env_ids)
@@ -954,6 +956,7 @@ class LeggedRobot(BaseTask):
                                    requires_grad=False)
         self.last_actions = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device,
                                         requires_grad=False)
+        self.last_torques = torch.zeros_like(self.torques)
         self.last_dof_vel = torch.zeros_like(self.dof_vel)
         self.last_dof_pos = torch.zeros_like(self.dof_pos)
         self.last_root_vel = torch.zeros_like(self.root_states[:, 7:13])  # 包含线速度和角速度
@@ -1110,7 +1113,7 @@ class LeggedRobot(BaseTask):
         """ Creates environments:
              1. loads the robot URDF/MJCF asset,
              2. For each environment
-                2.1 creates the environment, 
+                2.1 creates the environment,
                 2.2 calls DOF and Rigid shape properties callbacks,
                 2.3 create actor with these properties and add them to the env
              3. Store indices of different bodies of the robot
@@ -1445,7 +1448,7 @@ class LeggedRobot(BaseTask):
         return torch.exp(-lin_vel_error / self.cfg.rewards.tracking_sigma)
 
     def _reward_tracking_ang_vel(self):
-        # Tracking of angular velocity commands (yaw) 
+        # Tracking of angular velocity commands (yaw)
         ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
         return torch.exp(-ang_vel_error / self.cfg.rewards.tracking_sigma)
 
@@ -1492,6 +1495,9 @@ class LeggedRobot(BaseTask):
         # penalize high contact forces
         return torch.sum((torch.norm(self.contact_forces[:, self.feet_indices, :],
                                      dim=-1) - self.cfg.rewards.max_contact_force).clip(min=0.), dim=1)
+
+    def _reward_delta_torques(self):
+        return torch.sum(torch.square(self.torques - self.last_torques), dim=1)
 
     #-----------------------leg imitation rewards-----------------------------------------------
     def _reward_track_root_pos(self):
@@ -1544,7 +1550,7 @@ class LeggedRobot(BaseTask):
     def _reward_rf_no_action(self):
         "惩罚右前腿没有动作"
         # no_action_buf = torch.sum(torch.square(self.dof_pos[:, 4:6] - self.last_dof_pos[:, 4:6]), dim=1)
-        no_action_buf = torch.sum(torch.square(self.dof_pos[:,4:6] - self.last_dof_pos[:,4:6]), dim=1)<0.005
+        no_action_buf = torch.sum(torch.square(self.dof_pos[:,4:6] - self.last_dof_pos[:,4:6]), dim=1)<0.002
         return no_action_buf
 
     def _reward_track_dof_vel(self):
@@ -1556,8 +1562,10 @@ class LeggedRobot(BaseTask):
         sim_jump_buf = self.rb_states[:, self.feet_indices, 2].view(self.num_envs, -1) > 0.06  # for panda7
         # print(ref_jump_buf)
         # print(self.rb_states[:, self.feet_indices, 2].view(self.num_envs, -1))
-        jump_buf = torch.eq(ref_jump_buf, sim_jump_buf[:, 0] & sim_jump_buf[:, 1] & sim_jump_buf[:, 2] & sim_jump_buf[:, 3])
-        return jump_buf
+        jump_buf = ref_jump_buf & sim_jump_buf[:, 0] & sim_jump_buf[:, 1] & sim_jump_buf[:, 2] & sim_jump_buf[:, 3]
+        stand_buf = ~ref_jump_buf & (~sim_jump_buf[:, 0] & ~sim_jump_buf[:, 1] & ~sim_jump_buf[:, 2] & ~sim_jump_buf[:, 3])
+        # 由于整个episode中跳跃的时长比较短，所以区分奖励
+        return 0.7*jump_buf + 0.3*stand_buf
 
     def _reward_original_xy(self):
         return torch.exp(-10 * torch.sum(torch.square(self.base_pos[:, :2] - self.origin_xy[:, :2]), dim=1))

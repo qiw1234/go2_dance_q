@@ -72,6 +72,7 @@ class pandaCfg(LeggedRobotCfg):
             feet_air_time = 0
             survival = 0
             test = 0
+            delta_torques = -1e-5
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
