@@ -595,6 +595,43 @@ class panda7FixedGripperStandCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_stand'
 
+class panda7FixedGripperArmLegCfg(panda7FixedGripperCfg):
+    class rewards(panda7FixedGripperCfg.rewards):
+        class scales(panda7FixedGripperCfg.rewards.scales):
+            rf_no_action = -1
+            # 模仿奖励
+            tracking_lin_vel = 0
+            tracking_ang_vel = 0
+            track_root_pos = 1.
+            track_root_height = 0.
+            track_root_rot = 1.2
+            orientation = 0
+            track_lin_vel_ref = 0
+            track_ang_vel_ref = 0
+            track_dof_pos = 1.5
+            track_dof_vel = 0
+            track_toe_pos = 10
+            # track_LF_toe_pos = 10
+            # 机械臂
+            track_arm_dof_pos = 5
+            track_griper_dof_pos = 0
+            track_arm_dof_vel = 0
+            track_arm_pos = 0
+            track_arm_rot = 0
+
+    class asset(pandaCfg.asset):
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7_nleg_rm_arm/panda7_nleg_rm_arm_0102.urdf'
+
+    class env(panda7FixedGripperCfg.env):
+        motion_name = 'leg_with_arm'
+
+
+
+class panda7FixedGripperArmLegCfgPPO(pandaCfgPPO):
+    class runner(pandaCfgPPO.runner):
+        experiment_name = 'panda7_fixed_gripper_arm_leg'
+
+
 #----------------------panda7 fixed gripper trans config---------------------------
 class panda7FixedGripperTransCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
