@@ -132,7 +132,7 @@ class LeggedRobotCfg(BaseConfig):
 
         use_default_friction = True  # 是否使用URDF默认的关节摩擦值
         use_random_friction_value = False  # 否则 使用随机的关节摩擦值或者指定值
-        joint_friction_range = [0.0, 0.5]  # 随机值范围[0.01, 1.15]
+        joint_friction_range = [0.0, 0.02]  # 随机值范围[0.01, 1.15]
         joint_friction_value = 0.3  # 指定值
         randomize_joint_friction = False
         randomize_joint_friction_each_joint = False
