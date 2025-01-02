@@ -77,7 +77,7 @@ toe_pos[:] = panda7.toe_pos_init
 q_FR_0 = [-0.1, 0.8, -1.5]  # 初始位置
 q_FR_1 = [-0.1, -0.8, -1.5]  # 抬手中间位置
 q_FR_2 = [-0.1, -0.8, -1]  # 抬手下方
-q_FR_3 = [-0.1, -0.8, -2]  # 抬手上方
+q_FR_3 = [-0.1, -0.8, -2.5]  # 抬手上方
 q_FL_0 = [0.1, 0.8, -1.5]
 q_FL_1 = [-0.4, 0.8, -1.5]
 q_FL_2 = [0.1, 0.8, -1.9]
@@ -147,6 +147,8 @@ ref[:, 49:52] = arm_pos[:num_row - 1, :]
 ref[:, 52:56] = arm_rot[:num_row - 1, :]
 ref[:, 56:64] = arm_dof_pos[:num_row - 1, :]
 ref[:, 64:72] = arm_dof_vel
+
+
 
 # # 导出完整轨迹
 outfile = 'output_panda/panda_wave.txt'
