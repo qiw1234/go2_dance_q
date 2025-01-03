@@ -19,7 +19,7 @@ panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.287854, -0.481
                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828]
 panda7 = utils.QuadrupedRobot(l=0.65, w=0.225, l1=0.126375, l2=0.34, l3=0.34,
                               lb=panda_lb, ub=panda_ub, toe_pos_init=panda_toe_pos_init)
-num_row = 140
+num_row = 130
 num_col = 72
 fps = 50
 
@@ -70,10 +70,10 @@ for i in range(start, end):
     root_rot[i, :] = quaternion_slerp(q3, q2, frac)
 
 start = end
-end = start + interval2
+end = start + interval1
 for i in range(start, end):
     frac = (i - start) / (end - start)
-    root_rot[i, :] = quaternion_slerp(q2, q1, frac)
+    root_rot[i, :] = quaternion_slerp(q2, q3, frac)
 
 interval3 = end  #10是朝前站立的时间0.2s
 # # 循环3次

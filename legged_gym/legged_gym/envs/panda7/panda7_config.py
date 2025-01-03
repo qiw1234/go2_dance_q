@@ -620,7 +620,8 @@ class panda7FixedGripperArmLegCfg(panda7FixedGripperCfg):
             track_arm_rot = 0
 
     class asset(pandaCfg.asset):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7_nleg_rm_arm/panda7_nleg_rm_arm_0102.urdf'
+        # file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7_nleg_rm_arm/panda7_nleg_rm_arm_0102.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_fixed_gripper.urdf'
 
     class env(panda7FixedGripperCfg.env):
         motion_name = 'leg_with_arm'

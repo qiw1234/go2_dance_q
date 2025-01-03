@@ -29,3 +29,4 @@ os.system("python legged_gym/legged_gym/scripts/train.py --task=go2_dance_trot -
 # python legged_gym/legged_gym/scripts/train.py --task=panda7_fixed_gripper_trot --num_envs=4096 --headless
 # python legged_gym/legged_gym/scripts/train.py --task=panda7_fixed_gripper_swing --num_envs=4096 --headless
 # python legged_gym/legged_gym/scripts/train.py --task=panda7_fixed_gripper_stand --num_envs=4096 --headless
+# python legged_gym/legged_gym/scripts/train.py --task=panda7_fixed_gripper_arm_leg --num_envs=4096 --headless

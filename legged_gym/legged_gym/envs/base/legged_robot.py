@@ -121,7 +121,7 @@ class LeggedRobot(BaseTask):
         if len(self.action_id)>1:
             raise ValueError("select trajs more than 1")
         # self.action_id = 0
-        # self.motion_loader.trajectory_lens[self.action_id[0]] = 6
+        self.motion_loader.trajectory_lens[self.action_id[0]] = 6
         self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
