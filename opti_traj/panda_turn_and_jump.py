@@ -19,7 +19,7 @@ panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.287854, -0.481
                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828]
 panda7 = utils.QuadrupedRobot(l=0.65, w=0.225, l1=0.126375, l2=0.34, l3=0.34,
                               lb=panda_lb, ub=panda_ub, toe_pos_init=panda_toe_pos_init)
-num_row = 280
+num_row = 160
 num_col = 72
 fps = 50
 
@@ -48,9 +48,9 @@ def h_1(t):
 # 质心轨迹
 for i in range(20):
     root_pos[i, 2] = h_1(i / 50) + 0.55
-root_pos[20:70, 2] = 0.55
+root_pos[20:40, 2] = 0.55
 for i in range(3):
-    root_pos[70 * (i + 1):70 * (i + 2), :] = root_pos[:70, :]
+    root_pos[40 * (i + 1):40 * (i + 2), :] = root_pos[:40, :]
 # 质心线速度
 for i in range(num_row - 1):
     root_lin_vel[i, :] = (root_pos[i + 1, :] - root_pos[i, :]) * fps
@@ -153,31 +153,31 @@ for i in range(5, 15):
     toe_pos_world[i, :] = get_toepos(angle[i - 5])
     toe_pos_world[i, 2] = toe_pos_world[i, 5] = toe_pos_world[i, 8] = toe_pos_world[i, 11] = root_pos[i, 2] - delta_h + panda7.toe_pos_init[2]
 
-for i in range(15, 75):
+for i in range(15, 45):
     toe_pos_world[i, :] = toepos_1
 
 angle = np.linspace(-np.pi / 6, np.pi / 6, 10)
-for i in range(75, 85):
-    toe_pos_world[i, :] = get_toepos(angle[i - 75])
+for i in range(45, 55):
+    toe_pos_world[i, :] = get_toepos(angle[i - 45])
     toe_pos_world[i, 2] = toe_pos_world[i, 5] = toe_pos_world[i, 8] = toe_pos_world[i, 11] = root_pos[i, 2] - delta_h + panda7.toe_pos_init[2]
 
-for i in range(85, 145):
+for i in range(55, 85):
     toe_pos_world[i, :] = toepos_2
 
 angle = np.linspace(np.pi / 6, -np.pi / 6, 10)
-for i in range(145, 155):
-    toe_pos_world[i, :] = get_toepos(angle[i - 145])
+for i in range(85, 95):
+    toe_pos_world[i, :] = get_toepos(angle[i - 85])
     toe_pos_world[i, 2] = toe_pos_world[i, 5] = toe_pos_world[i, 8] = toe_pos_world[i, 11] = root_pos[i, 2] - delta_h + panda7.toe_pos_init[2]
 
-for i in range(155, 215):
+for i in range(95, 125):
     toe_pos_world[i, :] = toepos_1
 
 angle = np.linspace(-np.pi / 6, 0, 10)
-for i in range(215, 225):
-    toe_pos_world[i, :] = get_toepos(angle[i - 215])
+for i in range(125, 135):
+    toe_pos_world[i, :] = get_toepos(angle[i - 125])
     toe_pos_world[i, 2] = toe_pos_world[i, 5] = toe_pos_world[i, 8] = toe_pos_world[i, 11] = root_pos[i, 2] - delta_h + panda7.toe_pos_init[2]
 
-for i in range(225, 280):
+for i in range(135, 160):
     toe_pos_world[i, :] = toepos_0
 
 # 质心系的足端位置
