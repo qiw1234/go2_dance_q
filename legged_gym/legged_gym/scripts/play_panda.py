@@ -82,7 +82,7 @@ def play(args):
     env_cfg.domain_rand.RSI_traj_rand = False
     env_cfg.domain_rand.randomize_base_mass = False
     env_cfg.noise.add_noise = False
-    env_cfg.env.RSI = False
+    # env_cfg.env.RSI = False
     # env_cfg.domain_rand.randomize_joint_armature = False
     # env_cfg.domain_rand.randomize_motor = False
     # env_cfg.domain_rand.action_delay = False
@@ -135,8 +135,8 @@ def play(args):
         # obs[:, 24:42] = obs_tensor[i, 24:42].unsqueeze(dim=0)
         actions = policy(obs.detach())
         # actions[:, 18:20] = 0
-        # print(f"obs:{obs.detach()}")
-        # print(f"action:{actions.detach()}")
+        # print(f"obs:{obs[:,18:24].detach()}")
+        # print(f"action:{actions[:,:].detach()}")
         # 将self.actor_state输出成文件
         obs_flattened = obs[0,].squeeze()
         actor_state.append(obs_flattened.tolist())

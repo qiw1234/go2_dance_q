@@ -1499,6 +1499,8 @@ class LeggedRobot(BaseTask):
     def _reward_delta_torques(self):
         return torch.sum(torch.square(self.torques - self.last_torques), dim=1)
 
+
+
     #-----------------------leg imitation rewards-----------------------------------------------
     def _reward_track_root_pos(self):
         # 奖励跟踪root的位置，self.base_pos装的也是绝对坐标
@@ -1538,6 +1540,27 @@ class LeggedRobot(BaseTask):
         # print(f'toe pos {self.toe_pos_body}')
         # print(50*'*')
         return temp
+
+    def _reward_track_toe_height(self):
+        '''
+        跟踪腿的相对位置的高度
+        '''
+        rew = torch.exp(-50*torch.sum(torch.square(self.frames[:,[15, 18, 21, 24]] - self.toe_pos_body[:,[2, 5, 8, 11]]), dim=1))
+        return rew
+
+    def _reward_track_toe_x(self):
+        '''
+        跟踪腿x方向的相对位置
+        '''
+        rew = torch.exp(-50*torch.sum(torch.square(self.frames[:,[13, 16, 19, 22]] - self.toe_pos_body[:,[0, 3, 6, 9]]), dim=1))
+        return rew
+
+    def _reward_track_toe_y(self):
+        '''
+        跟踪腿y方向的相对位置
+        '''
+        rew = torch.exp(-50*torch.sum(torch.square(self.frames[:,[14, 17, 20, 23]] - self.toe_pos_body[:,[1, 4, 7, 10]]), dim=1))
+        return rew
 
     def _reward_track_LF_toe_pos(self):
         # 跟踪左前腿末端执行器的相对位置
