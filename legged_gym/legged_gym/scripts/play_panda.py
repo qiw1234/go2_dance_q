@@ -70,7 +70,7 @@ def load_policy() -> dict:
 def play(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     # override some parameters for testing
-    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 10)
+    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 1)
     env_cfg.terrain.num_rows = 1
     env_cfg.terrain.num_cols = 1
     env_cfg.terrain.curriculum = False
@@ -136,7 +136,7 @@ def play(args):
         actions = policy(obs.detach())
         # actions[:, 18:20] = 0
         # print(f"obs:{obs[:,18:24].detach()}")
-        # print(f"action:{actions[0,13:15].detach()}")
+        # print(f"action:{actions.detach()}")
         # 将self.actor_state输出成文件
         obs_flattened = obs[0,].squeeze()
         actor_state.append(obs_flattened.tolist())

@@ -121,7 +121,7 @@ class LeggedRobot(BaseTask):
         if len(self.action_id)>1:
             raise ValueError("select trajs more than 1")
         # self.action_id = 0
-        self.motion_loader.trajectory_lens[self.action_id[0]] = 10
+        # self.motion_loader.trajectory_lens[self.action_id[0]] = 10
         self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
@@ -132,7 +132,13 @@ class LeggedRobot(BaseTask):
             actions (torch.Tensor): Tensor of shape (num_envs, num_actions_per_env)
         """
         actions.to(self.device)
-        self.action_history_buf = torch.cat([self.action_history_buf[:, 1:].clone(), actions[:, None, :].clone()],
+
+        clip_actions = self.cfg.normalization.clip_actions / self.cfg.control.action_scale
+        self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
+        clip_arm_actions = self.cfg.normalization.clip_arm_actions / self.cfg.control.action_scale
+        self.actions[:, 12:] = torch.clip(self.actions[:, 12:], -clip_arm_actions, clip_arm_actions).to(self.device)
+
+        self.action_history_buf = torch.cat([self.action_history_buf[:, 1:].clone(), self.actions[:, None, :].clone()],
                                             dim=1)
         if self.cfg.domain_rand.action_delay:
             if self.global_counter % self.cfg.domain_rand.delay_update_global_steps == 0:
@@ -142,14 +148,11 @@ class LeggedRobot(BaseTask):
             if self.viewer:
                 self.delay = torch.tensor(self.cfg.domain_rand.action_delay_view, device=self.device, dtype=torch.float)
             indices = -self.delay - 1  # print("indices: ", indices)  # -2
-            actions = self.action_history_buf[:, indices.long()]  # delay for 1/50=20ms  对小数部分进行截断转换为long
+            self.actions = self.action_history_buf[:, indices.long()]  # delay for 1/50=20ms  对小数部分进行截断转换为long
 
         self.global_counter += 1
 
-        clip_actions = self.cfg.normalization.clip_actions / self.cfg.control.action_scale
-        self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
-        clip_arm_actions = self.cfg.normalization.clip_arm_actions / self.cfg.control.action_scale
-        self.actions[:, 12:] = torch.clip(self.actions[:, 12:], -clip_arm_actions, clip_arm_actions).to(self.device)
+
         # step physics and render each frame
         self.render()
 

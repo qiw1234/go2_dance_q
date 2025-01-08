@@ -7,13 +7,13 @@ raisim_torque_path = 'BJ_Raisim/net/HSW/data/torques.csv'
 raisim_base_euler_path = 'BJ_Raisim/net/HSW/data/base_euler.csv'
 
 # isaac gym
-pose = 'jump'
+pose = 'stand'
 isaacgym_obs_path = 'BJ_Raisim/net/HSW/data/'+pose+'_obs.csv'
 isaacgym_torque_path = 'BJ_Raisim/net/HSW/data/'+pose+'_torque.csv'
 isaacgym_base_euler_path = 'BJ_Raisim/net/HSW/data/'+pose+'_base_euler.csv'
 
 plot_raisim = True
-plot_isaacgym = False
+plot_isaacgym = True
 
 start = 0
 end = 400
