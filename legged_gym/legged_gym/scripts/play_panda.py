@@ -70,7 +70,7 @@ def load_policy() -> dict:
 def play(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     # override some parameters for testing
-    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 1)
+    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 20)
     env_cfg.terrain.num_rows = 1
     env_cfg.terrain.num_cols = 1
     env_cfg.terrain.curriculum = False
@@ -79,7 +79,7 @@ def play(args):
     env_cfg.domain_rand.push_robots = False
 
     # env_cfg.env.debug = True
-    env_cfg.domain_rand.RSI_traj_rand = False
+    # env_cfg.domain_rand.RSI_traj_rand = False
     # env_cfg.domain_rand.randomize_base_mass = False
     env_cfg.noise.add_noise = False
     env_cfg.env.RSI = False

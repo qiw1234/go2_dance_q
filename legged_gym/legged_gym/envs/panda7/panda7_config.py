@@ -472,13 +472,13 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
             feet_contact_time = 0
             feet_contact_forces = -0.05
             action_rate = -0.3
-            arm_dof_error = -2.
+            # arm_dof_error = -2.
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            track_root_pos = 2
+            track_root_pos = 1
             track_root_height = 0
-            track_root_rot = 5
+            track_root_rot = 10
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
             track_dof_pos = 5
@@ -490,7 +490,7 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
             # jump reward
             jump = 20.
             # 机械臂
-            track_arm_dof_pos = 1.5
+            track_arm_dof_pos = 10
             track_griper_dof_pos = 0
             track_arm_dof_vel = 0
             track_arm_pos = 0
@@ -505,7 +505,7 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
 class panda7FixedGripperTurnAndJumpCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_turn_and_jump'
-        resume_path = 'legged_gym/logs/panda7_fixed_gripper_turn_and_jump/Jan08_09-34-21_/model_3000.pt'
+        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_turn_and_jump/Jan08_09-34-21_/model_3000.pt'
 
 class panda7FixedGripperSpaceTrotCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
@@ -583,12 +583,12 @@ class panda7FixedGripperStandCfg(panda7FixedGripperCfg):
             tracking_ang_vel = 0
             track_root_pos = 3
             track_root_height = 0
-            track_root_rot = 1
+            track_root_rot = 10
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
             track_dof_pos = 8
             track_dof_vel = 0
-            track_toe_pos = 8
+            track_toe_pos = 10
             # 机械臂
             track_arm_dof_pos = 8
             track_griper_dof_pos = 0
@@ -598,7 +598,7 @@ class panda7FixedGripperStandCfg(panda7FixedGripperCfg):
 
     class env(panda7FixedGripperCfg.env):
         motion_name = 'stand'
-        RSI = False
+        # RSI = False
         check_contact = False
 
 

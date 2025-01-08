@@ -131,6 +131,28 @@ class LeggedRobot(BaseTask):
         Args:
             actions (torch.Tensor): Tensor of shape (num_envs, num_actions_per_env)
         """
+
+        # actions.to(self.device)
+        # self.action_history_buf = torch.cat([self.action_history_buf[:, 1:].clone(), actions[:, None, :].clone()],
+        #                                     dim=1)
+        # if self.cfg.domain_rand.action_delay:
+        #     if self.global_counter % self.cfg.domain_rand.delay_update_global_steps == 0:
+        #         if len(self.cfg.domain_rand.action_curr_step) != 0:
+        #             self.delay = torch.tensor(self.cfg.domain_rand.action_curr_step.pop(0), device=self.device,
+        #                                       dtype=torch.float)
+        #     if self.viewer:
+        #         self.delay = torch.tensor(self.cfg.domain_rand.action_delay_view, device=self.device, dtype=torch.float)
+        #     indices = -self.delay - 1  # print("indices: ", indices)  # -2
+        #     actions = self.action_history_buf[:, indices.long()]  # delay for 1/50=20ms  对小数部分进行截断转换为long
+        #
+        # self.global_counter += 1
+        #
+        # clip_actions = self.cfg.normalization.clip_actions / self.cfg.control.action_scale
+        # self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
+        # clip_arm_actions = self.cfg.normalization.clip_arm_actions / self.cfg.control.action_scale
+        # self.actions[:, 12:] = torch.clip(self.actions[:, 12:], -clip_arm_actions, clip_arm_actions).to(self.device)
+
+        # 目前只给站立动作使用
         actions.to(self.device)
 
         clip_actions = self.cfg.normalization.clip_actions / self.cfg.control.action_scale
@@ -151,7 +173,6 @@ class LeggedRobot(BaseTask):
             self.actions = self.action_history_buf[:, indices.long()]  # delay for 1/50=20ms  对小数部分进行截断转换为long
 
         self.global_counter += 1
-
 
         # step physics and render each frame
         self.render()

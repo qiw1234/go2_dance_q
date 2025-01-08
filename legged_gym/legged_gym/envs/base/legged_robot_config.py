@@ -194,7 +194,7 @@ class LeggedRobotCfg(BaseConfig):
         action_buf_len = 8
 
         RSI_rand = False   # 参考轨迹基础上添加随机化
-        RSI_traj_rand = False  # 初始轨迹随机化
+        RSI_traj_rand = True  # 初始轨迹随机化
 
 
 
