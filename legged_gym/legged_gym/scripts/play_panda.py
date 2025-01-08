@@ -80,9 +80,9 @@ def play(args):
 
     # env_cfg.env.debug = True
     env_cfg.domain_rand.RSI_traj_rand = False
-    env_cfg.domain_rand.randomize_base_mass = False
+    # env_cfg.domain_rand.randomize_base_mass = False
     env_cfg.noise.add_noise = False
-    # env_cfg.env.RSI = False
+    env_cfg.env.RSI = False
     # env_cfg.domain_rand.randomize_joint_armature = False
     # env_cfg.domain_rand.randomize_motor = False
     # env_cfg.domain_rand.action_delay = False
@@ -136,7 +136,7 @@ def play(args):
         actions = policy(obs.detach())
         # actions[:, 18:20] = 0
         # print(f"obs:{obs[:,18:24].detach()}")
-        # print(f"action:{actions[:,:].detach()}")
+        # print(f"action:{actions[0,13:15].detach()}")
         # 将self.actor_state输出成文件
         obs_flattened = obs[0,].squeeze()
         actor_state.append(obs_flattened.tolist())
@@ -174,7 +174,7 @@ def play(args):
         if start_state_log < i < stop_state_log:
             logger.log_states(
                 {
-                    'dof_pos_target': actions[robot_index, joint_index].item() * env.action_scale,
+                    'dof_pos_target': actions[robot_index, joint_index].item() * env.action_scale.item(),
                     'dof_pos': env.dof_pos[robot_index, joint_index].item(),
                     'dof_vel': env.dof_vel[robot_index, joint_index].item(),
                     'dof_torque': env.torques[robot_index, joint_index].item(),

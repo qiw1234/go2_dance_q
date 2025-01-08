@@ -121,7 +121,7 @@ class LeggedRobot(BaseTask):
         if len(self.action_id)>1:
             raise ValueError("select trajs more than 1")
         # self.action_id = 0
-        self.motion_loader.trajectory_lens[self.action_id[0]] = 6
+        self.motion_loader.trajectory_lens[self.action_id[0]] = 10
         self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
@@ -1609,6 +1609,8 @@ class LeggedRobot(BaseTask):
                                                                      self.motion_loader.ARM_JOINT_POS_END_IDX] -
                                                       self.dof_pos[:, 12:18]), dim=1))
 
+    def _reward_arm_dof_error(self):
+        return torch.sum(torch.square(self.dof_pos[:, 12:18] - self.default_dof_pos[:, 12:18]), dim=1)
     def _reward_track_griper_dof_pos(self):
         return torch.exp(-1000 * torch.sum(torch.square(self.frames[:, 62:64] - self.dof_pos[:, 18:20]), dim=1))
 

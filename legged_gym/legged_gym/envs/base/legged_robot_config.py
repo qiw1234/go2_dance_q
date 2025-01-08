@@ -194,7 +194,7 @@ class LeggedRobotCfg(BaseConfig):
         action_buf_len = 8
 
         RSI_rand = False   # 参考轨迹基础上添加随机化
-        RSI_traj_rand = True  # 初始轨迹随机化
+        RSI_traj_rand = False  # 初始轨迹随机化
 
 
 
@@ -241,7 +241,7 @@ class LeggedRobotCfg(BaseConfig):
         add_noise = True
         noise_level = 1.0 # scales other values
         class noise_scales:
-            dof_pos = 0.01  #0.01
+            dof_pos = 0.08  #0.01
             dof_vel = 1.5
             lin_vel = 0.1
             ang_vel = 0.2

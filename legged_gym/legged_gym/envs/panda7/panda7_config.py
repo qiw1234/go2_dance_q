@@ -61,6 +61,7 @@ class pandaCfg(LeggedRobotCfg):
         soft_dof_pos_limit = 0.9
         base_height_target = 0.55
         only_positive_rewards = False
+        max_contact_force = 500
 
         class scales(LeggedRobotCfg.rewards.scales):
             # regularization reward
@@ -467,22 +468,29 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
         class scales(panda7FixedGripperCfg.rewards.scales):
             lin_vel_z = -0
             survival = 1
+            feet_air_time = 5
+            feet_contact_time = 0
+            feet_contact_forces = -0.05
+            action_rate = -0.3
+            arm_dof_error = -2.
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            track_root_pos = 5
+            track_root_pos = 2
             track_root_height = 0
-            track_root_rot = 1
+            track_root_rot = 5
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 0
+            track_dof_pos = 5
             track_dof_vel = 0
-            track_toe_pos = 10
-            track_toe_height = 10
+            track_toe_pos = 0
+            track_toe_height = 1.5
+            track_toe_x = 1.5
+            track_toe_y = 1.5
             # jump reward
-            jump = 10.
+            jump = 20.
             # 机械臂
-            track_arm_dof_pos = 10
+            track_arm_dof_pos = 1.5
             track_griper_dof_pos = 0
             track_arm_dof_vel = 0
             track_arm_pos = 0
@@ -497,7 +505,7 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
 class panda7FixedGripperTurnAndJumpCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_turn_and_jump'
-        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_turn_and_jump/Dec10_16-07-25_' # clip_actions=1.2
+        resume_path = 'legged_gym/logs/panda7_fixed_gripper_turn_and_jump/Jan08_09-34-21_/model_3000.pt'
 
 class panda7FixedGripperSpaceTrotCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
@@ -538,20 +546,20 @@ class panda7FixedGripperStandCfg(panda7FixedGripperCfg):
     class init_state(LeggedRobotCfg.init_state):
         pos = [0.0, 0.0, 0.15]  # x,y,z [m]
         default_joint_angles = {  # = target angles [rad] when action = 0.0
-            'FL_hip_joint': 0.125,  # [rad]
-            'RL_hip_joint': 0.125,  # [rad]
-            'FR_hip_joint': -0.125,  # [rad]
-            'RR_hip_joint': -0.125,  # [rad]
+            'FL_hip_joint': 0.1,  # [rad]
+            'RL_hip_joint': 0.1,  # [rad]
+            'FR_hip_joint': -0.1,  # [rad]
+            'RR_hip_joint': -0.1,  # [rad]
 
-            'FL_thigh_joint': 2.42,  # [rad]
-            'RL_thigh_joint': 2.42,  # [rad]
-            'FR_thigh_joint': 2.42,  # [rad]
-            'RR_thigh_joint': 2.42,  # [rad]
+            'FL_thigh_joint': 2.3,  # [rad]
+            'RL_thigh_joint': 2.3,  # [rad]
+            'FR_thigh_joint': 2.3,  # [rad]
+            'RR_thigh_joint': 2.3,  # [rad]
 
-            'FL_calf_joint': -2.42,  # [rad]
-            'RL_calf_joint': -2.42,  # [rad]
-            'FR_calf_joint': -2.42,  # [rad]
-            'RR_calf_joint': -2.42,  # [rad]
+            'FL_calf_joint': -2.4,  # [rad]
+            'RL_calf_joint': -2.4,  # [rad]
+            'FR_calf_joint': -2.4,  # [rad]
+            'RR_calf_joint': -2.4,  # [rad]
 
             'arm_joint1': 0,
             'arm_joint2': 0,
@@ -568,6 +576,8 @@ class panda7FixedGripperStandCfg(panda7FixedGripperCfg):
             feet_air_time = 0
             leg_num_contact = 0
             feet_contact_time = 0
+            feet_contact_forces = -0.05
+            action_rate = -0.3
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
