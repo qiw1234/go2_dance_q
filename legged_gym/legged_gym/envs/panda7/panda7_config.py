@@ -505,7 +505,7 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
 class panda7FixedGripperTurnAndJumpCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_turn_and_jump'
-        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_turn_and_jump/Jan08_09-34-21_/model_3000.pt'
+        resume_path = 'legged_gym/logs/panda7_fixed_gripper_turn_and_jump/Jan08_15-07-28_/model_35000.pt'
 
 class panda7FixedGripperSpaceTrotCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
@@ -543,33 +543,6 @@ class panda7FixedGripperSpaceTrotCfgPPO(pandaCfgPPO):
         # resume_path = 'legged_gym/logs/panda7_fixed_gripper_spacetrot/Dec15_10-37-34_/model_29400.pt' # 滑步
 
 class panda7FixedGripperStandCfg(panda7FixedGripperCfg):
-    class init_state(LeggedRobotCfg.init_state):
-        pos = [0.0, 0.0, 0.15]  # x,y,z [m]
-        default_joint_angles = {  # = target angles [rad] when action = 0.0
-            'FL_hip_joint': 0.1,  # [rad]
-            'RL_hip_joint': 0.1,  # [rad]
-            'FR_hip_joint': -0.1,  # [rad]
-            'RR_hip_joint': -0.1,  # [rad]
-
-            'FL_thigh_joint': 2.3,  # [rad]
-            'RL_thigh_joint': 2.3,  # [rad]
-            'FR_thigh_joint': 2.3,  # [rad]
-            'RR_thigh_joint': 2.3,  # [rad]
-
-            'FL_calf_joint': -2.4,  # [rad]
-            'RL_calf_joint': -2.4,  # [rad]
-            'FR_calf_joint': -2.4,  # [rad]
-            'RR_calf_joint': -2.4,  # [rad]
-
-            'arm_joint1': 0,
-            'arm_joint2': 0,
-            'arm_joint3': 0,
-            'arm_joint4': 0,
-            'arm_joint5': 0,
-            'arm_joint6': 0,
-            'arm_joint7': 0,
-            'arm_joint8': 0,
-        }
 
     class rewards(panda7FixedGripperCfg.rewards):
         class scales(panda7FixedGripperCfg.rewards.scales):
