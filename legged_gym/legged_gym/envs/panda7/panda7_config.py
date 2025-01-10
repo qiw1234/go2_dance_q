@@ -505,7 +505,7 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
 class panda7FixedGripperTurnAndJumpCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_turn_and_jump'
-        resume_path = 'legged_gym/logs/panda7_fixed_gripper_turn_and_jump/Jan08_15-07-28_/model_35000.pt'
+        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_turn_and_jump/Jan08_15-07-28_/model_35000.pt'
 
 class panda7FixedGripperSpaceTrotCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
@@ -597,7 +597,7 @@ class panda7FixedGripperArmLegCfg(panda7FixedGripperCfg):
             track_toe_pos = 10
             # track_LF_toe_pos = 10
             # 机械臂
-            track_arm_dof_pos = 5
+            track_arm_dof_pos = 10
             track_griper_dof_pos = 0
             track_arm_dof_vel = 0
             track_arm_pos = 0
