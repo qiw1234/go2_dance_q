@@ -13,10 +13,10 @@ isaacgym_torque_path = 'BJ_Raisim/net/HSW/data/'+pose+'_torque.csv'
 isaacgym_base_euler_path = 'BJ_Raisim/net/HSW/data/'+pose+'_base_euler.csv'
 
 plot_raisim = True
-plot_isaacgym = True
+plot_isaacgym = False
 
 start = 0
-end = 400
+end = 6000
 
 default_dof_pos = [0.1, 0.8, -1.5, -0.1, 0.8, -1.5, 0.1, 1., -1.5, -0.1, 1., -1.5, 0, 0, 0, 0, 0, 0]
 
@@ -268,5 +268,67 @@ if plot_isaacgym:
     a.plot(isaacgym_base_euler[:, 2], label='isaacgym_base_z', linestyle='--', c='b')
 plt.rcParams['xtick.labelsize'] = 20
 a.set(title='base euler')
+
+# raisim关节角度 vs 期望关节角度
+fig6, axs6 = plt.subplots(2, 2)
+a = axs6[0, 0]
+a.grid(True)
+if plot_raisim:
+    a.plot(raisim_dof_pos[:, 0], label='raisim_LF_hip', c='r')
+    a.plot(raisim_dof_pos[:, 1], label='raisim_LF_thigh', c='g')
+    a.plot(raisim_dof_pos[:, 2], label='raisim_LF_calf', c='b')
+
+    a.plot(raisim_actions[:, 0], label='raisim_LF_hip', c='r', linestyle='--')
+    a.plot(raisim_actions[:, 1], label='raisim_LF_thigh', c='g', linestyle='--')
+    a.plot(raisim_actions[:, 2], label='raisim_LF_calf', c='b', linestyle='--')
+
+plt.rcParams['xtick.labelsize'] = 20
+a.set(title='dof pos')
+# a.legend()
+
+a = axs6[0, 1]
+a.grid(True)
+if plot_raisim:
+    a.plot(raisim_dof_pos[:, 3], label='raisim_RF_hip', c='r')
+    a.plot(raisim_dof_pos[:, 4], label='raisim_RF_thigh', c='g')
+    a.plot(raisim_dof_pos[:, 5], label='raisim_RF_calf', c='b')
+
+    a.plot(raisim_actions[:, 3], label='raisim_RF_hip', c='r', linestyle='--')
+    a.plot(raisim_actions[:, 4], label='raisim_RF_thigh', c='g', linestyle='--')
+    a.plot(raisim_actions[:, 5], label='raisim_RF_calf', c='b', linestyle='--')
+
+    plt.rcParams['xtick.labelsize'] = 20
+a.set(title='dof pos')
+# a.legend()
+
+a = axs6[1, 0]
+a.grid(True)
+if plot_raisim:
+    a.plot(raisim_dof_pos[:, 6], label='raisim_LH_hip', c='r')
+    a.plot(raisim_dof_pos[:, 7], label='raisim_LH_thigh', c='g')
+    a.plot(raisim_dof_pos[:, 8], label='raisim_LH_calf', c='b')
+
+    a.plot(raisim_actions[:, 6], label='raisim_LH_hip', c='r', linestyle='--')
+    a.plot(raisim_actions[:, 7], label='raisim_LH_thigh', c='g', linestyle='--')
+    a.plot(raisim_actions[:, 8], label='raisim_LH_calf', c='b', linestyle='--')
+
+plt.rcParams['xtick.labelsize'] = 20
+a.set(title='dof pos')
+# a.legend()
+
+a = axs6[1, 1]
+a.grid(True)
+if plot_raisim:
+    a.plot(raisim_dof_pos[:, 9], label='raisim_LH_hip', c='r')
+    a.plot(raisim_dof_pos[:, 10], label='raisim_LH_thigh', c='g')
+    a.plot(raisim_dof_pos[:, 11], label='raisim_LH_calf', c='b')
+
+    a.plot(raisim_actions[:, 9], label='raisim_RH_hip', c='r', linestyle='--')
+    a.plot(raisim_actions[:, 10], label='raisim_RH_thigh', c='g', linestyle='--')
+    a.plot(raisim_actions[:, 11], label='raisim_RH_calf', c='b', linestyle='--')
+plt.rcParams['xtick.labelsize'] = 20
+a.set(title='dof pos')
+# a.legend()
+
 
 plt.show()
