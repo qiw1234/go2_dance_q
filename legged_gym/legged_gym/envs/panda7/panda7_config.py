@@ -572,6 +572,7 @@ class panda7FixedGripperStandCfg(panda7FixedGripperCfg):
 
     class env(panda7FixedGripperCfg.env):
         motion_name = 'stand'
+        motion_files = "opti_traj/STANDTraj"
         # RSI = False
         check_contact = False
 
