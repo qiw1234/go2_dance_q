@@ -18,7 +18,7 @@ panda_toe_pos_init = [0.300133, -0.287854, -0.481828, 0.300133, 0.287854, -0.481
                       -0.287854, -0.481828, -0.349867, 0.287854, -0.481828]
 panda7 = utils.QuadrupedRobot(l=0.65, w=0.225, l1=0.126375, l2=0.34, l3=0.34,
                               lb=panda_lb, ub=panda_ub, toe_pos_init=panda_toe_pos_init)
-num_row = 300
+num_row = 100
 num_col = 72
 fps = 50
 
