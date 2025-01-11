@@ -92,6 +92,8 @@ def play(args):
 
     env_cfg.env.check_contact = False
 
+    env_cfg.domain_rand.action_curr_step = [1]
+
     issave = True
 
 
