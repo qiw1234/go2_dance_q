@@ -499,6 +499,8 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
     class env(panda7FixedGripperCfg.env):
         # motion_files = "opti_traj/output_panda_fixed_gripper/panda_turn_and_jump.txt"
         motion_name = 'turn_and_jump'
+
+    class domian_rand(panda7FixedGripperCfg.domain_rand):
         RSI = False
 
 
@@ -573,7 +575,6 @@ class panda7FixedGripperStandCfg(panda7FixedGripperCfg):
     class env(panda7FixedGripperCfg.env):
         motion_name = 'stand'
         motion_files = "opti_traj/STANDTraj"
-        # RSI = False
         check_contact = False
 
 
