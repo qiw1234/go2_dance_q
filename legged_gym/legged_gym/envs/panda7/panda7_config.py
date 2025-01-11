@@ -454,7 +454,7 @@ class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
 
     class env(panda7FixedGripperCfg.env):
         # motion_files = "opti_traj/output_panda_fixed_gripper/panda_wave.txt"
-        motion_name = 'wave'
+        motion_name = 'panda_wave'
 
 
 

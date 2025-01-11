@@ -431,6 +431,7 @@ class LeggedRobot(BaseTask):
                                              # 18   # 9...27
                                              self.dof_vel * self.obs_scales.dof_vel,  # 18  # 27...45
                                              self.actions,  # 18  # 45...63
+                                             # self.action_history_buf[:,-1],
                                              self.base_euler_xyz * self.obs_scales.quat,  # 3  63...66
                                              tracking_error  # 66   66...132
                                              ), dim=-1)
@@ -439,6 +440,7 @@ class LeggedRobot(BaseTask):
                                   (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,  # 18   # 24
                                   self.dof_vel * self.obs_scales.dof_vel,  # 18  # 42
                                   self.actions  # 18  # 60
+                                  # self.action_history_buf[:,-1]
                                   ), dim=-1)
 
         # add perceptive inputs if not blind
