@@ -478,17 +478,17 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
             tracking_ang_vel = 0
             track_root_pos = 1
             track_root_height = 0
-            track_root_rot = 10
+            track_root_rot = 2
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
             track_dof_pos = 5
             track_dof_vel = 0
             track_toe_pos = 0
             track_toe_height = 5
-            track_toe_x = 5
-            track_toe_y = 5
+            track_toe_x = 0
+            track_toe_y = 0
             # jump reward
-            jump = 20.
+            jump = 50.
             # 机械臂
             track_arm_dof_pos = 10 #20
             track_griper_dof_pos = 0
