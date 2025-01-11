@@ -500,7 +500,7 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
         # motion_files = "opti_traj/output_panda_fixed_gripper/panda_turn_and_jump.txt"
         motion_name = 'turn_and_jump'
 
-    class domian_rand(panda7FixedGripperCfg.domain_rand):
+    class domain_rand(panda7FixedGripperCfg.domain_rand):
         RSI = False
 
 
