@@ -468,7 +468,7 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
         class scales(panda7FixedGripperCfg.rewards.scales):
             lin_vel_z = -0
             survival = 1
-            feet_air_time = 5
+            feet_air_time = 1
             feet_contact_time = 0
             feet_contact_forces = -0.05
             action_rate = -0.3
@@ -490,7 +490,7 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
             # jump reward
             jump = 20.
             # 机械臂
-            track_arm_dof_pos = 10
+            track_arm_dof_pos = 20
             track_griper_dof_pos = 0
             track_arm_dof_vel = 0
             track_arm_pos = 0

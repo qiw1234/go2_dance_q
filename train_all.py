@@ -30,3 +30,5 @@ os.system("python legged_gym/legged_gym/scripts/train.py --task=go2_dance_trot -
 # python legged_gym/legged_gym/scripts/train.py --task=panda7_fixed_gripper_swing --num_envs=4096 --headless
 # python legged_gym/legged_gym/scripts/train.py --task=panda7_fixed_gripper_stand --num_envs=4096 --headless --sim_device=cuda:1 --rl_device=cuda:1
 # python legged_gym/legged_gym/scripts/train.py --task=panda7_fixed_gripper_arm_leg --num_envs=4096 --headless
+
+#  python legged_gym/legged_gym/scripts/play_panda.py --task=panda7_fixed_gripper_turn_and_jump

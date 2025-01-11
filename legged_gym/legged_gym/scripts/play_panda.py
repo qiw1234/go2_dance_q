@@ -126,9 +126,9 @@ def play(args):
     torque = []
     base_euler = []
     counter = 0
-    raisim_obs_path = 'sim2sim/BJ_Raisim/net/HSW/data/actor_state.csv'
-    obs_test_data = np.loadtxt(raisim_obs_path, delimiter=',')
-    obs_tensor = torch.from_numpy(obs_test_data).to(args.sim_device).float()
+    # raisim_obs_path = 'sim2sim/BJ_Raisim/net/HSW/data/actor_state.csv'
+    # obs_test_data = np.loadtxt(raisim_obs_path, delimiter=',')
+    # obs_tensor = torch.from_numpy(obs_test_data).to(args.sim_device).float()
     for i in range(50*int(env.max_episode_length)):
         # if i in range(200,500):
         #     obs = obs_tensor[i, :].unsqueeze(dim=0)
@@ -144,7 +144,7 @@ def play(args):
         torque.append(torque_flattened.tolist())
         base_euler_flattened = env.base_euler_xyz[0,].squeeze()
         base_euler.append(base_euler_flattened.tolist())
-        if issave and counter == 1000:
+        if issave and counter == 1000000:
             np.savetxt('sim2sim/BJ_Raisim/net/HSW/data/'+args.task.split('_')[-1]+'_obs.csv', np.array(actor_state), delimiter=",")
             np.savetxt('sim2sim/BJ_Raisim/net/HSW/data/' + args.task.split('_')[-1] + '_torque.csv', np.array(torque),
                        delimiter=",")
