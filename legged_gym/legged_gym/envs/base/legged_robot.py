@@ -283,7 +283,7 @@ class LeggedRobot(BaseTask):
             self.update_command_curriculum(env_ids)
 
         # reset robot states
-        if not self.cfg.env.RSI:
+        if not self.cfg.domain_rand.RSI:
             self._reset_root_states(env_ids)
             self._reset_dofs(env_ids)
         else:

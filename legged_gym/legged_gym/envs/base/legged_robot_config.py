@@ -193,8 +193,9 @@ class LeggedRobotCfg(BaseConfig):
         action_delay_view = 1  # 有viewer时(打开渲染)的delay
         action_buf_len = 8
 
+        RSI = True
         RSI_rand = False   # 参考轨迹基础上添加随机化
-        RSI_traj_rand = True  # 初始轨迹随机化
+        RSI_traj_rand = False  # 初始轨迹随机化
 
 
 
