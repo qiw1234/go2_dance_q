@@ -406,11 +406,11 @@ class panda7FixedGripperSwingCfg(panda7FixedGripperCfg):
             track_root_height = 0.5
             track_root_rot = 0.
             orientation = -0.1
-            tracking_yaw = 1.
+            tracking_yaw = 10.
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
             track_dof_pos = 5
-            track_dof_vel = 0
+            track_dof_vel = 5
             track_toe_pos = 10
             # 机械臂
             track_arm_dof_pos = 10
@@ -431,22 +431,22 @@ class panda7FixedGripperSwingCfgPPO(pandaCfgPPO):
 class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
         class scales(panda7FixedGripperCfg.rewards.scales):
-            rf_no_action = -1
+            action_rate = -1
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            track_root_pos = 1.
+            track_root_pos = 0
             track_root_height = 0.
-            track_root_rot = 1.2
+            track_root_rot = 5
             orientation = 0
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 1.5
-            track_dof_vel = 0
-            track_toe_pos = 10
+            track_dof_pos = 10
+            track_dof_vel = 10
+            track_toe_pos = 20
             # track_LF_toe_pos = 10
             # 机械臂
-            track_arm_dof_pos = 5
+            track_arm_dof_pos = 10
             track_griper_dof_pos = 0
             track_arm_dof_vel = 0
             track_arm_pos = 0
@@ -461,7 +461,7 @@ class panda7FixedGripperWaveCfg(panda7FixedGripperCfg):
 class panda7FixedGripperWaveCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_wave'
-        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_wave/Dec27_11-31-46_/model_103000.pt'
+        # resume_path = 'legged_gym/logs/panda7_fixed_gripper_wave/Jan01_10-56-34_/model_70000.pt'
 
 class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
