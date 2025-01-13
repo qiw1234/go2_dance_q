@@ -754,6 +754,15 @@ class LeggedRobot(BaseTask):
             self.measured_heights = self._get_heights()
         if self.cfg.domain_rand.push_robots and (self.common_step_counter % self.cfg.domain_rand.push_interval == 0):
             self._push_robots()
+        else:
+            # 四腿触地时摇晃机器人
+            if self.cfg.domain_rand.swing_roll:
+                max_angular = self.cfg.domain_rand.max_swing_roll
+                contact = self.contact_forces[:, self.feet_indices, 2] > 5.
+                if torch.all(contact):
+                    self.root_states[:, 10] = torch_rand_float(-max_angular, max_angular, (self.num_envs, 1),device=self.device).squeeze(1)  # roll ang vel
+            if self.cfg.domain_rand.push_vel or self.cfg.domain_rand.push_ang:
+                self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
 
     def _resample_commands(self, env_ids):
         """ Randommly select commands of some environments
@@ -868,6 +877,11 @@ class LeggedRobot(BaseTask):
         if self.cfg.domain_rand.push_ang:
             max_angular = self.cfg.domain_rand.max_push_ang_vel
             self.root_states[:, 10:13] = torch_rand_float(-max_angular, max_angular, (self.num_envs, 3), device=self.device) # ang vel
+        if self.cfg.domain_rand.swing_roll:
+            max_angular = self.cfg.domain_rand.max_swing_roll
+            contact = self.contact_forces[:, self.feet_indices, 2] > 5.
+            if torch.all(contact):
+                self.root_states[:, 10] = torch_rand_float(-max_angular, max_angular, (self.num_envs, ),device=self.device).squeeze(1)  # roll ang vel
         if self.cfg.domain_rand.push_vel or self.cfg.domain_rand.push_ang:
             self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
 

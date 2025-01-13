@@ -502,7 +502,7 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
         motion_name = 'turn_and_jump'
 
     class domain_rand(panda7FixedGripperCfg.domain_rand):
-        RSI = True
+        RSI = False
 
 
 
