@@ -187,7 +187,7 @@ class LeggedRobotCfg(BaseConfig):
         push_ang = True
         max_push_ang_vel = 0.6
 
-        delay_update_global_steps = 2000
+        delay_update_global_steps = 5000
         action_delay = True  # False True
         action_curr_step = [0, 1]  # [1, 1] [1, 2]
         action_delay_view = 1  # 有viewer时(打开渲染)的delay
