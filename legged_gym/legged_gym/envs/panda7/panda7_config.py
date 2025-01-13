@@ -473,7 +473,7 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
             feet_contact_forces = -0.05
             action_rate = -0.3
             # arm_dof_error = -2.
-            orientation = -1.
+            orientation = -10.
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
