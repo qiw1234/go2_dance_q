@@ -479,7 +479,7 @@ class panda7FixedGripperTurnAndJumpCfg(panda7FixedGripperCfg):
             tracking_ang_vel = 0
             track_root_pos = 0
             track_root_height = 5
-            track_root_rot = 10
+            track_root_rot = 12
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
             track_dof_pos = 0
