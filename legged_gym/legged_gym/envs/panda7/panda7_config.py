@@ -612,8 +612,8 @@ class panda7FixedGripperArmLegCfg(panda7FixedGripperCfg):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_fixed_gripper.urdf'
 
     class env(panda7FixedGripperCfg.env):
-        motion_name = 'leg_with_arm'
-        # motion_name = 'leg_with_leg'
+        # motion_name = 'leg_with_arm'
+        motion_name = 'leg_with_leg'
 
 
 
