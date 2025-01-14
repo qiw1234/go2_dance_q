@@ -613,6 +613,7 @@ class panda7FixedGripperArmLegCfg(panda7FixedGripperCfg):
 
     class env(panda7FixedGripperCfg.env):
         motion_name = 'leg_with_arm'
+        # motion_name = 'leg_with_leg'
 
 
 

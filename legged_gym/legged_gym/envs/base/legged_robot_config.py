@@ -186,7 +186,7 @@ class LeggedRobotCfg(BaseConfig):
         max_push_vel_xy = 1.  #0.2
         push_ang = True
         max_push_ang_vel = 0.6
-        swing_roll = False
+        swing_roll = False #这个参数是针对实物上跳跃落地后抖动添加的
         max_swing_roll = 0.35 #20°
 
         delay_update_global_steps = 2000
