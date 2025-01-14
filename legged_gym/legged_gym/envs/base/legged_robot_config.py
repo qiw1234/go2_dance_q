@@ -186,7 +186,7 @@ class LeggedRobotCfg(BaseConfig):
         max_push_vel_xy = 1.  #0.2
         push_ang = True
         max_push_ang_vel = 0.6
-        swing_roll = True
+        swing_roll = False
         max_swing_roll = 0.35 #20°
 
         delay_update_global_steps = 2000
