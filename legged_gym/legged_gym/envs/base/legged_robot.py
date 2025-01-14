@@ -121,7 +121,7 @@ class LeggedRobot(BaseTask):
         if len(self.action_id)>1:
             raise ValueError("select trajs more than 1")
         # self.action_id = [10]
-        self.motion_loader.trajectory_lens[self.action_id[0]] = 2
+        # self.motion_loader.trajectory_lens[self.action_id[0]] = 2
         self.max_episode_length_s = self.motion_loader.trajectory_lens[self.action_id[0]]
         self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
 
@@ -761,8 +761,7 @@ class LeggedRobot(BaseTask):
                 contact = self.contact_forces[:, self.feet_indices, 2] > 5.
                 if torch.all(contact):
                     self.root_states[:, 10] = torch_rand_float(-max_angular, max_angular, (self.num_envs, 1),device=self.device).squeeze(1)  # roll ang vel
-            if self.cfg.domain_rand.push_vel or self.cfg.domain_rand.push_ang:
-                self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
+                    self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
 
     def _resample_commands(self, env_ids):
         """ Randommly select commands of some environments
