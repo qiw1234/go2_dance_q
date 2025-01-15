@@ -615,6 +615,8 @@ class panda7FixedGripperArmLegCfg(panda7FixedGripperCfg):
         # motion_name = 'leg_with_arm'
         motion_name = 'leg_with_leg'
 
+    class domain_rand(panda7FixedGripperCfg.domain_rand):
+        RSI = False
 
 
 class panda7FixedGripperArmLegCfgPPO(pandaCfgPPO):
