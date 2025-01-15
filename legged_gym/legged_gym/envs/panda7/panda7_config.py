@@ -592,12 +592,12 @@ class panda7FixedGripperArmLegCfg(panda7FixedGripperCfg):
             tracking_ang_vel = 0
             track_root_pos = 1.
             track_root_height = 0.
-            track_root_rot = 1.2
+            track_root_rot = 5
             orientation = 0
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 5
-            track_dof_vel = 0
+            track_dof_pos = 10
+            track_dof_vel = 10
             track_toe_pos = 10
             # track_LF_toe_pos = 10
             # 机械臂
