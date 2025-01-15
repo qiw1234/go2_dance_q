@@ -586,7 +586,7 @@ class panda7FixedGripperStandCfgPPO(pandaCfgPPO):
 class panda7FixedGripperArmLegCfg(panda7FixedGripperCfg):
     class rewards(panda7FixedGripperCfg.rewards):
         class scales(panda7FixedGripperCfg.rewards.scales):
-            rf_no_action = -1
+            # rf_no_action = -1
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
@@ -596,7 +596,7 @@ class panda7FixedGripperArmLegCfg(panda7FixedGripperCfg):
             orientation = 0
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 1.5
+            track_dof_pos = 5
             track_dof_vel = 0
             track_toe_pos = 10
             # track_LF_toe_pos = 10
@@ -612,8 +612,8 @@ class panda7FixedGripperArmLegCfg(panda7FixedGripperCfg):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/panda7/urdf/panda7_fixed_gripper.urdf'
 
     class env(panda7FixedGripperCfg.env):
-        # motion_name = 'leg_with_arm'
-        motion_name = 'leg_with_leg'
+        motion_name = 'leg_with_arm'
+        # motion_name = 'leg_with_leg'
 
     class domain_rand(panda7FixedGripperCfg.domain_rand):
         RSI = False
