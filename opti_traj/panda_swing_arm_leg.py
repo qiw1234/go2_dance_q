@@ -547,5 +547,5 @@ ref[:, 62:68] = arm_dof_vel
 # outfile = 'output_panda_fixed_gripper/panda_leg_with_arm_1.txt' # 初始角度不为0
 # outfile = 'output_panda_fixed_gripper/panda_leg_with_arm_2.txt' # 初始角度为0
 # outfile = 'output_panda_fixed_gripper/panda_leg_with_arm_3.txt' # 两段迈步
-outfile = 'output_panda_fixed_gripper/panda_leg_with_arm_4.txt' # 一段 末端不动
-np.savetxt(outfile, ref, delimiter=',')
+# outfile = 'output_panda_fixed_gripper/panda_leg_with_arm_4.txt' # 一段 末端不动
+# np.savetxt(outfile, ref, delimiter=',')
