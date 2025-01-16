@@ -45,7 +45,6 @@ arm_dof_vel = np.zeros((num_row - 1, 6))
 root_pos[:, 2] = 0.55
 # 质心线速度 默认为0
 
-# ---第一阶段---
 # 姿态
 q0 = [0, 0, 0, 1]  # [x,y,z,w]
 q1 = [0, 0, np.sin(np.pi / 36), np.cos(np.pi / 36)]  # 绕z轴转4°
@@ -89,25 +88,11 @@ toe_pos[5:25, 11] += temp_pos_1[:, 2]
 toe_pos[25:45, :3] += temp_pos_2
 toe_pos[25:45, 9:11] -= temp_pos_2[:, :2]
 toe_pos[25:45, 11] += temp_pos_2[:, 2]
-# ---第2阶段---
-# 姿态
-q0 = [0, 0, 0, 1]  # [x,y,z,w]
-q1 = [0, 0, np.sin(np.pi / 36), np.cos(np.pi / 36)]  # 绕z轴转-4°
 
-interval = 20
-start = 55
-end = start + interval
-
-for i in range(start, end):
-    frac = (i - start) / (end - start)
-    root_rot[i, :] = quaternion_slerp(q0, q1, frac)
-
-start = end
-end = start + interval
-for i in range(start, end):
-    frac = (i - start) / (end - start)
-    root_rot[i, :] = quaternion_slerp(q1, q0, frac)
-
+# 重复四次
+for i in range(3):
+    root_rot[50*(i+1):50*(i+2), :] = root_rot[:50,:]
+    toe_pos[50*(i+1):50*(i+2), :] = toe_pos[:50,:]
 
 # 四元数的导数
 for i in range(num_row - 1):
@@ -115,33 +100,6 @@ for i in range(num_row - 1):
 # 质心角速度
 for i in range(num_row - 1):
     root_ang_vel[i, :] = 2 * utils.quat2angvel_map(root_rot[i, :]) @ root_rot_dot[i, :]
-
-
-# 计算关节角度
-# 获取足端初始位置，初始位置在世界系下保持不变，需要计算质心系的足端位置
-def z_1(t):
-    # z方向轨迹，0.4s
-    x = 0.2  # 对称轴0.2s
-    h = 0.1
-    return h - 5 / 2 * (t - x) ** 2
-
-pos1 = [0, 0, 0]
-pos2 = [0.1, -0.1, 0]
-temp_pos_1= np.linspace(pos1, pos2, 20) #伸腿
-temp_pos_2= np.linspace(pos2, pos1, 20) #收腿
-for i in range(20):
-    t = i/fps
-    temp_pos_1[i, 2] = z_1(t)
-    temp_pos_2[i, 2] = z_1(t)
-
-toe_pos[55:75, :3] += temp_pos_1
-toe_pos[55:75, 9:11] -= temp_pos_1[:, :2]
-toe_pos[55:75, 11] += temp_pos_1[:, 2]
-toe_pos[75:95, :3] += temp_pos_2
-toe_pos[75:95, 9:11] -= temp_pos_2[:, :2]
-toe_pos[75:95, 11] += temp_pos_2[:, 2]
-
-
 
 
 # 计算质心系下的足端轨迹
@@ -178,8 +136,8 @@ phase2_end = 50
 phase4_end = 100
 
 # 设置角度范围（单位：弧度）
-start_angle1 = 0
-end_angle1 = -np.pi / 6  # 60度
+initial_angle1 = 0
+final_angle1 = -np.pi / 6  # 60度
 # end_angle2 = -np.pi / 22.5  # -60度
 # end_angle3 = np.pi / 3  # 60度
 initial_angle2 = 0  # 初始角度 0度
@@ -209,24 +167,58 @@ angle6_step2 = (initial_angle6 - final_angle6) / phase2_end
 # 阶段1:
 for i in range(phase2_end):
     frac = i / phase2_end
-    arm_dof_pos[i, 1] = initial_angle2 + angle2_step1 * (i + 1)
-    arm_dof_pos[i, 2] = initial_angle3 + angle3_step1 * (i + 1)
-    arm_dof_pos[i, 3] = initial_angle4 + angle4_step1 * (i + 1)
+    arm_dof_pos[i, 1] = initial_angle2 + (final_angle2 - initial_angle2) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 2] = initial_angle3 + (final_angle3 - initial_angle3) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 3] = initial_angle4 + (final_angle4 - initial_angle4) * (0.5 - 0.5 * np.cos(np.pi * frac))
     # arm_dof_pos[i, 4] = initial_angle5 + angle5_step1 * (i + 1)
-    arm_dof_pos[i, 5] = initial_angle6 + angle6_step1 * (i + 1)
-    arm_dof_pos[i, 0] = start_angle1 + (end_angle1 - start_angle1) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 5] = initial_angle6 + (final_angle6 - initial_angle6) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 0] = initial_angle1 + (final_angle1 - initial_angle1) * (0.5 - 0.5 * np.cos(np.pi * frac))
     arm_dof_pos[i, 4] = initial_angle5 + (final_angle5 - initial_angle5) * (0.5 - 0.5 * np.cos(np.pi * frac))
 
 # 阶段3:
 for i in range(phase2_end, phase4_end):
     frac = (i - phase2_end) / (phase4_end - phase2_end)
-    arm_dof_pos[i, 0] = end_angle1 + (start_angle1 - end_angle1) * (0.5 - 0.5 * np.cos(np.pi * frac))
-    arm_dof_pos[i, 1] = final_angle2 + angle2_step2 * (i - phase2_end + 1)
-    arm_dof_pos[i, 2] = final_angle3 + angle3_step2 * (i - phase2_end + 1)
-    arm_dof_pos[i, 3] = final_angle4 + angle4_step2 * (i - phase2_end + 1)
+    arm_dof_pos[i, 0] = final_angle1 + (initial_angle1 - final_angle1) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 1] = final_angle2 + (initial_angle2 - final_angle2) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 2] = final_angle3 + (initial_angle3 - final_angle3) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 3] = final_angle4 + (initial_angle4 - final_angle4) * (0.5 - 0.5 * np.cos(np.pi * frac))
     # arm_dof_pos[i, 4] = final_angle5 + angle5_step2 * (i - phase3_end + 1)
-    arm_dof_pos[i, 5] = final_angle6 + angle6_step2 * (i - phase2_end + 1)
+    arm_dof_pos[i, 5] = final_angle6 + (initial_angle6 - final_angle6) * (0.5 - 0.5 * np.cos(np.pi * frac))
     arm_dof_pos[i, 4] = final_angle5 + (initial_angle5 - final_angle5) * (0.5 - 0.5 * np.cos(np.pi * frac))
+
+# 反方向再来一遍
+# 设置角度范围（单位：弧度）
+initial_angle1 = 0
+final_angle1 = np.pi / 6  # 30度
+initial_angle2 = 0  # 初始角度 0度
+final_angle2 = -np.pi / 12  # 目标角度 -15度
+initial_angle3 = 0  # 初始角度 0度
+final_angle3 = np.pi / 6  # 目标角度 -30度
+initial_angle4 = 0  # 初始角度 0度
+final_angle4 = -np.pi / 12  # 目标角度 -30度
+initial_angle5 = 0  # 初始角度 0度
+final_angle5 = -np.pi / 6  # 目标角度 -30度
+initial_angle6 = 0  # 初始角度 0度
+final_angle6 = -np.pi / 24  # 目标角度 -30度
+
+for i in range(100, 150):
+    frac = (i - 100) / (150 - 100)
+    arm_dof_pos[i, 1] = initial_angle2 + (final_angle2 - initial_angle2) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 2] = initial_angle3 + (final_angle3 - initial_angle3) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 3] = initial_angle4 + (final_angle4 - initial_angle4) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 5] = initial_angle6 + (final_angle6 - initial_angle6) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 0] = initial_angle1 + (final_angle1 - initial_angle1) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 4] = initial_angle5 + (final_angle5 - initial_angle5) * (0.5 - 0.5 * np.cos(np.pi * frac))
+
+for i in range(150, 200):
+    frac = (i - 150) / (200 - 150)
+    arm_dof_pos[i, 0] = final_angle1 + (initial_angle1 - final_angle1) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 1] = final_angle2 + (initial_angle2 - final_angle2) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 2] = final_angle3 + (initial_angle3 - final_angle3) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 3] = final_angle4 + (initial_angle4 - final_angle4) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 5] = final_angle6 + (initial_angle6 - final_angle6) * (0.5 - 0.5 * np.cos(np.pi * frac))
+    arm_dof_pos[i, 4] = final_angle5 + (initial_angle5 - final_angle5) * (0.5 - 0.5 * np.cos(np.pi * frac))
+
 
 # 关节角速度
 for i in range(num_row - 1):
@@ -332,7 +324,7 @@ ref[:, 52:56] = arm_rot[:num_row - 1, :]
 ref[:, 56:62] = arm_dof_pos[:num_row - 1, :]
 ref[:, 62:68] = arm_dof_vel
 
-ref[100:200,:] = ref[:99,:]
+# ref[100:200,:] = ref[:99,:]
 
 # # 导出完整轨迹
 # outfile = 'output_panda_fixed_gripper/panda_leg_with_arm_1.txt' # 初始角度不为0
@@ -343,6 +335,7 @@ ref[100:200,:] = ref[:99,:]
 # 导出 fixed gripper轨迹
 outfile = 'output_panda_fixed_gripper/panda_leg_with_arm.txt'
 np.savetxt(outfile, ref, delimiter=',')
+np.savetxt('output_panda_fixed_gripper/arm_dof_pos.txt', arm_dof_pos, delimiter=',')
 # 保存json
 files = 'output_panda_fixed_gripper'
 file = "panda_leg_with_arm.txt"
