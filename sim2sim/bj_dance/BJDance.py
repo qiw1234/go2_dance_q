@@ -154,14 +154,9 @@ class BJTUDance:
         # 60:
         self.actor_state[6 + self.num_acts: 6 + self.num_acts * 2] = self.dof_vel * self.scale["dof_vel"]
         #self.actor_state[6 + self.num_acts: 6 + self.num_acts * 2] = self.dof_vel * self.scale["dof_vel"] * 0  # *0
-        
-        # trot swing waveHand 用的以前的
-        if self.model_select in (1, 2, 3):
-            self.actor_state[6 + self.num_acts * 2: 6 + self.num_acts * 3] = self.action_history_buf[-1]
-        else:    
-            self.actor_state[6 + self.num_acts * 2: 6 + self.num_acts * 3] = self.actions
-        # 42:
-        #self.actor_state[6 + self.num_acts: 6 + self.num_acts * 2] = self.action_history_buf[-1]
+
+        self.actor_state[6 + self.num_acts * 2: 6 + self.num_acts * 3] = self.actions
+
 
 
     def inference_(self):
@@ -196,26 +191,15 @@ class BJTUDance:
         actions.to(self.device)
 
         # 先存入再裁剪
-        #self.action_history_buf = torch.cat([self.action_history_buf[1:], actions[None, :]], dim=0)
-        #actions = self.action_history_buf[-self.delay - 1]
+        self.action_history_buf = torch.cat([self.action_history_buf[1:], actions[None, :]], dim=0)
+        actions = self.action_history_buf[-self.delay - 1]
         
-        #clip_actions = self.scale["clip_actions"] / self.scale["action_scale"]
-        #clip_arm_actions = self.scale["clip_arm_actions"] / self.scale["action_scale"]
-
-        #self.actions[:12] = torch.clip(actions[:12], -clip_actions, clip_actions).to(self.device)
-        #self.actions[12:] = torch.clip(actions[12:], -clip_arm_actions, clip_arm_actions).to(self.device)
-        
-
-        
-        # 先裁剪再存入
         clip_actions = self.scale["clip_actions"] / self.scale["action_scale"]
         clip_arm_actions = self.scale["clip_arm_actions"] / self.scale["action_scale"]
 
-        actions[:12] = torch.clip(actions[:12], -clip_actions, clip_actions).to(self.device)
-        actions[12:] = torch.clip(actions[12:], -clip_arm_actions, clip_arm_actions).to(self.device)
-        
-        self.action_history_buf = torch.cat([self.action_history_buf[1:], actions[None, :]], dim=0)
-        self.actions = self.action_history_buf[-self.delay - 1]
+        self.actions[:12] = torch.clip(actions[:12], -clip_actions, clip_actions).to(self.device)
+        self.actions[12:] = torch.clip(actions[12:], -clip_arm_actions, clip_arm_actions).to(self.device)
+
         
         
         actions_scaled = self.actions * self.scale["action_scale"]
@@ -232,6 +216,11 @@ class BJTUDance:
             
         if self.model_select == 5:
             T = time.perf_counter()
-            #temp = [self.shareinfo_feed_send.servo_package.joint_q_d[0][2], self.shareinfo_feed_send.servo_package.joint_q_d[1][2]]
-            self.joint_qd[0][2] = -2.16 + math.sin(T)
-            self.joint_qd[1][2] = -2.16 + math.sin(T)
+            self.joint_qd[0][0] = 0.5
+            self.joint_qd[1][0] = -0.5
+
+            self.joint_qd[0][1] = 1 + math.sin(T) * 0.4
+            self.joint_qd[1][1] = 1 + math.sin(T) * 0.4
+
+            self.joint_qd[0][2] = -2.16 + math.sin(3 * T) * 0.4
+            self.joint_qd[1][2] = -2.16 + math.sin(3 * T) * 0.4
