@@ -3,4 +3,8 @@
 
 __pycache__/
 
-**/sim2sim/BJ_Raisim
+**/sim2sim/BJ_Raisim/build
+
+**/sim2sim/BJ_Raisim/dog_arm
+
+**/sim2sim/BJ_Raisim/.vscode

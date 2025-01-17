@@ -1,0 +1,12 @@
+  model:
+    model0: "./model/stand/stand_model_13500.jit"                  # 0 stand   
+    model1: "./model/trot/trot202501061230.jit"                    # 1 trot gait
+    model2: "./model/swing/swing_0104_1.jit"                       # 2 swing body  
+    model3: "./model/wave/wave_0102_2.jit"                         # 3 wave hand 
+    model4: "./model/turnJump/turn_and_jump_0113_6.jit"            # 4 turnJump   
+    model5: "./model/twoleg/wavetwoleg2_model_26000.jit"            # 5 two leg    
+    model6: "./model/arm_leg_0111_1.jit"                           # 6 leg wirh hand 
+    model7: "./model/twoleg/wavetwoleg_model_18000.jit"            # 7 twoleg 1
+    model8: "./model/twoleg/wavetwoleg2_model_26000.jit"             # 8 twoleg 2
+    model9: "./model/twoleg/wavetwoleg3_model_26500.jit"             # 9 twoleg 3
+    model10: "./model/twoleg/wavetwoleg4_model_12500.jit"             # 10 twoleg 4    
