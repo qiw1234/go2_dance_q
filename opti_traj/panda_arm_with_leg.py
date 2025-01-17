@@ -147,7 +147,7 @@ final_angle3 = np.pi / 6  # 目标角度 -30度
 initial_angle4 = 0  # 初始角度 0度
 final_angle4 = -np.pi / 12  # 目标角度 -30度
 initial_angle5 = 0  # 初始角度 0度
-final_angle5 = np.pi / 6  # 目标角度 -30度
+final_angle5 = -np.pi / 6  # 目标角度 -30度
 initial_angle6 = 0  # 初始角度 0度
 final_angle6 = np.pi / 24  # 目标角度 -30度
 # 计算每步的角度变化量
@@ -197,7 +197,7 @@ final_angle3 = np.pi / 6  # 目标角度 -30度
 initial_angle4 = 0  # 初始角度 0度
 final_angle4 = -np.pi / 12  # 目标角度 -30度
 initial_angle5 = 0  # 初始角度 0度
-final_angle5 = -np.pi / 6  # 目标角度 -30度
+final_angle5 = np.pi / 6  # 目标角度 -30度
 initial_angle6 = 0  # 初始角度 0度
 final_angle6 = -np.pi / 24  # 目标角度 -30度
 
