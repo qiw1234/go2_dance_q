@@ -44,9 +44,9 @@ model_path_test2 = './model/test/wave_0112_1.jit'  #  input 60 pd150 单臂挥�
 # model_path_test0 = './model/test/swing_1230_5.jit'  # input 60 摇摆 
 # model_path_test0 = './model/test/swing_0102_2.jit'  # input 60 摇摆 在实物上抖动很厉害
 
-# model_path_test4 = './model/test/swing_0112_1.jit'  # 可以一直左右摇摆
+model_path_test4 = './model/test/swing_0112_1.jit'  # 可以一直左右摇摆
 # model_path_test4 = './model/test/swing_0104_1.jit'  
-model_path_test4 = './model/test/swing_model_30000.jit'
+# model_path_test4 = './model/test/swing_model_30000.jit'
 
 model_path_test1 = './model/test/arm_leg_0116_1.jit' #臂足协同
 # model_path_test1 = './model/test/arm_leg_0114_1.jit'  #时间延长训练效果不行

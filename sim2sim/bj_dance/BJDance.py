@@ -188,6 +188,7 @@ class BJTUDance:
             if(self.model_select>10 or self.model_select<0):
                 actions = self.model_0(self.actor_state)
 
+
         actions.to(self.device)
 
         # 先存入再裁剪
