@@ -520,7 +520,9 @@ class BJTUDance:
                     actions2 = self.model_test6(self.actor_state)
                 if self.model_select == 7 or self.model_select == 8:
                     actions = self.model_test7(self.actor_state)
-                    actions2 = self.model_test7(self.actor_state)                
+                    actions2 = self.model_test7(self.actor_state)  
+            # TODO:切换模型时action_history_buf在这里置为零
+               
             # print("actions: \n", actions)
             # print("self.actor_state: ", self.actor_state)
 
