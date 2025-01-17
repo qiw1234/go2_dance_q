@@ -1,0 +1,611 @@
+# -*- coding: utf-8 -*-
+import torch
+import getsharememory_twodogs
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+import math
+import time
+import csv
+import os
+import threading
+import keyboard
+import random
+from kinematics import *
+from copy import deepcopy
+import yaml
+import ctypes
+
+model_path_swing = "./model/swing/model_4400.jit"
+model_path_turnjump = "./model/turnjump/model_7450.jit"
+# model_path_test = "./model/test/model_15000.jit"
+# model_path_test = "./model/test/swing.pt"
+# model_path_test = "./model/test/trot.pt"
+# model_path_test = './model/test/policy_1.pt'
+# model_path_test = './model/test/stand.pt'
+# model_path_test = './model/test/wave.pt'
+# model_path_test0 = './model/test/swing_pd_1223_1.pt'  # 铁山靠 input 42
+# model_path_test = './model/test/wave_pd_1223_1.pt'  # input 42
+# model_path_test0 = './model/test/trot_1224_1.pt'  # trot步态会抖腿 input 42
+# model_path_test0 = './model/test/trot_1226_1.pt'  # input 42
+# model_path_test0 = './model/test/trot_1225_1.pt'  # 发抖 input 42
+# model_path_test0 = './model/test/swing_1225_1.pt' # 腿会滑动  input 42
+# model_path_test0 = './model/test/wave_1228_4.pt'  #  input 60
+# model_path_test0 = './model/test/swing_1230_1.pt'  #  input 60 pd150
+# model_path_test1 = './model/test/stand_1229_1.pt'  #  input 60 pd150
+# model_path_test0 = './model/test/wave_1230_1.jit'  #  input 60 pd150 单臂挥舞
+# model_path_test0 = './model/test/wave_0102_1.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度小
+
+model_path_test2 = './model/test/wave_0112_1.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度大
+# model_path_test2 = './model/test/wave_0102_2.jit'
+
+# model_path_test2 = './model/test/wave_1231_1.jit'  #  input 60 pd150
+
+# 实物上摇摆用的1230_3,机身位置很低但是抖动比较小
+# model_path_test0 = './model/test/swing_1230_5.jit'  # input 60 摇摆 
+# model_path_test0 = './model/test/swing_0102_2.jit'  # input 60 摇摆 在实物上抖动很厉害
+
+# model_path_test4 = './model/test/swing_0112_1.jit'  # 可以一直左右摇摆
+# model_path_test4 = './model/test/swing_0104_1.jit'  
+model_path_test4 = './model/test/swing_model_30000.jit'
+
+model_path_test1 = './model/test/arm_leg_0116_1.jit' #臂足协同
+# model_path_test1 = './model/test/arm_leg_0114_1.jit'  #时间延长训练效果不行
+
+# model_path_test3 = './model/test/trot_123009.jit'  #  input 60 pd 150
+model_path_test3 = './model/test/trot_model_10500.jit'
+
+model_path_test5 = './model/test/turn_and_jump_0114_1.jit' # 跳跃turn_and_jump_0107_1不行
+# model_path_test5 = './model/test/turn_and_jump_0113_2.jit' #脚会打结，容易摔倒
+
+model_path_test6 = './model/test/wavetwoleg_model_18000.jit'
+model_path_test7 = './model/test/wavetwoleg2_model_26000.jit'
+# model_path_test7 = './model/test/twolegwave0110_1.jit'
+
+model_path_test0 = './model/test/stand_model_30000.jit' # 
+# model_path_test0 = './model/test/stand_0111_4.jit' # 
+def s(x):
+    return math.sin(x)
+
+
+def c(x):
+    return math.cos(x)
+
+
+def t(x):
+    return math.tan(x)
+
+
+def limit(a, min_, max_):
+    value = min(max(a, min_), max_)
+    return value
+
+
+min_pos = [[-0.69, -0.78, -2.6 - 0.262],
+           [-0.87, -0.78, -2.6 - 0.262],
+           [-0.69, -0.78, -2.6 - 0.262],
+           [-0.87, -0.78, -2.6 - 0.262]]
+max_pos = [[0.87, 3.00, -0.45 - 0.262],
+           [0.69, 3.00, -0.45 - 0.262],
+           [0.87, 3.00, -0.45 - 0.262],
+           [0.69, 3.00, -0.45 - 0.262]]
+
+reindex_feet1 = [1, 0, 3, 2]
+max_effort = [160, 180, 572]
+max_vel = [19.3, 21.6, 12.8]
+joint_up_limit = [0.69, 3.92, -0.52]
+joint_low_limit = [-0.87, -1.46, -2.61]
+
+
+def quat_rotate_inverse(q, v):  # 获取基座z轴在惯性系下的投影矢量，q是IMU的四元数，v是z轴向量 (0,0,-1)
+    """
+    使用逆四元数旋转向量。
+
+    参数:
+        q (torch.Tensor): 四元数，形状为 [batch_size, 4]，格式为 [x, y, z, w]。
+        v (torch.Tensor): 要旋转的向量，形状为 [batch_size, 3]。
+
+    返回:
+        torch.Tensor: 旋转后的向量，形状为 [batch_size, 3]。
+    """
+    shape = q.shape
+    q_w = q[:, -1]
+    q_vec = q[:, :3]
+    a = v * (2.0 * q_w ** 2 - 1.0).unsqueeze(-1)
+    b = torch.cross(q_vec, v, dim=-1) * q_w.unsqueeze(-1) * 2.0
+    c = q_vec * torch.bmm(q_vec.view(shape[0], 1, 3), v.view(shape[0], 3, 1)).squeeze(-1) * 2.0
+    return a - b + c
+
+
+def to_torch(x, dtype=torch.float, device='cuda:0', requires_grad=False):
+    return torch.tensor(x, dtype=dtype, device=device, requires_grad=requires_grad)
+
+
+def rpy2quaternion(roll, pitch, yaw):
+    cz = math.cos(yaw * 0.5)
+    sz = math.sin(yaw * 0.5)
+    cy = math.cos(pitch * 0.5)
+    sy = math.sin(pitch * 0.5)
+    cx = math.cos(roll * 0.5)
+    sx = math.sin(roll * 0.5)
+    w = cx * cy * cz + sx * sy * sz
+    x = sx * cz * cy - cx * sy * sz
+    y = sx * cy * sz + cx * sy * cz
+    z = cx * cy * sz - sx * sy * cz
+    return x, y, z, w
+
+
+class BJTUDance:
+    # 初始化方法
+    def __init__(self):
+        self.device = torch.device('cpu')  # cpu cuda
+        self.num_obs = 60  # 60 94 63
+        self.num_acts = 18  # 12
+        self.scale = {"lin_vel": 2.0,
+                      "ang_vel": 0.25,
+                      "dof_pos": 1.0,
+                      "dof_vel": 0.05, #0.05
+                      "height_measurements": 5.0,
+                      "clip_observations": 100.,
+                      "clip_actions": 2.5,
+                      "clip_arm_actions": 1.2,
+                      "action_scale": 0.25}#0.25
+        default_dof_pos = [0.1, 0.8, -1.5, -0.1, 0.8, -1.5, 0.1, 1., -1.5, -0.1, 1., -1.5, 0, 0, 0, 0, 0, 0, 0,
+                           0]  # LF RF LH RH
+        # default_dof_pos = [0.1, 2.3, -2.4, -0.1, 2.3, -2.4, 0.1, 2.3, -2.4, -0.1, 2.3, -2.4, 0, 0, 0, 0, 0, 0, 0,
+        #                    0]  # LF RF LH RH 站立时的默认关节角度
+        self.default_dof_pos = to_torch(default_dof_pos[0:self.num_acts], device=self.device, requires_grad=False)
+        self.dof_pos = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
+        self.dof_vel = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
+
+        self.actor_state = torch.zeros(size=(self.num_obs,), device=self.device, requires_grad=False)
+        self.actions = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
+
+        self.actor_state2 = torch.zeros(size=(self.num_obs,), device=self.device, requires_grad=False)
+        self.actions2 = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
+
+        self.delay = 1
+        self.action_buf_len = 3
+        self.action_history_buf = torch.zeros(self.action_buf_len, self.num_acts, device=self.device, dtype=torch.float)
+        self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
+                                               dtype=torch.float)
+
+        p_gains = [150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 20., 15.,
+                   10., 10., 10.]
+        d_gains = [2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 0.1, 0.1, 0.1, 0.1, 0.1]
+        self.p_gains = to_torch(p_gains[0:self.num_acts], device=self.device, requires_grad=False)
+        self.d_gains = to_torch(d_gains[0:self.num_acts], device=self.device, requires_grad=False)
+        self.torques = torch.zeros(self.num_acts, device=self.device, requires_grad=False)
+        self.torques2 = torch.zeros(self.num_acts, device=self.device, requires_grad=False)
+        torque_limits = [160, 180, 572, 160, 180, 572, 160, 180, 572, 160, 180, 572, 100, 100, 100, 100, 100, 100, 100,
+                         100]
+        self.torque_limits = to_torch(torque_limits[0:self.num_acts], device=self.device, requires_grad=False)
+        # print("self.torque_limits: ", self.torque_limits)
+
+        self.joint_qd = np.zeros((4, 3))
+        self.joint_qd2 = np.zeros((4, 3))
+        self.joint_arm_d = np.zeros((self.num_acts - 12,))
+        self.joint_arm_d2 = np.zeros((self.num_acts - 12,))
+
+        self.foot_pos = np.zeros((4, 3))
+        self.stand_height = 0.52
+
+        self.lock = threading.Lock()
+        self.shareinfo_tem = 0
+        self.shareinfo_feed = getsharememory_twodogs.ShareInfo()
+        self._inferenceReady = False
+        self.IPC_PROJ_ID = 0x5A0C0001  # key键值  50LEIREN:5A0164C9
+        self.SHM_SIZE = 2 * 1024 * 1024  # 共享内存大小
+        self.SEM_KEY_ID = 0x5C0C0001  # SEM key键值 50LEIREN:5C0164C9
+        self.shmaddr, self.semaphore = 0, 0
+
+        self.shmaddr, self.semaphore = getsharememory_twodogs.CreatShareMem()  # change
+        self.shareinfo_feed_send = getsharememory_twodogs.ShareInfo()
+        print("sizeof ShareInfo is :", ctypes.sizeof(getsharememory_twodogs.ShareInfo()))
+        print("sizeof sensor_package is :", ctypes.sizeof(getsharememory_twodogs.ShareInfo().sensor_package2))
+        print("sizeof servo_package is :", ctypes.sizeof(getsharememory_twodogs.ShareInfo().servo_package2))
+        print("sizeof ocu_package is :", ctypes.sizeof(getsharememory_twodogs.ShareInfo().ocu_package))
+
+        self.event = threading.Event()
+        self.key_pressed = None
+        self.swing = 0
+        self.model_select = 0
+
+        self.F_dof_pos = torch.zeros_like(self.actor_state[6:12], device=self.device, requires_grad=False)
+
+        # 加载模型
+        self.loadPolicy()
+
+    def on_key_press(self, event):
+        self.key_pressed = event.name
+        self.event.set()  # 设置事件，通知主线程处理
+
+    def listen_keyboard(self):
+        keyboard.on_press(self.on_key_press)
+        while True:
+            time.sleep(0.2)  # 模拟长时间运行
+            # 都减15°
+
+    def update_keyboard(self):
+        if self.event.is_set():
+            if self.key_pressed == 'b':
+                self.swing = 1
+            if self.key_pressed == 'u':
+                self.stand_height += 0.01
+            if self.key_pressed == 'i':
+                self.stand_height -= 0.01
+            if self.key_pressed == 'w':
+                self.shareinfo_feed_send.ocu_package.x_des_vel += 0.05
+            if self.key_pressed == 's':
+                self.shareinfo_feed_send.ocu_package.x_des_vel -= 0.05
+            if self.key_pressed == 'd':
+                self.shareinfo_feed_send.ocu_package.yaw_turn_dot += 0.05
+            if self.key_pressed == 'a':
+                self.shareinfo_feed_send.ocu_package.yaw_turn_dot -= 0.05
+            if self.key_pressed == '0':
+                self.model_select = 0
+            if self.key_pressed == '1':
+                self.model_select = 1
+            if self.key_pressed == '2':
+                self.model_select = 2
+            if self.key_pressed == '3':
+                self.model_select = 3
+            if self.key_pressed == '4':
+                self.model_select = 4
+            if self.key_pressed == '5':
+                self.model_select = 5
+            if self.key_pressed == '6':
+                self.model_select = 6
+            if self.key_pressed == '7':
+                self.model_select = 7
+            if self.key_pressed == '8':
+                self.model_select = 8
+                # self.count = 0
+            if self.key_pressed in range(9):
+                self.actions[:12] = 0
+                self.action_history_buf[:,:12] = 0
+            self.event.clear()  # 重置事件，等待下一个按键
+
+    def update_data(self):
+        self.shareinfo_feed = getsharememory_twodogs.GetFromShareMem(
+            self.shmaddr, self.semaphore)
+        getLegFK(self.shareinfo_feed.sensor_package.joint_q, self.foot_pos)
+
+    def loadPolicy(self):
+        # self.model_swing = torch.jit.load(model_path_swing).to(self.device)
+        # self.model_turnjump = torch.jit.load(model_path_turnjump).to(self.device)
+        # self.model_swing.eval()
+        # self.model_turnjump.eval()
+
+        # 测试模型，所有的都可以放进来
+        self.model_test0 = torch.jit.load(model_path_test0).to(self.device)
+        self.model_test0.eval()
+        self.model_test1 = torch.jit.load(model_path_test1).to(self.device)
+        self.model_test1.eval()
+        self.model_test2 = torch.jit.load(model_path_test2).to(self.device)
+        self.model_test2.eval()
+        self.model_test3 = torch.jit.load(model_path_test3).to(self.device)
+        self.model_test3.eval()
+        self.model_test4 = torch.jit.load(model_path_test4).to(self.device)
+        self.model_test4.eval()
+        self.model_test5 = torch.jit.load(model_path_test5).to(self.device)
+        self.model_test5.eval()
+        self.model_test6 = torch.jit.load(model_path_test6).to(self.device)
+        self.model_test6.eval()
+        self.model_test7 = torch.jit.load(model_path_test7).to(self.device)
+        self.model_test7.eval()
+
+    def _compute_torques(self, joint_qd):
+        # PD controller
+        torques = self.p_gains * (joint_qd - self.dof_pos) - self.d_gains * self.dof_vel
+        return torch.clip(torques, -self.torque_limits, self.torque_limits)
+
+    def PutToDrive(self):
+        for i in range(4):
+            self.shareinfo_feed_send.servo_package.motor_enable[i] = 1
+            self.shareinfo_feed_send.servo_package2.motor_enable[i] = 1
+            for j in range(3):
+                # self.shareinfo_feed_send.servo_package.kp[i][j] = max_effort[j]*0.8 #self.p_gains[i * 3 + j]
+                # self.shareinfo_feed_send.servo_package.kd[i][j] = max_vel[j]*0.1   #self.d_gains[i * 3 + j]
+                self.shareinfo_feed_send.servo_package.kp[i][j] = self.p_gains[i * 3 + j]
+                self.shareinfo_feed_send.servo_package.kd[i][j] = self.d_gains[i * 3 + j]
+                self.shareinfo_feed_send.servo_package.joint_q_d[i][j] = self.joint_qd[i][j]
+                # self.shareinfo_feed_send.servo_package.joint_tau_d[reindex_feet1[i]][j] = self.torques[i * 3 + j]
+                
+
+                self.shareinfo_feed_send.servo_package2.kp[i][j] = self.p_gains[i * 3 + j]
+                self.shareinfo_feed_send.servo_package2.kd[i][j] = self.d_gains[i * 3 + j]
+                self.shareinfo_feed_send.servo_package2.joint_q_d[i][j] = self.joint_qd2[i][j]
+        # print(f'action:{self.action_history_buf[-2]}')
+        # print(f'des pos:{self.joint_qd}')
+        for k in range(self.num_acts - 12):
+            # self.shareinfo_feed_send.servo_package.joint_arm_d[k] = self.shareinfo_feed.sensor_package.joint_arm[k]
+            self.shareinfo_feed_send.servo_package.joint_arm_d[k] = self.joint_arm_d[k]
+            self.shareinfo_feed_send.servo_package2.joint_arm_d[k] = self.joint_arm_d2[k]
+            # self.shareinfo_feed_send.servo_package.joint_arm_d[k] = 0
+            # self.shareinfo_feed_send.servo_package2.joint_arm_d[k] = 0
+
+            self.shareinfo_feed_send.servo_package.kp_arm[k] = self.p_gains[12 + k]
+            self.shareinfo_feed_send.servo_package2.kp_arm[k] = self.p_gains[12 + k]
+
+            self.shareinfo_feed_send.servo_package.kd_arm[k] = self.d_gains[12 + k]
+            self.shareinfo_feed_send.servo_package2.kd_arm[k] = self.d_gains[12 + k]
+            # print("joint_arm",self.shareinfo_feed.sensor_package2.joint_arm[k])
+        # if self.model_select==1:
+        print(f'des arm pos:{self.joint_arm_d}')
+        # 夹爪
+        self.shareinfo_feed_send.servo_package.joint_arm_d[6] = 0.0
+        self.shareinfo_feed_send.servo_package.joint_arm_d[7] = 0.0
+        self.shareinfo_feed_send.servo_package.kp_arm[6] = 20
+        self.shareinfo_feed_send.servo_package.kp_arm[7] = 20
+        self.shareinfo_feed_send.servo_package.kd_arm[6] = 1
+        self.shareinfo_feed_send.servo_package.kd_arm[7] = 1
+
+        if self.model_select == 8:
+            T = time.perf_counter()
+
+            # if self.count==10:
+            #    self.F_dof_pos = (self.actor_state[6:12]).clone()
+            # self.count = self.count+1
+
+            # temp = [self.shareinfo_feed_send.servo_package.joint_q_d[0][2], self.shareinfo_feed_send.servo_package.joint_q_d[1][2]]
+            self.shareinfo_feed_send.servo_package.joint_q_d[0][0] = 0.5
+            self.shareinfo_feed_send.servo_package.joint_q_d[1][0] = -0.5
+
+            self.shareinfo_feed_send.servo_package.joint_q_d[0][1] = 1 + math.sin(T)*0.4
+            self.shareinfo_feed_send.servo_package.joint_q_d[1][1] = 1 + math.sin(T)*0.4
+
+            self.shareinfo_feed_send.servo_package.joint_q_d[0][2] = -2.16 + math.sin(3*T)*0.4
+            self.shareinfo_feed_send.servo_package.joint_q_d[1][2] = -2.16 + math.sin(3*T)*0.4
+
+        getsharememory_twodogs.PutToShareMem(self.shareinfo_feed_send, self.shareinfo_feed_send.ocu_package,
+                                             self.shmaddr, self.semaphore)
+        getsharememory_twodogs.PutToShareMem(self.shareinfo_feed_send, self.shareinfo_feed_send.servo_package,
+                                             self.shmaddr, self.semaphore)
+        getsharememory_twodogs.PutToShareMem(self.shareinfo_feed_send, self.shareinfo_feed_send.servo_package2,
+                                             self.shmaddr, self.semaphore)
+
+        # if self.model_select == 8:
+        #     self.shareinfo_feed_send.servo_package.joint_q_d[0][2] = temp[0]
+        #     self.shareinfo_feed_send.servo_package.joint_q_d[1][2] = temp[1]
+                                            
+
+    def PutToNet(self):
+        x, y, z, w = rpy2quaternion(self.shareinfo_feed.sensor_package.imu_euler[0],
+                                    self.shareinfo_feed.sensor_package.imu_euler[1],
+                                    self.shareinfo_feed.sensor_package.imu_euler[2])
+        base_quat = to_torch([x, y, z, w], dtype=torch.float32, device=self.device).unsqueeze(0)
+
+        base_ang_vel_w = [self.shareinfo_feed.sensor_package.imu_wxyz[0],
+                          self.shareinfo_feed.sensor_package.imu_wxyz[1],
+                          self.shareinfo_feed.sensor_package.imu_wxyz[2]]
+        base_ang_vel_w = to_torch(base_ang_vel_w, dtype=torch.float32, device=self.device).unsqueeze(0)
+        base_ang_vel = base_ang_vel_w.squeeze(0)
+        # base_ang_vel = quat_rotate_inverse(base_quat, base_ang_vel_w).squeeze(0)
+
+        gravity_vec = to_torch([0, 0, -1], dtype=torch.float32, device=self.device).unsqueeze(0)
+        projected_gravity = quat_rotate_inverse(base_quat, gravity_vec).squeeze(0)
+
+        self.actor_state[0:3] = base_ang_vel * self.scale["ang_vel"]
+        self.actor_state[3:6] = projected_gravity
+
+        # print("base_quat: ", base_quat)
+        # print("base_ang_vel: ", base_ang_vel)
+        # print("projected_gravity: ", projected_gravity)
+        # print("actor_state[0:6]: ", self.actor_state[0:6])
+
+        for i in range(4):  # LF RF LH RH <-- RF LF RH LH  reindex_feet1 = [1, 0, 3, 2]
+            for j in range(3):
+                self.dof_pos[i * 3 + j] = self.shareinfo_feed.sensor_package.joint_q[reindex_feet1[i]][j]
+                self.dof_vel[i * 3 + j] = self.shareinfo_feed.sensor_package.joint_qd[reindex_feet1[i]][j]
+        # self.dof_vel[:] = 0  #测试用的
+
+        for i in range(self.num_acts - 12):
+            self.dof_pos[12 + i] = self.shareinfo_feed.sensor_package.joint_arm[i]
+            self.dof_vel[12 + i] = self.shareinfo_feed.sensor_package.joint_arm_dq[i]  # 机械臂的关节角速度
+
+        self.actor_state[6: 6 + self.num_acts] = (self.dof_pos - self.default_dof_pos) * self.scale["dof_pos"]
+        
+        # if self.model_select == 8:
+        #     self.actor_state[6:12] = self.F_dof_pos
+        #     print(f'count:{self.count}')
+        #     print(f'F_dof_pos:{self.F_dof_pos}')
+
+        # self.actor_state[18:24] = 0 # 机械臂关节角度
+        if self.num_obs == 60:
+            self.actor_state[6 + self.num_acts: 6 + self.num_acts * 2] = self.dof_vel * self.scale["dof_vel"]
+            # self.actor_state[6 + self.num_acts: 6 + self.num_acts * 2] = 0
+            # self.actor_state[6 + self.num_acts * 2: 6 + self.num_acts * 3] = self.action_history_buf[-1]
+            self.actor_state[6 + self.num_acts * 2: 6 + self.num_acts * 3] = self.actions
+        else:
+            # self.actor_state[6 + self.num_acts * 1: 6 + self.num_acts * 2] = self.action_history_buf[-1]
+            self.actor_state[6 + self.num_acts * 1: 6 + self.num_acts * 2] = self.actions
+        # 机械臂速度设置为0
+        # self.actor_state[6 + self.num_acts + 12: 6 + self.num_acts * 2] = 0
+        # 测试，手动添加噪声
+        # self.actor_state[6:24] += (2 * torch.rand_like(self.actor_state[6:24]) - 1) * 0.1
+        # self.actor_state[0] += (2 * torch.rand_like(self.actor_state[0]) - 1) * 0.3
+        # self.actor_state[4:6] += (2 * torch.rand_like(self.actor_state[4:6]) - 1) * 0.5
+
+        # print(self.actor_state[6 + self.num_acts * 2: 6 + self.num_acts * 3])
+
+        # self.actor_state = torch.zeros(size=(self.num_obs,), device=self.device, requires_grad=False)
+        # print("actor_state[6:42]: ", self.actor_state[6:42])
+
+        # print("dof_pos: ", (self.dof_pos - self.default_dof_pos) * self.scale["dof_pos"])
+        # print("actor_state[6 : 6+self.num_acts]: ", self.actor_state[6 : 6+self.num_acts])
+        # print("dof_vel: ", self.dof_vel * self.scale["dof_vel"])
+        # print("actor_state[6+self.num_acts : 6+self.num_acts*2]: ", self.actor_state[6+self.num_acts : 6+self.num_acts*2])
+        # print("actions: ", self.actions)
+        # print("actor_state[6+self.num_acts : 6+self.num_acts*2]: ", self.actor_state[6+self.num_acts*2 : 6+self.num_acts*3])
+
+    def PutToNet2(self):
+        x2, y2, z2, w2 = rpy2quaternion(self.shareinfo_feed.sensor_package2.imu_euler[0],
+                                        self.shareinfo_feed.sensor_package2.imu_euler[1],
+                                        self.shareinfo_feed.sensor_package2.imu_euler[2])
+        base_quat2 = to_torch([x2, y2, z2, w2], dtype=torch.float32, device=self.device).unsqueeze(0)
+
+    def inference_(self):
+        last_vel = 0
+        last_yaw = 0
+        counter = 0
+        actor_state = []
+        torques = []
+        base_euler = []
+
+        while True:
+            start_RL_Time = time.perf_counter()
+            # print(start_RL_Time - start_RL_Time)
+            self.update_data()
+            self.update_keyboard()
+
+            if (self.shareinfo_feed_send.ocu_package.x_des_vel != last_vel):
+                print('x_vel', self.shareinfo_feed_send.ocu_package.x_des_vel)
+            if (self.shareinfo_feed_send.ocu_package.yaw_turn_dot != last_yaw):
+                print('yaw_dot', self.shareinfo_feed_send.ocu_package.yaw_turn_dot)
+
+            last_vel = self.shareinfo_feed_send.ocu_package.x_des_vel
+            last_yaw = self.shareinfo_feed_send.ocu_package.yaw_turn_dot
+
+            
+
+            self.PutToNet()
+            self.PutToNet2()
+            
+            
+            # 将self.actor_state输出成文件
+            actor_state.append(self.actor_state.tolist())
+            torques.append(self.torques.tolist())
+            base_euler.append([self.shareinfo_feed.sensor_package.imu_euler[0],
+                               self.shareinfo_feed.sensor_package.imu_euler[1],
+                               self.shareinfo_feed.sensor_package.imu_euler[2],])
+
+            if counter == 1000:
+                np.savetxt('data/actor_state.csv', np.array(actor_state), delimiter=",")
+                np.savetxt('data/torques.csv', np.array(torques), delimiter=",")
+                np.savetxt('data/base_euler.csv', np.array(base_euler), delimiter=",")
+
+                print('data has been saved')
+            counter += 1
+
+
+            # self.actor_state = torch.zeros(size=(self.num_obs,), device=self.device, requires_grad=False)
+            # self.actor_state = torch.ones(size=(self.num_obs,), device=self.device, requires_grad=False)
+            # self.actor_state = torch.randn(size=(self.num_obs,), device=self.device, requires_grad=False)
+
+            with torch.no_grad():
+                # actions = self.model_turnjump(self.actor_state)
+                # actions2 = self.model_turnjump(self.actor_state2)
+                # actions = self.model_test(self.actor_state)
+                # actions2 = self.model_test(self.actor_state2)
+                if self.model_select == 0:
+                    actions = self.model_test0(self.actor_state)
+                    actions2 = self.model_test0(self.actor_state)
+                if self.model_select == 1:
+                    actions = self.model_test1(self.actor_state)
+                    actions2 = self.model_test1(self.actor_state)
+                if self.model_select == 2:
+                    actions = self.model_test2(self.actor_state)
+                    actions2 = self.model_test2(self.actor_state)
+                if self.model_select == 3:
+                    actions = self.model_test3(self.actor_state)
+                    actions2 = self.model_test3(self.actor_state)
+                if self.model_select == 4:
+                    actions = self.model_test4(self.actor_state)
+                    actions2 = self.model_test4(self.actor_state)
+                if self.model_select == 5:
+                    actions = self.model_test5(self.actor_state)
+                    actions2 = self.model_test5(self.actor_state)
+                if self.model_select == 6:
+                    actions = self.model_test6(self.actor_state)
+                    actions2 = self.model_test6(self.actor_state)
+                if self.model_select == 7 or self.model_select == 8:
+                    actions = self.model_test7(self.actor_state)
+                    actions2 = self.model_test7(self.actor_state)                
+            # print("actions: \n", actions)
+            # print("self.actor_state: ", self.actor_state)
+
+
+            actions = actions.to(self.device)
+            actions2 = actions2.to(self.device)
+
+            # if self.model_select != 9:
+
+            # 存入history_buf
+            # print("self.action_history_buf1: \n", self.action_history_buf)
+            self.action_history_buf = torch.cat([self.action_history_buf[1:], actions[None, :]], dim=0)
+            self.action_history_buf2 = torch.cat([self.action_history_buf2[1:], actions2[None, :]], dim=0)
+            # print("self.action_history_buf2: \n", self.action_history_buf)
+
+            actions = self.action_history_buf[-self.delay - 1]
+            actions2 = self.action_history_buf2[-self.delay - 1]
+
+            # 剪切 
+            clip_actions = self.scale["clip_actions"]/self.scale["action_scale"]
+            clip_arm_actions = self.scale["clip_arm_actions"]/self.scale["action_scale"]
+            self.actions[:12] = torch.clip(actions[:12], -clip_actions, clip_actions).to(self.device)
+            self.actions[12:] = torch.clip(actions[12:], -clip_arm_actions, clip_arm_actions).to(self.device)
+            self.actions2[:12] = torch.clip(actions2[:12], -clip_actions, clip_actions).to(self.device)
+            self.actions2[12:] = torch.clip(actions2[12:], -clip_arm_actions, clip_arm_actions).to(self.device)
+
+            # print("actions: \n", actions)
+            # print("self.actions: \n", self.actions)
+
+            # else:
+            # # 剪切 
+            # clip_actions = self0scale["clip_actions"]/self.scale["action_scale"]
+            # clip_arm_actions = self.scale["clip_arm_actions"]/self.scale["action_scale"]
+            # actions[:12] = torch.clip(actions[:12], -clip_actions, clip_actions).to(self.device)
+            # actions[12:] = torch.clip(actions[12:], -clip_arm_actions, clip_arm_actions).to(self.device)
+            # actions2[:12] = torch.clip(actions2[:12], -clip_actions, clip_actions).to(self.device)
+            # actions2[12:] = torch.clip(actions2[12:], -clip_arm_actions, clip_arm_actions).to(self.device)
+            # # 存入history_buf
+            # # print("self.action_history_buf1: \n", self.action_history_buf)
+            # self.action_history_buf = torch.cat([self.action_history_buf[1:], actions[None, :]], dim=0)
+            # self.action_history_buf2 = torch.cat([self.action_history_buf2[1:], actions2[None, :]], dim=0)
+            # # print("self.action_history_buf2: \n", self.action_history_buf)
+
+            # self.actions = self.action_history_buf[-self.delay - 1]
+            # self.actions2 = self.action_history_buf2[-self.delay - 1]
+
+
+
+            actions_scaled = self.actions * self.scale["action_scale"]
+            actions2_scaled = self.actions2 * self.scale["action_scale"]
+            joint_qd = actions_scaled + self.default_dof_pos
+            joint_qd2 = actions2_scaled + self.default_dof_pos
+
+            # joint_qd[4,] = 0.8+self.shareinfo_feed_send.ocu_package.x_des_vel
+
+
+
+            for i in range(4):
+                for j in range(3):
+                    self.joint_qd[reindex_feet1[i]][j] = joint_qd.tolist()[i * 3 + j]
+                    self.joint_qd2[reindex_feet1[i]][j] = joint_qd2.tolist()[i * 3 + j]
+            # self.joint_qd[0][1] = -0.6
+            for i in range(self.num_acts - 12):
+                self.joint_arm_d[i] = joint_qd.tolist()[12 + i]
+                self.joint_arm_d2[i] = joint_qd2.tolist()[12 + i]
+
+            self.torques = self._compute_torques(joint_qd).view(self.torques.shape)
+            self.torques2 = self._compute_torques(joint_qd2).view(self.torques2.shape)
+
+            # print("self.actor_state: ", self.actor_state)
+            # print('actions:',joint_qd)
+
+            self.PutToDrive()
+
+            last_time = time.perf_counter() - start_RL_Time
+            # print("last_time: ", last_time)  # 大概 3 ms
+            if (last_time > 0.02):
+                print("time over:", time.perf_counter() - start_RL_Time)
+            if last_time < 0.02:
+                time.sleep(0.02 - last_time)  # 保证50Hz频率
+
+
+if __name__ == "__main__":
+    bjtudance = BJTUDance()
+    bjtudance.keyboard_thread = threading.Thread(target=bjtudance.listen_keyboard)
+    bjtudance.keyboard_thread.start()
+    while (True):
+        bjtudance.inference_()

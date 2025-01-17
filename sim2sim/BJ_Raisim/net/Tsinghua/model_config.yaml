@@ -1,0 +1,6 @@
+model:
+   model0: "./70HRH/model_HRH_general.pt"
+   model1: "./70HRH/model_HRH_slope.pt"
+   model2: "./70HRH/model_HRH_stair_0926.pt"
+   model3: "./70HRH/general_Nov17_12-09-59_.pt"
+   model4: "./70HRH/1_straight.pt"
