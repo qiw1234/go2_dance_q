@@ -47,28 +47,15 @@ root_rot[:] = np.array([0, 0, 0, 1])
 
 # 质心角速度
 
-#足端位置
-toe_pos[:] = panda7.toe_pos_init
 
 # 关节角度
-# panda7的关节上下限
-q = SX.sym('q', 3, 1)
-
-for j in range(4):
-    for i in range(num_row):
-        # print(j,i)
-        # toe_pos是世界系下的足端轨迹(也是质心系)，但质心位置和方向都保持在原点，正前方不变，所以欧拉角和质心都是[0, 0, 0]
-        pos = panda7.transrpy(q, j, [0, 0, 0], [0, 0, 0]) @ panda7.toe
-        cost = 500 * dot((toe_pos[i, 3 * j:3 * j + 3] - pos[:3]), (toe_pos[i, 3 * j:3 * j + 3] - pos[:3]))
-        # cost = 500 * dot(([0.179183, -0.172606, 0] - pos[:3]), ([0.179183, -0.172606, 0] - pos[:3]))
-        nlp = {'x': q, 'f': cost}
-        S = nlpsol('S', 'ipopt', nlp)
-        r = S(x0=[0.1, 0.8, -1.5], lbx=panda7.lb[3 * j:3 * j + 3], ubx=panda7.ub[3 * j:3 * j + 3])
-        q_opt = r['x']
-        # print(q_opt)
-        # toe_pos_v = go2.transrpy(q_opt, j, [0, 0, 0], [0, 0, 0]) @ go2.toe
-        # print(toe_pos_v, toe_pos[i, :3])
-        dof_pos[i, 3 * j:3 * j + 3] = q_opt.T
+dof_pos[:] = [0, 0.8, -1.5, 0, 0.8, -1.5, 0, 1., -1.5, 0, 1., -1.5]
+# 足端位置
+for i in range(toe_pos.shape[0]):
+    toe_pos[i, :3] = np.transpose(casadi.DM(panda7.transrpy(dof_pos[i, :3], 0, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3])
+    toe_pos[i, 3:6] = np.transpose(casadi.DM(panda7.transrpy(dof_pos[i, 3:6], 1, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3])
+    toe_pos[i, 6:9] = np.transpose(casadi.DM(panda7.transrpy(dof_pos[i, 6:9], 2, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3])
+    toe_pos[i, 9:12] = np.transpose(casadi.DM(panda7.transrpy(dof_pos[i, 9:12], 3, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3])
 
 
 # 关节角速度
