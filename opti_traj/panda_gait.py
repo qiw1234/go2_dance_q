@@ -16,6 +16,7 @@ panda_toe_pos_init = [0.300133, -0.238875, -0.496927, 0.300133, 0.238875, -0.496
                       -0.238875, -0.496927, -0.349867, 0.238875, -0.496927]
 panda7 = utils.QuadrupedRobot(l=0.65, w=0.225, l1=0.126375, l2=0.34, l3=0.34,
                               lb=panda_lb, ub=panda_ub, toe_pos_init=panda_toe_pos_init)
+
 num_row = 100
 num_col = 72
 fps = 50
@@ -72,6 +73,15 @@ plt.plot(t, phase[:,1], linewidth=6, c='b')
 plt.plot(t, phase[:,2], linewidth=2, c='r')
 plt.plot(t, phase[:,3], linewidth=2, c='y')
 plt.show()
+
+# 关节角度
+dof_pos[:] = [0, 0.8, -1.5, 0, 0.8, -1.5, 0, 0.8, -1.5, 0, 0.8, -1.5]
+# 足端位置
+a = np.transpose(ca.DM(panda7.transrpy(dof_pos[0, :3], 0, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3]).flatten().tolist()
+panda7.toe_pos_init[:3] = np.transpose(ca.DM(panda7.transrpy(dof_pos[0, :3], 0, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3]).flatten().tolist()
+panda7.toe_pos_init[3:6] = np.transpose(ca.DM(panda7.transrpy(dof_pos[0, 3:6], 1, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3]).flatten().tolist()
+panda7.toe_pos_init[6:9] = np.transpose(ca.DM(panda7.transrpy(dof_pos[0, 6:9], 2, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3]).flatten().tolist()
+panda7.toe_pos_init[9:12] = np.transpose(ca.DM(panda7.transrpy(dof_pos[0, 9:12], 3, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3]).flatten().tolist()
 
 # 足端位置
 vx = 0.8

@@ -49,7 +49,7 @@ root_rot[:] = np.array([0, 0, 0, 1])
 
 
 # 关节角度
-dof_pos[:] = [0, 0.8, -1.5, 0, 0.8, -1.5, 0, 1., -1.5, 0, 1., -1.5]
+dof_pos[:] = [0, 0.8, -1.5, 0, 0.8, -1.5, 0, 0.8, -1.5, 0, 0.8, -1.5]
 # 足端位置
 for i in range(toe_pos.shape[0]):
     toe_pos[i, :3] = np.transpose(casadi.DM(panda7.transrpy(dof_pos[i, :3], 0, [0, 0, 0], [0, 0, 0]) @ panda7.toe).full()[:3])
