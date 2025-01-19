@@ -554,7 +554,7 @@ class panda7FixedGripperStandCfg(panda7FixedGripperCfg):
             leg_num_contact = 0
             feet_contact_time = 0
             feet_contact_forces = -0.1
-            action_rate = -1
+            action_rate = -1.5
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0

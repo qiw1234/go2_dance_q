@@ -80,9 +80,11 @@ class BJTUDance:
 
         self.actor_state = torch.zeros(size=(self.num_obs,), device=self.device, requires_grad=False)
         self.actions = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
+        self.last_actions = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
 
         self.delay = 0
         print("self.delay: ", self.delay)
+        self.delay_factor = 0.5
         self.action_buf_len = 3
         self.action_history_buf = torch.zeros(self.action_buf_len, self.num_acts, device=self.device, dtype=torch.float)
 
@@ -201,7 +203,8 @@ class BJTUDance:
         self.actions[:12] = torch.clip(actions[:12], -clip_actions, clip_actions).to(self.device)
         self.actions[12:] = torch.clip(actions[12:], -clip_arm_actions, clip_arm_actions).to(self.device)
 
-        
+        self.actions = self.last_actions * self.delay_factor + self.actions * (1 - self.delay_factor)
+        self.last_actions = self.actions.clone()
         
         actions_scaled = self.actions * self.scale["action_scale"]
         joint_qd = actions_scaled + self.default_dof_pos

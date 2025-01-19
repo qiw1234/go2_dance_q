@@ -170,8 +170,8 @@ class BJTUDance:
         self.action_history_buf = torch.zeros(self.action_buf_len, self.num_acts, device=self.device, dtype=torch.float)
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
                                                dtype=torch.float)
-
-        self.delayfactor = 0.5
+        # 越大延迟越高
+        self.delay_factor = 0.5
 
         p_gains = [150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 20., 15.,
                    10., 10., 10.]
@@ -263,11 +263,11 @@ class BJTUDance:
                 self.model_select = 7
             if self.key_pressed == '8':
                 self.model_select = 8
-            # if self.key_pressed == 'p':
-            #     self.delayfactor +=0.1
-            # if self.key_pressed == 'l':
-            #     self.delayfactor -=0.1
-            # print(f'delayfactor:{self.delayfactor}')
+            if self.key_pressed == 'p':
+                self.delay_factor +=0.1
+            if self.key_pressed == 'l':
+                self.delay_factor -=0.1
+            print(f'delay factor:{self.delay_factor}')
                 # self.count = 0
             # if self.key_pressed in range(9):
             #     self.actions[:12] = 0
@@ -419,7 +419,7 @@ class BJTUDance:
         #     print(f'count:{self.count}')
         #     print(f'F_dof_pos:{self.F_dof_pos}')
 
-        # self.actor_state[18:24] = 0 # 机械臂关节角度
+        self.actor_state[18:24] = 0 # 机械臂关节角度
         if self.num_obs == 60:
             self.actor_state[6 + self.num_acts: 6 + self.num_acts * 2] = self.dof_vel * self.scale["dof_vel"]
             # self.actor_state[6 + self.num_acts: 6 + self.num_acts * 2] = 0
@@ -578,8 +578,10 @@ class BJTUDance:
             # self.actions = self.action_history_buf[-self.delay - 1]
             # self.actions2 = self.action_history_buf2[-self.delay - 1]
 
-            self.actions = self.last_actions * self.delayfactor + self.actions * (1 - self.delayfactor)
-            self.last_actions = self.actions
+            # self.actions = self.last_actions * self.delay_factor + self.actions * (1 - self.delay_factor)
+            for i in range(4):
+                self.actions[3*i] = self.last_actions[3*i] * self.delay_factor + self.actions[3*i] * (1 - self.delay_factor)
+            self.last_actions = self.actions.clone()
 
 
             actions_scaled = self.actions * self.scale["action_scale"]
