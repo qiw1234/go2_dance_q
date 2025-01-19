@@ -160,15 +160,18 @@ class BJTUDance:
 
         self.actor_state = torch.zeros(size=(self.num_obs,), device=self.device, requires_grad=False)
         self.actions = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
+        self.last_actions = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
 
         self.actor_state2 = torch.zeros(size=(self.num_obs,), device=self.device, requires_grad=False)
         self.actions2 = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
 
-        self.delay = 1
+        self.delay = 0
         self.action_buf_len = 3
         self.action_history_buf = torch.zeros(self.action_buf_len, self.num_acts, device=self.device, dtype=torch.float)
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
                                                dtype=torch.float)
+
+        self.delayfactor = 0.5
 
         p_gains = [150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 20., 15.,
                    10., 10., 10.]
@@ -260,10 +263,15 @@ class BJTUDance:
                 self.model_select = 7
             if self.key_pressed == '8':
                 self.model_select = 8
+            # if self.key_pressed == 'p':
+            #     self.delayfactor +=0.1
+            # if self.key_pressed == 'l':
+            #     self.delayfactor -=0.1
+            # print(f'delayfactor:{self.delayfactor}')
                 # self.count = 0
-            if self.key_pressed in range(9):
-                self.actions[:12] = 0
-                self.action_history_buf[:,:12] = 0
+            # if self.key_pressed in range(9):
+            #     self.actions[:12] = 0
+            #     self.action_history_buf[:,:12] = 0
             self.event.clear()  # 重置事件，等待下一个按键
 
     def update_data(self):
@@ -332,7 +340,7 @@ class BJTUDance:
             self.shareinfo_feed_send.servo_package2.kd_arm[k] = self.d_gains[12 + k]
             # print("joint_arm",self.shareinfo_feed.sensor_package2.joint_arm[k])
         # if self.model_select==1:
-        print(f'des arm pos:{self.joint_arm_d}')
+        # print(f'des arm pos:{self.joint_arm_d}')
         # 夹爪
         self.shareinfo_feed_send.servo_package.joint_arm_d[6] = 0.0
         self.shareinfo_feed_send.servo_package.joint_arm_d[7] = 0.0
@@ -480,7 +488,7 @@ class BJTUDance:
                                self.shareinfo_feed.sensor_package.imu_euler[1],
                                self.shareinfo_feed.sensor_package.imu_euler[2],])
 
-            if counter == 1000:
+            if counter == 6000:
                 np.savetxt('data/actor_state.csv', np.array(actor_state), delimiter=",")
                 np.savetxt('data/torques.csv', np.array(torques), delimiter=",")
                 np.savetxt('data/base_euler.csv', np.array(base_euler), delimiter=",")
@@ -522,7 +530,7 @@ class BJTUDance:
                 if self.model_select == 7 or self.model_select == 8:
                     actions = self.model_test7(self.actor_state)
                     actions2 = self.model_test7(self.actor_state)  
-            # TODO:切换模型时action_history_buf在这里置为零
+            # TODO:切换模型时action_history_buf在这里置为零 cannot just run once
                
             # print("actions: \n", actions)
             # print("self.actor_state: ", self.actor_state)
@@ -570,6 +578,8 @@ class BJTUDance:
             # self.actions = self.action_history_buf[-self.delay - 1]
             # self.actions2 = self.action_history_buf2[-self.delay - 1]
 
+            self.actions = self.last_actions * self.delayfactor + self.actions * (1 - self.delayfactor)
+            self.last_actions = self.actions
 
 
             actions_scaled = self.actions * self.scale["action_scale"]
@@ -579,7 +589,7 @@ class BJTUDance:
 
             # joint_qd[4,] = 0.8+self.shareinfo_feed_send.ocu_package.x_des_vel
 
-
+            
 
             for i in range(4):
                 for j in range(3):
@@ -593,10 +603,12 @@ class BJTUDance:
             self.torques = self._compute_torques(joint_qd).view(self.torques.shape)
             self.torques2 = self._compute_torques(joint_qd2).view(self.torques2.shape)
 
+            # print("torques: ", self.torques)
             # print("self.actor_state: ", self.actor_state)
             # print('actions:',joint_qd)
 
             self.PutToDrive()
+
 
             last_time = time.perf_counter() - start_RL_Time
             # print("last_time: ", last_time)  # 大概 3 ms
