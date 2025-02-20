@@ -49,8 +49,8 @@ model_path_test2 = './model/test/wave_0112_1.jit'  #  input 60 pd150 单臂挥�
 # model_path_test4 = './model/test/swing_model_30000.jit'
 model_path_test4 = './model/test/swing_0118_1.jit'  
 
-model_path_test1 = './model/test/arm_leg_0116_1.jit' #臂足协同
-# model_path_test1 = './model/test/arm_leg_0114_1.jit'  #时间延长训练效果不行
+model_path_test1 = './model/test/arm_leg_0115_2.jit' #臂足协同
+# model_path_test1 = './model/test/arm_leg_0104_1.jit'  #时间延长训练效果不行
 
 # model_path_test3 = './model/test/trot_123009.jit'  #  input 60 pd 150
 model_path_test3 = './model/test/trot_model_10500.jit'
@@ -267,7 +267,7 @@ class BJTUDance:
                 self.delay_factor +=0.1
             if self.key_pressed == 'l':
                 self.delay_factor -=0.1
-            print(f'delay factor:{self.delay_factor}')
+            # print(f'delay factor:{self.delay_factor}')
                 # self.count = 0
             # if self.key_pressed in range(9):
             #     self.actions[:12] = 0
@@ -563,7 +563,7 @@ class BJTUDance:
 
             # else:
             # # 剪切 
-            # clip_actions = self0scale["clip_actions"]/self.scale["action_scale"]
+            # clip_actions = self.scale["clip_actions"]/self.scale["action_scale"]
             # clip_arm_actions = self.scale["clip_arm_actions"]/self.scale["action_scale"]
             # actions[:12] = torch.clip(actions[:12], -clip_actions, clip_actions).to(self.device)
             # actions[12:] = torch.clip(actions[12:], -clip_arm_actions, clip_arm_actions).to(self.device)

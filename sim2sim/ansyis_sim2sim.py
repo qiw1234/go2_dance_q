@@ -1,5 +1,40 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
+def quaternion_to_euler(quaternions):
+    """
+    将多组四元数 (x, y, z, w) 转换为多组欧拉角 (roll, pitch, yaw)。
+    输入：quaternions - 二维数组，形状为 (N, 4)，每行是一个四元数 (x, y, z, w)。
+    输出：欧拉角数组，形状为 (N, 3)，每行是一个欧拉角 (roll, pitch, yaw)。
+    欧拉角的单位是弧度。
+    """
+    # 初始化输出数组
+    euler_angles = np.zeros((quaternions.shape[0], 3))
+
+    for i, (x, y, z, w) in enumerate(quaternions):
+        # roll (绕x轴旋转)
+        sinr_cosp = 2 * (w * x + y * z)
+        cosr_cosp = 1 - 2 * (x * x + y * y)
+        roll = np.arctan2(sinr_cosp, cosr_cosp)
+
+        # pitch (绕y轴旋转)
+        sinp = 2 * (w * y - z * x)
+        if np.abs(sinp) >= 1:
+            pitch = np.copysign(np.pi / 2, sinp)  # 处理90度角的情况
+        else:
+            pitch = np.arcsin(sinp)
+
+        # yaw (绕z轴旋转)
+        siny_cosp = 2 * (w * z + x * y)
+        cosy_cosp = 1 - 2 * (y * y + z * z)
+        yaw = np.arctan2(siny_cosp, cosy_cosp)
+
+        # 将结果存储到输出数组中
+        euler_angles[i] = [roll, pitch, yaw]
+
+    return euler_angles
+
+
 # raisim
 raisim_obs_path = 'BJ_Raisim/net/HSW/data/actor_state.csv'
 # raisim_obs_path = 'BJ_Raisim/net/HSW/data/actor_state_TsingHua.csv'
@@ -7,13 +42,17 @@ raisim_torque_path = 'BJ_Raisim/net/HSW/data/torques.csv'
 raisim_base_euler_path = 'BJ_Raisim/net/HSW/data/base_euler.csv'
 
 # isaac gym
-pose = 'stand'
+pose = 'swing'
 isaacgym_obs_path = 'BJ_Raisim/net/HSW/data/'+pose+'_obs.csv'
 isaacgym_torque_path = 'BJ_Raisim/net/HSW/data/'+pose+'_torque.csv'
 isaacgym_base_euler_path = 'BJ_Raisim/net/HSW/data/'+pose+'_base_euler.csv'
 
+# plan
+swing_traj_path = '/home/pcpc/robot_dance/opti_traj/output_panda_fixed_gripper/panda_swing.txt'
+
 plot_raisim = True
 plot_isaacgym = False
+plot_plan = True
 
 start = 0
 end = 6000
@@ -26,6 +65,15 @@ isaacgym_torques = np.loadtxt(isaacgym_torque_path, delimiter=",")
 raisim_torques = np.loadtxt(raisim_torque_path, delimiter=",")
 isaacgym_base_euler = np.loadtxt(isaacgym_base_euler_path, delimiter=',')
 raism_base_euler = np.loadtxt(raisim_base_euler_path, delimiter=',')
+raisim_base_euler_z_o = raism_base_euler[1000, 2]
+raism_base_euler[:, 2] -=  raisim_base_euler_z_o
+swing_traj = np.loadtxt(swing_traj_path, delimiter=',')
+swing_base_quat = swing_traj[:,3:7]
+swing_base_euler = np.zeros((6000,3))
+swing_base_euler[:100,:] = quaternion_to_euler(swing_base_quat[:100,:])
+for i in range(99):
+    swing_base_euler[40+60*i:40+60*(i+1),:] = swing_base_euler[40:100,:]
+swing_base_euler = np.roll(swing_base_euler, shift=30)
 
 
 isaacgym_torques = isaacgym_torques[start:end, :]
@@ -259,13 +307,29 @@ fig5, axs5 = plt.subplots()
 a = axs5
 a.grid(True)
 if plot_raisim:
-    a.plot(raism_base_euler[:, 0], label='raisim_LF_hip', c='r')
-    a.plot(raism_base_euler[:, 1], label='raisim_LF_thigh', c='g')
-    a.plot(raism_base_euler[:, 2], label='raisim_LF_calf', c='b')
+    # a.plot(raism_base_euler[:, 0], label='raisim_base_x', c='r')
+    # a.plot(raism_base_euler[:, 1], label='raisim_base_y', c='g')
+    a.plot(raism_base_euler[:, 2], label='raisim_base_z', c='b')
 if plot_isaacgym:
     a.plot(isaacgym_base_euler[:, 0], label='isaacgym_base_x', linestyle='--', c='r')
     a.plot(isaacgym_base_euler[:, 1], label='isaacgym_base_y', linestyle='--', c='g')
     a.plot(isaacgym_base_euler[:, 2], label='isaacgym_base_z', linestyle='--', c='b')
+if plot_plan:
+    # a.plot(isaacgym_base_euler[:, 0], label='plan_base_x', linestyle='--', c='r')
+    # a.plot(isaacgym_base_euler[:, 1], label='plan_base_y', linestyle='--', c='g')
+    a.plot(swing_base_euler[:, 2], label='plan_base_z', linestyle='--', c='b')
+plt.rcParams['xtick.labelsize'] = 20
+a.set(title='base euler')
+a.legend()
+
+# plot base_euler
+fig7, axs7 = plt.subplots()
+a = axs7
+a.grid(True)
+if plot_plan:
+    # a.plot(isaacgym_base_euler[:, 0], label='isaacgym_base_x', linestyle='--', c='r')
+    # a.plot(isaacgym_base_euler[:, 1], label='isaacgym_base_y', linestyle='--', c='g')
+    a.plot(swing_base_euler[:, 2], label='plan_base_z', linestyle='--', c='b')
 plt.rcParams['xtick.labelsize'] = 20
 a.set(title='base euler')
 
