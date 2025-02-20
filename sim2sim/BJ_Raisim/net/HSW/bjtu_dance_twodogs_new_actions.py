@@ -49,8 +49,9 @@ model_path_test2 = './model/test/wave_0112_1.jit'  #  input 60 pd150 单臂挥�
 # model_path_test4 = './model/test/swing_model_30000.jit'
 model_path_test4 = './model/test/swing_0118_1.jit'  
 
-model_path_test1 = './model/test/arm_leg_0115_2.jit' #臂足协同
+# model_path_test1 = './model/test/arm_leg_0115_2.jit' #臂足协同
 # model_path_test1 = './model/test/arm_leg_0104_1.jit'  #时间延长训练效果不行
+model_path_test1 = './model/test/arm_leg_0119_1039.jit' #臂足协同,但是动作不好看，拖腿
 
 # model_path_test3 = './model/test/trot_123009.jit'  #  input 60 pd 150
 model_path_test3 = './model/test/trot_model_10500.jit'
