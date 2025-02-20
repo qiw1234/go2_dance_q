@@ -35,6 +35,7 @@ import numpy as np
 import random
 from isaacgym import gymapi
 from isaacgym import gymutil
+import datetime
 
 from legged_gym import LEGGED_GYM_ROOT_DIR, LEGGED_GYM_ENVS_DIR
 
@@ -184,7 +185,13 @@ def export_policy_as_jit(actor_critic, path):
         exporter.export(path)
     else: 
         os.makedirs(path, exist_ok=True)
-        path = os.path.join(path, 'policy_1.jit')
+        # 获取当前日期和时间
+        current_time = datetime.datetime.now()
+        # 格式化日期和时间，例如：2025-02-20_15-30-45
+        formatted_time = current_time.strftime("%Y-%m-%d_%H-%M-%S")
+        # 创建文件名
+        jit_name = f"policy_{formatted_time}.jit"
+        path = os.path.join(path, jit_name)
         model = copy.deepcopy(actor_critic.actor).to('cpu')
         traced_script_module = torch.jit.script(model)
         traced_script_module.save(path)
