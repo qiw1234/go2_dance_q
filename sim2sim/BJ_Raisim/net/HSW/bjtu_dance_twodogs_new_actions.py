@@ -171,7 +171,7 @@ class BJTUDance:
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
                                                dtype=torch.float)
         # 越大延迟越高
-        self.delay_factor = 0.5
+        self.delay_factor = 0.
 
         p_gains = [150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 20., 15.,
                    10., 10., 10.]
@@ -267,7 +267,7 @@ class BJTUDance:
                 self.delay_factor +=0.1
             if self.key_pressed == 'l':
                 self.delay_factor -=0.1
-            # print(f'delay factor:{self.delay_factor}')
+            print(f'delay factor:{self.delay_factor}')
                 # self.count = 0
             # if self.key_pressed in range(9):
             #     self.actions[:12] = 0

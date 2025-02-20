@@ -623,6 +623,7 @@ class panda7FixedGripperArmLegCfg(panda7FixedGripperCfg):
 class panda7FixedGripperArmLegCfgPPO(pandaCfgPPO):
     class runner(pandaCfgPPO.runner):
         experiment_name = 'panda7_fixed_gripper_arm_leg'
+        resume_path = 'legged_gym/logs/panda7_fixed_gripper_arm_leg/Jan03_21-19-12_/model_41000.pt'
 
 
 #----------------------panda7 fixed gripper trans config---------------------------
