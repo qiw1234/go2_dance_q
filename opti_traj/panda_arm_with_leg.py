@@ -132,8 +132,8 @@ for i in range(num_row - 1):
 #  --------第一个关节来回运动---------
 # 定义各阶段的时间步数
 
-phase2_end = 50
-phase4_end = 100
+phase2_end = 25
+phase4_end = 50
 
 # 设置角度范围（单位：弧度）
 initial_angle1 = 0
@@ -201,17 +201,20 @@ final_angle5 = -np.pi / 6  # 目标角度 -30度
 initial_angle6 = 0  # 初始角度 0度
 final_angle6 = -np.pi / 24  # 目标角度 -30度
 
-for i in range(100, 150):
-    frac = (i - 100) / (150 - 100)
+start = 50
+end = 75
+for i in range(start, end):
+    frac = (i - start) / (end - start)
     arm_dof_pos[i, 1] = initial_angle2 + (final_angle2 - initial_angle2) * (0.5 - 0.5 * np.cos(np.pi * frac))
     arm_dof_pos[i, 2] = initial_angle3 + (final_angle3 - initial_angle3) * (0.5 - 0.5 * np.cos(np.pi * frac))
     arm_dof_pos[i, 3] = initial_angle4 + (final_angle4 - initial_angle4) * (0.5 - 0.5 * np.cos(np.pi * frac))
     arm_dof_pos[i, 5] = initial_angle6 + (final_angle6 - initial_angle6) * (0.5 - 0.5 * np.cos(np.pi * frac))
     arm_dof_pos[i, 0] = initial_angle1 + (final_angle1 - initial_angle1) * (0.5 - 0.5 * np.cos(np.pi * frac))
     arm_dof_pos[i, 4] = initial_angle5 + (final_angle5 - initial_angle5) * (0.5 - 0.5 * np.cos(np.pi * frac))
-
-for i in range(150, 200):
-    frac = (i - 150) / (200 - 150)
+start = 75
+end = 100
+for i in range(start, end):
+    frac = (i - start) / (end - start)
     arm_dof_pos[i, 0] = final_angle1 + (initial_angle1 - final_angle1) * (0.5 - 0.5 * np.cos(np.pi * frac))
     arm_dof_pos[i, 1] = final_angle2 + (initial_angle2 - final_angle2) * (0.5 - 0.5 * np.cos(np.pi * frac))
     arm_dof_pos[i, 2] = final_angle3 + (initial_angle3 - final_angle3) * (0.5 - 0.5 * np.cos(np.pi * frac))
@@ -219,6 +222,8 @@ for i in range(150, 200):
     arm_dof_pos[i, 5] = final_angle6 + (initial_angle6 - final_angle6) * (0.5 - 0.5 * np.cos(np.pi * frac))
     arm_dof_pos[i, 4] = final_angle5 + (initial_angle5 - final_angle5) * (0.5 - 0.5 * np.cos(np.pi * frac))
 
+# 重复一遍
+arm_dof_pos[100:200,:] = arm_dof_pos[:100,:]
 
 # 关节角速度
 for i in range(num_row - 1):
