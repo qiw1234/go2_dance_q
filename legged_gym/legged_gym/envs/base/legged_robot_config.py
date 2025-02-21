@@ -190,7 +190,7 @@ class LeggedRobotCfg(BaseConfig):
         max_swing_roll = 0.35 #20°
 
         delay_update_global_steps = 2000
-        action_delay = True  # False True
+        action_delay = False  # False True
         action_curr_step = [0, 1]  # [1, 1] [1, 2]
         action_delay_view = 1  # 有viewer时(打开渲染)的delay
         action_buf_len = 8
@@ -244,7 +244,7 @@ class LeggedRobotCfg(BaseConfig):
         add_noise = True
         noise_level = 1.0 # scales other values
         class noise_scales:
-            dof_pos = 0.01  #0.01 0.08swing
+            dof_pos = 0.08  #0.01 0.08swing
             dof_vel = 1.5
             lin_vel = 0.1
             ang_vel = 0.2 #0.2 jump
