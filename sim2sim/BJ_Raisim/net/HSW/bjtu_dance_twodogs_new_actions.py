@@ -54,8 +54,8 @@ model_path_test4 = './model/test/swing_0118_1.jit'
 # model_path_test1 = './model/test/arm_leg_0220_2156.jit' #臂足协同,但是动作不好看，拖腿
 # model_path_test1 = './model/test/arm_leg_2025-02-21_08-37-14.jit' #关节角度训练噪声0.08
 # model_path_test1 = './model/test/arm_leg_2025-02-21_08-43-01.jit' #关节角度训练噪声0.01
-# model_path_test1 = './model/test/arm_leg_2025-02-21_15-00-27.jit' #关节角度训练噪声0.08
-model_path_test1 = './model/test/arm_leg_2025-02-21_15-02-10.jit' #关节角度训练噪声0.08，无延迟
+model_path_test1 = './model/test/arm_leg_2025-02-23_12-56-10.jit' #关节角度训练噪声0.08
+# model_path_test1 = './model/test/arm_leg_2025-02-23_12-59-00.jit' #关节角度训练噪声0.08，无延迟，实物上效果不好
 
 # model_path_test3 = './model/test/trot_123009.jit'  #  input 60 pd 150
 model_path_test3 = './model/test/trot_model_10500.jit'
@@ -69,6 +69,7 @@ model_path_test7 = './model/test/wavetwoleg2_model_26000.jit'
 
 model_path_test0 = './model/test/stand_model_30000.jit' # 
 # model_path_test0 = './model/test/stand_0111_4.jit' # 
+# model_path_test0 = './model/test/arm_leg_2025-02-23_12-56-10.jit'
 def s(x):
     return math.sin(x)
 
