@@ -34,6 +34,9 @@ def quaternion_to_euler(quaternions):
 
     return euler_angles
 
+def compute_velocity(position, dt):
+    velocity = (position[1:-1,:] - position[0:-2,:])/dt
+    return velocity
 
 # raisim
 raisim_obs_path = 'BJ_Raisim/net/HSW/data/actor_state.csv'
@@ -78,11 +81,11 @@ swing_base_euler = np.roll(swing_base_euler, shift=30)
 
 isaacgym_torques = isaacgym_torques[start:end, :]
 raisim_torques = raisim_torques[start:end, :]
-
+dt = 0.02
 raisim_ang_vel = raisim_obs[start:end, 0:3]
 raisim_projected_gravity = raisim_obs[start:end, 3: 6]
 raisim_dof_pos = (raisim_obs[start:end, 6:24] + default_dof_pos)
-
+raisim_dof_v = compute_velocity(raisim_dof_pos,dt)
 raisim_actions = np.clip(raisim_obs[start:end, 42:60],-10,10)*0.25 + default_dof_pos
 # raisim_actions = raisim_obs[start:end, 24:42]*0.25 + default_dof_pos
 
@@ -183,26 +186,61 @@ a.set(title='dof pos')
 # a.legend()
 
 # 关节角速度
-# a = axs[2, 0]
-# a.plot(raisim_dof_pos[:, 24], label='raisim_LF_hip', c='r')
-# a.plot(isaacgym_dof_pos[:, 24], label='isaacgym_LF_hip', linestyle='--', c='r')
-# a.plot(raisim_dof_pos[:, 25], label='raisim_LF_thigh', c='g')
-# a.plot(isaacgym_dof_pos[:, 25], label='isaacgym_LF_thigh', linestyle='--', c='g')
-# a.plot(raisim_dof_pos[:, 26], label='raisim_LF_calf', c='b')
-# a.plot(isaacgym_dof_pos[:, 26], label='isaacgym_LF_calf', linestyle='--', c='b')
-# plt.rcParams['xtick.labelsize'] = 20
-# a.set(title='dof vel')
+fig8, axs8 = plt.subplots(2, 2)
+a = axs8[0, 0]
+a.grid(True)
+if plot_raisim:
+    a.plot(raisim_dof_v[:, 0], label='raisim_LF_hip', c='r')
+    a.plot(raisim_dof_v[:, 1], label='raisim_LF_thigh', c='g')
+    a.plot(raisim_dof_v[:, 2], label='raisim_LF_calf', c='b')
+if plot_isaacgym:
+    a.plot(isaacgym_dof_pos[:, 0], label='isaacgym_LF_hip', linestyle='--', c='r')
+    a.plot(isaacgym_dof_pos[:, 1], label='isaacgym_LF_thigh', linestyle='--', c='g')
+    a.plot(isaacgym_dof_pos[:, 2], label='isaacgym_LF_calf', linestyle='--', c='b')
+plt.rcParams['xtick.labelsize'] = 20
+a.set(title='dof velocity')
 # a.legend()
-#
-# a = axs[2, 1]
-# a.plot(raisim_dof_pos[:, 27], label='raisim_RF_hip', c='r')
-# a.plot(isaacgym_dof_pos[:, 27], label='isaacgym_RF_hip', linestyle='--', c='r')
-# a.plot(raisim_dof_pos[:, 28], label='raisim_RF_thigh', c='g')
-# a.plot(isaacgym_dof_pos[:, 28], label='isaacgym_RF_thigh', linestyle='--', c='g')
-# a.plot(raisim_dof_pos[:, 29], label='raisim_RF_calf', c='b')
-# a.plot(isaacgym_dof_pos[:, 29], label='isaacgym_RF_calf', linestyle='--', c='b')
-# plt.rcParams['xtick.labelsize'] = 20
-# a.set(title='dof vel')
+
+a = axs8[0, 1]
+a.grid(True)
+if plot_raisim:
+    a.plot(raisim_dof_v[:, 3], label='raisim_RF_hip', c='r')
+    a.plot(raisim_dof_v[:, 4], label='raisim_RF_thigh', c='g')
+    a.plot(raisim_dof_v[:, 5], label='raisim_RF_calf', c='b')
+if plot_isaacgym:
+    a.plot(isaacgym_dof_pos[:, 3], label='isaacgym_RF_hip', linestyle='--', c='r')
+    a.plot(isaacgym_dof_pos[:, 4], label='isaacgym_RF_thigh', linestyle='--', c='g')
+    a.plot(isaacgym_dof_pos[:, 5], label='isaacgym_RF_calf', linestyle='--', c='b')
+    plt.rcParams['xtick.labelsize'] = 20
+a.set(title='dof velocity')
+# a.legend()
+
+a = axs8[1, 0]
+a.grid(True)
+if plot_raisim:
+    a.plot(raisim_dof_v[:, 6], label='raisim_LH_hip', c='r')
+    a.plot(raisim_dof_v[:, 7], label='raisim_LH_thigh', c='g')
+    a.plot(raisim_dof_v[:, 8], label='raisim_LH_calf', c='b')
+if plot_isaacgym:
+    a.plot(isaacgym_dof_pos[:, 6], label='isaacgym_LH_hip', linestyle='--', c='r')
+    a.plot(isaacgym_dof_pos[:, 7], label='isaacgym_LH_thigh', linestyle='--', c='g')
+    a.plot(isaacgym_dof_pos[:, 8], label='isaacgym_LH_calf', linestyle='--', c='b')
+plt.rcParams['xtick.labelsize'] = 20
+a.set(title='dof velocity')
+# a.legend()
+
+a = axs8[1, 1]
+a.grid(True)
+if plot_raisim:
+    a.plot(raisim_dof_v[:, 9], label='raisim_LH_hip', c='r')
+    a.plot(raisim_dof_v[:, 10], label='raisim_LH_thigh', c='g')
+    a.plot(raisim_dof_v[:, 11], label='raisim_LH_calf', c='b')
+if plot_isaacgym:
+    a.plot(isaacgym_dof_pos[:, 9], label='isaacgym_LH_hip', linestyle='--', c='r')
+    a.plot(isaacgym_dof_pos[:, 10], label='isaacgym_LH_thigh', linestyle='--', c='g')
+    a.plot(isaacgym_dof_pos[:, 11], label='isaacgym_LH_calf', linestyle='--', c='b')
+plt.rcParams['xtick.labelsize'] = 20
+a.set(title='dof velocity')
 # a.legend()
 
 # last_action

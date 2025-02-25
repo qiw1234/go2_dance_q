@@ -494,7 +494,7 @@ class BJTUDance:
                                self.shareinfo_feed.sensor_package.imu_euler[1],
                                self.shareinfo_feed.sensor_package.imu_euler[2],])
 
-            if counter == 6000:
+            if counter == 2000:
                 np.savetxt('data/actor_state.csv', np.array(actor_state), delimiter=",")
                 np.savetxt('data/torques.csv', np.array(torques), delimiter=",")
                 np.savetxt('data/base_euler.csv', np.array(base_euler), delimiter=",")
