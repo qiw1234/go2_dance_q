@@ -190,10 +190,11 @@ class LeggedRobotCfg(BaseConfig):
         max_swing_roll = 0.35 #20°
 
         delay_update_global_steps = 2000
-        action_delay = False  # False True
+        action_delay = True  # False True
         action_curr_step = [0, 1]  # [1, 1] [1, 2]
         action_delay_view = 1  # 有viewer时(打开渲染)的delay
         action_buf_len = 8
+        action_delay_range = [0, 0.75]
 
         RSI = True
         RSI_rand = False   # 参考轨迹基础上添加随机化

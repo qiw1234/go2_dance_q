@@ -434,6 +434,9 @@ class BJTUDance:
         else:
             # self.actor_state[6 + self.num_acts * 1: 6 + self.num_acts * 2] = self.action_history_buf[-1]
             self.actor_state[6 + self.num_acts * 1: 6 + self.num_acts * 2] = self.actions
+        
+        self.actor_state = torch.clip(self.actor_state, -self.scale["clip_observations"], 
+                                      self.scale["clip_observations"]).to(self.device)
         # 机械臂速度设置为0
         # self.actor_state[6 + self.num_acts + 12: 6 + self.num_acts * 2] = 0
         # 测试，手动添加噪声
