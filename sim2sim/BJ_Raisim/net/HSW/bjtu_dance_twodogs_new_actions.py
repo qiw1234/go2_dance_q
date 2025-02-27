@@ -54,8 +54,9 @@ model_path_test4 = './model/test/swing_0118_1.jit'
 # model_path_test1 = './model/test/arm_leg_0220_2156.jit' #臂足协同,但是动作不好看，拖腿
 # model_path_test1 = './model/test/arm_leg_2025-02-21_08-37-14.jit' #关节角度训练噪声0.08
 # model_path_test1 = './model/test/arm_leg_2025-02-21_08-43-01.jit' #关节角度训练噪声0.01
-model_path_test1 = './model/test/arm_leg_2025-02-23_12-56-10.jit' #关节角度训练噪声0.08
+# model_path_test1 = './model/test/arm_leg_2025-02-23_12-56-10.jit' #关节角度训练噪声0.08
 # model_path_test1 = './model/test/arm_leg_2025-02-23_12-59-00.jit' #关节角度训练噪声0.08，无延迟，实物上效果不好
+model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit' #关节角度训练噪声0.08，滤波延迟
 
 # model_path_test3 = './model/test/trot_123009.jit'  #  input 60 pd 150
 model_path_test3 = './model/test/trot_model_10500.jit'
@@ -177,7 +178,7 @@ class BJTUDance:
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
                                                dtype=torch.float)
         # 越大延迟越高
-        self.delay_factor = 0.
+        self.delay_factor = 0.6
 
         p_gains = [150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 20., 15.,
                    10., 10., 10.]

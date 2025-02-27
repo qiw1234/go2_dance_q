@@ -599,7 +599,7 @@ class panda7FixedGripperArmLegCfg(panda7FixedGripperCfg):
             track_ang_vel_ref = 0
             track_dof_pos = 10
             track_dof_vel = 10
-            track_toe_pos = 10
+            track_toe_pos = 15
             # track_LF_toe_pos = 10
             # 机械臂
             track_arm_dof_pos = 10
