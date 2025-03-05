@@ -104,7 +104,7 @@ class motionLoader:
                     motion_json = json.load(f)
                     motion_data = np.array(motion_json["frames"])
                     motion_data = self.reorder_from_pybullet_to_isaac(motion_data)
-                    # 如果以后有数据的四元数不是标准的四元素，还需要把思源出归一化，把二范数变成1
+                    # 如果以后有数据的四元数不是标准的四元素，还需要把四元数归一化，把二范数变成1
                     # 由于我的四元数是标准的，我这里就没有处理
                     # Remove first 7 observation dimensions (root_pos and root_orn).
                     self.trajectories.append(torch.tensor(

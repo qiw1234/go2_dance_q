@@ -48,7 +48,7 @@ from legged_gym.utils.math import quat_apply_yaw, wrap_to_pi, torch_rand_sqrt_fl
 from legged_gym.utils.helpers import class_to_dict
 from .legged_robot_config import LeggedRobotCfg
 from legged_gym.motion_loader.motion_loader_panda_fixed_gripper import motionLoaderPandaFixedGripper
-
+from legged_gym.motion_loader.motion_loader import motionLoader
 
 def get_euler_xyz_tensor(quat):
     r, p, w = get_euler_xyz(quat)
@@ -113,7 +113,7 @@ class LeggedRobot(BaseTask):
         self.init_done = True
         self.global_counter = 0
         # 重新加载动作数据
-        self.motion_loader = motionLoaderPandaFixedGripper(motion_files=self.cfg.env.motion_files, device=self.device,
+        self.motion_loader = motionLoader(motion_files=self.cfg.env.motion_files, device=self.device,
                                                            time_between_frames=self.dt,
                                                            frame_duration=self.cfg.env.frame_duration)
         self.action_id = [id for id, name in enumerate(self.motion_loader.trajectory_names) if
@@ -236,10 +236,6 @@ class LeggedRobot(BaseTask):
         self.toe_pos_body[:, 6:9] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 6:9] - self.base_pos)
         self.toe_pos_body[:, 9:12] = quat_rotate_inverse(self.base_quat, self.toe_pos_world[:, 9:12] - self.base_pos)
 
-        arm_end_pos = self.rb_states[:, self.arm_link6_indice, 0:3].view(self.num_envs, -1) - self.base_pos
-        self.arm_end_pos = quat_rotate_inverse(self.base_quat, arm_end_pos)
-        self.arm_end_quat = self.rb_states[:, self.arm_link6_indice, 3:7].view(self.num_envs, -1)
-
         self._post_physics_step_callback()
 
         # compute observations, rewards, resets, ...
@@ -352,12 +348,10 @@ class LeggedRobot(BaseTask):
             env_ids (List[int]): Environemnt ids
             frames: AMP frames to initialize motion with
         """
-        self.dof_pos[env_ids] = torch.cat((self.motion_loader.get_joint_pose_batch(frames),
-                                           self.motion_loader.get_arm_joint_pos_batch(frames)), dim=1)
+        self.dof_pos[env_ids] = self.motion_loader.get_joint_pose_batch(frames)
         if self.cfg.domain_rand.RSI_rand:
             self.dof_pos[env_ids] += torch_rand_float(-0.05, 0.05, (len(env_ids), self.num_dof), device=self.device)
-        self.dof_vel[env_ids] = torch.cat((self.motion_loader.get_joint_vel_batch(frames),
-                                           self.motion_loader.get_arm_joint_vel_batch(frames)), dim=1)
+        self.dof_vel[env_ids] = self.motion_loader.get_joint_vel_batch(frames)
         env_ids_int32 = env_ids.to(dtype=torch.int32)
         self.gym.set_dof_state_tensor_indexed(self.sim,
                                               gymtorch.unwrap_tensor(self.dof_state),
@@ -421,32 +415,27 @@ class LeggedRobot(BaseTask):
         foot_pos_error = self.toe_pos_body - self.frames[:, 13:25]
         leg_dof_pos_error = self.dof_pos[:, 0:12] - self.frames[:, 25:37]  # LF RF LH RH
         leg_dof_vel_error = self.dof_vel[:, 0:12] - self.frames[:, 37:49]
-        # arm: pos quat q dq
-        arm_end_pos_error = self.arm_end_pos - self.frames[:, 49:52]
-        arm_end_rot_error = get_euler_xyz_tensor(self.arm_end_quat) - get_euler_xyz_tensor(self.frames[:, 52:56])
-        arm_dof_pos_error = self.dof_pos[:, 12:18] - self.frames[:, 56:62]
-        arm_dof_vel_error = self.dof_vel[:, 12:18] - self.frames[:, 62:68]
+
 
         tracking_error = torch.cat((base_pos_error, base_euler_error, base_lin_vel_error, base_lin_ang_error,
-                                    foot_pos_error, leg_dof_pos_error, leg_dof_vel_error,
-                                    arm_end_pos_error, arm_end_rot_error, arm_dof_pos_error, arm_dof_vel_error), dim=-1)
+                                    foot_pos_error, leg_dof_pos_error, leg_dof_vel_error), dim=-1)
 
         self.privileged_obs_buf = torch.cat((self.base_lin_vel * self.obs_scales.lin_vel,  # 3   # 0...3
                                              self.base_ang_vel * self.obs_scales.ang_vel,  # 3   # 3...6
                                              self.projected_gravity,  # 3   # 6...9
                                              (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
-                                             # 18   # 9...27
-                                             self.dof_vel * self.obs_scales.dof_vel,  # 18  # 27...45
-                                             self.actions,  # 18  # 45...63
+                                             # 12   # 9...21
+                                             self.dof_vel * self.obs_scales.dof_vel,  # 12  # 21...33
+                                             self.actions,  # 12  # 33...45
                                              # self.action_history_buf[:,-1],
-                                             self.base_euler_xyz * self.obs_scales.quat,  # 3  63...66
-                                             tracking_error  # 66   66...132
+                                             self.base_euler_xyz * self.obs_scales.quat,  # 3  45...48
+                                             tracking_error  # 48   48...96
                                              ), dim=-1)
         self.obs_buf = torch.cat((self.base_ang_vel * self.obs_scales.ang_vel,  # 3   # 3
                                   self.projected_gravity,  # 3   # 6
-                                  (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,  # 18   # 24
-                                  self.dof_vel * self.obs_scales.dof_vel,  # 18  # 42
-                                  self.actions  # 18  # 60
+                                  (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,  # 12   # 18
+                                  self.dof_vel * self.obs_scales.dof_vel,  # 12  # 30
+                                  self.actions  # 12  # 42
                                   # self.action_history_buf[:,-1]
                                   ), dim=-1)
 
@@ -948,9 +937,9 @@ class LeggedRobot(BaseTask):
 
         noise_vec[0:3] = noise_scales.ang_vel * noise_level * self.obs_scales.ang_vel
         noise_vec[3:6] = noise_scales.gravity * noise_level
-        noise_vec[6:24] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
-        noise_vec[24:42] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
-        noise_vec[42:60] = 0.  # previous actions
+        noise_vec[6:18] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
+        noise_vec[18:30] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
+        noise_vec[30:42] = 0.  # previous actions
         if self.cfg.terrain.measure_heights:
             noise_vec[48:235] = noise_scales.height_measurements * noise_level * self.obs_scales.height_measurements
         return noise_vec
@@ -1299,8 +1288,8 @@ class LeggedRobot(BaseTask):
                                                                                         termination_contact_names[i])
 
         # get arm_indices
-        arm_name = self.cfg.asset.arm_name
-        self.arm_link6_indice = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], arm_name)
+        # arm_name = self.cfg.asset.arm_name
+        # self.arm_link6_indice = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], arm_name)
 
     def _get_env_origins(self):
         """ Sets environment origins. On rough terrain the origins are defined by the terrain platforms.
