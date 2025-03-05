@@ -2,16 +2,17 @@ import numpy as np
 from scipy.constants import g
 from pybullet_utils.transformations import quaternion_slerp, quaternion_multiply, quaternion_conjugate
 import utils
-import casadi as ca
+from casadi import *
 
+# 规划挥手的轨迹，输出的文件为一个状态矩阵txt文件，列数为49列，因为读取文件的固定格式为49列
+# root位置[0:3]，root姿态[3:7] [x,y,z,w]，线速度[7:10]，角速度[10:13]
+# 足端位置（在世界系下相对于质心的位置）[13:25][go2:[FR, FL, RR, RL]]，panda7没看过是什么顺序
+# 关节角度和关节[25:37]
 
 # 挥手动作：右前腿抬起来，挥舞右前腿，轨迹轮廓在y-z平面来看类似一片银杏叶
 # 包含两段轨迹，一是抬腿到指定位置，不在一个平面内，需要通过两个平面图形进行组合，二是在yz平面内挥舞
 # 由于机器狗的手臂关节的结构，横着挥手感觉不太好看，所以我想着做一个招财猫的动作
 # 具体来说就是身体仰起来30°，然后右手做招财猫的动作
-def z_1(y, y0, z0):
-    z = z0 - z0 * (y + y0) ** 2 / (y0 ** 2)
-    return z
 
 
 num_row = 80
