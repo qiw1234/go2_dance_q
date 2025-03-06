@@ -3,6 +3,7 @@ from scipy.constants import g
 from pybullet_utils.transformations import quaternion_slerp, quaternion_multiply, quaternion_conjugate
 import utils
 from casadi import *
+import json
 
 # 规划挥手的轨迹，输出的文件为一个状态矩阵txt文件，列数为49列，因为读取文件的固定格式为49列
 # root位置[0:3]，root姿态[3:7] [x,y,z,w]，线速度[7:10]，角速度[10:13]
@@ -15,11 +16,12 @@ from casadi import *
 # 具体来说就是身体仰起来30°，然后右手做招财猫的动作
 
 
-num_row = 80
-num_col = 49
+go2 = utils.QuadrupedRobot()
+num_row = 210
+num_col = 72
 fps = 50
 
-wave_ref = np.ones((num_row - 1, num_col))
+ref = np.ones((num_row - 1, num_col))
 root_pos = np.zeros((num_row, 3))
 root_rot = np.zeros((num_row, 4))
 root_lin_vel = np.zeros((num_row - 1, 3))
@@ -29,97 +31,104 @@ toe_pos = np.zeros((num_row, 12))
 dof_pos = np.zeros((num_row, 12))
 dof_vel = np.zeros((num_row - 1, 12))
 
-go2 = utils.QuadrupedRobot()
-# go2的关节上下限
-lb = [-0.8378, -np.pi / 2, -2.7227, -0.8378, -np.pi / 2, -2.7227, -0.8378, -np.pi / 6, -2.7227, -0.8378, -np.pi / 6,
-      -2.7227]
-ub = [0.8378, 3.4907, -0.8378, 0.8378, 3.4907, -0.8378, 0.8378, 4.5379, -0.8378, 0.8378, 4.5379, -0.8378]
-
 # 质心轨迹
-root_pos[:, 2] = 0.3
+root_pos[:, 2] = 0.322
+# 质心线速度 默认为0
 
-# 质心姿态
+# 姿态
 q0 = [0, 0, 0, 1]
 q1 = [0, np.sin(-np.pi / 24), 0, np.cos(-np.pi / 24)]
-end = 10
+root_rot[:] = q1
+end = 20 #0.4s
 for i in range(end):
-    frac = i / (end - 1)
+    frac = (i+1) / (end - 1)
     root_rot[i, :] = quaternion_slerp(q0, q1, frac)
 start = end
-end = 70
-root_rot[start: end, :] = root_rot[start - 1, :]
-start = end
-end = num_row
-for i in range(start, end):
-    frac = (i - start) / (end - start)
-    root_rot[i, :] = quaternion_slerp(q1, q0, frac)
+end = 190
 
 # 四元数的导数
-for i in range(num_row - 1):
-    root_rot_dot[i, :] = (root_rot[i + 1, :] - root_rot[i, :]) * fps
+for i in range(num_row-1):
+    root_rot_dot[i,:] = (root_rot[i+1,:] - root_rot[i,:]) * fps
 # 质心角速度
-for i in range(num_row - 1):
-    root_ang_vel[i, :] = 2 * utils.quat2angvel_map(root_rot[i, :]) @ root_rot_dot[i, :]
+for i in range(num_row-1):
+    root_ang_vel[i, :] = 2 * utils.quat2angvel_map(root_rot[i,:])@ root_rot_dot[i,:]
 
 # 足端轨迹
 # 除右前腿，其他的都是世界系的位置，都保持不动
 # 这是默认的足端位置，坐标系是固定在root处的世界系
-toe_pos_init = [0.178, -0.173, -0.3, 0.178, 0.173, -0.3, -0.178, -0.173, -0.3, -0.178, 0.173, -0.3]
 # 右前腿的动作通过关节角度规划
-toe_pos[:] = toe_pos_init
+toe_pos[:] = go2.toe_pos_init
 q_FR_0 = [-0.1, 0.8, -1.5]  # 初始位置
 q_FR_1 = [-0.1, -0.8, -1.5]  # 抬手中间位置
 q_FR_2 = [-0.1, -0.8, -1]  # 抬手下方
-q_FR_3 = [-0.1, -0.8, -2]  # 抬手上方
+q_FR_3 = [-0.1, -0.8, -2.5]  # 抬手上方
+q_FL_0 = [0.1, 0.8, -1.5]
+q_FL_1 = [-0.4, 0.8, -1.5]
+q_FL_2 = [0.1, 0.8, -1.9]
+# 右前腿关节角度
+dof_pos[:20, :3] = q_FR_0
+dof_pos[20:70, :3] = np.linspace(q_FR_0, q_FR_1, 50)
+dof_pos[70:80, :3] = np.linspace(q_FR_1, q_FR_2, 10)
+dof_pos[80:100, :3] = np.linspace(q_FR_2, q_FR_3, 20)
+dof_pos[100:120, :3] = np.linspace(q_FR_3, q_FR_2, 20)
+dof_pos[120:140, :3] = np.linspace(q_FR_2, q_FR_3, 20)
+dof_pos[140:160, :3] = np.linspace(q_FR_3, q_FR_2, 20)
+dof_pos[160:180, :3] = np.linspace(q_FR_2, q_FR_3, 20)
+dof_pos[180:200, :3] = np.linspace(q_FR_3, q_FR_2, 20)
+dof_pos[200:210, :3] = np.linspace(q_FR_2, q_FR_1, 10)
+# 左前腿关节角度
+dof_pos[:, 3:6] = q_FL_0
+dof_pos[:8, 3:6] = np.linspace(q_FL_0, q_FL_2, 8)
+dof_pos[8:20, 3:6] = np.linspace(q_FL_2, q_FL_1, 12)
+dof_pos[20:, 3:6] = q_FL_1
+# dof_pos[190:202, 3:6] = np.linspace(q_FL_1, q_FL_2, 12)
+# dof_pos[202:210, 3:6] = np.linspace(q_FL_2, q_FL_0, 8)
 
-dof_pos[:10, :3] = np.linspace(q_FR_0, q_FR_1, 10)
-dof_pos[10:20, :3] = np.linspace(q_FR_1, q_FR_2, 10)
-dof_pos[20:30, :3] = np.linspace(q_FR_2, q_FR_3, 10)
-dof_pos[30:40, :3] = np.linspace(q_FR_3, q_FR_2, 10)
-dof_pos[40:50, :3] = np.linspace(q_FR_2, q_FR_3, 10)
-dof_pos[50:60, :3] = np.linspace(q_FR_3, q_FR_2, 10)
-dof_pos[60:70, :3] = np.linspace(q_FR_2, q_FR_3, 10)
-dof_pos[70:80, :3] = np.linspace(q_FR_3, q_FR_0, 10)
-# 计算右前腿在质心处世界坐标系下的位置
-# 因为四元数转欧拉角的函数没写，所以这里直接欧拉角为[0,0,0]，再左乘旋转矩阵
-for i in range(num_row):
-    # c = ca.DM(go2.transrpy(dof_pos[i,:3], 0, [0, 0, 0], [0, 0, 0]) @ go2.toe).full()[:3]
-    pos = (utils.quaternion2rotm(root_rot[i, :]) @
-           ca.DM(go2.transrpy(dof_pos[i, :3], 0, [0, 0, 0], [0, 0, 0]) @ go2.toe).full()[:3])
-    toe_pos[i, :3] = pos.T
-a = ca.SX(ca.DM(utils.quaternion2rotm(root_rot[2, :])).full())
-# 其余三条腿的关节角度
-q = ca.SX.sym('q', 3, 1)
+# 计算足端位置在质心坐标系的坐标
+for i in range(toe_pos.shape[0]):
+    toe_pos[i, :3] = np.transpose(casadi.DM(go2.transrpy(dof_pos[i, :3], 0, [0, 0, 0], [0, 0, 0]) @ go2.toe).full()[:3])
+    toe_pos[i, 3:6] = np.transpose(casadi.DM(go2.transrpy(dof_pos[i, 3:6], 1, [0, 0, 0], [0, 0, 0]) @ go2.toe).full()[:3])
+    toe_pos[i, 6:9] = np.transpose(utils.quaternion2rotm(root_rot[i,:])) @ toe_pos[i, 6:9]
+    toe_pos[i, 9:12] = np.transpose(utils.quaternion2rotm(root_rot[i,:])) @ toe_pos[i, 9:12]
+
+# go2的关节上下限
+q = SX.sym('q', 3, 1)
 for j in range(1, 4):
     for i in range(num_row):
         # 这里的toe_pos是世界系足端轨迹，需要考虑质心姿态，因此左乘一个质心姿态
-        pos = (ca.SX(ca.DM(utils.quaternion2rotm(root_rot[i, :])).full()) @
-               (go2.transrpy(q, j, [0, 0, 0], [0, 0, 0]) @ go2.toe)[:3])
-        cost = 500 * ca.dot((toe_pos[i, 3 * j:3 * j + 3] - pos[:3]), (toe_pos[i, 3 * j:3 * j + 3] - pos[:3]))
-        # cost = 500 * dot(([0.179183, -0.172606, 0] - pos[:3]), ([0.179183, -0.172606, 0] - pos[:3]))
+        pos = (go2.transrpy(q, j, [0, 0, 0], [0, 0, 0]) @ go2.toe)[:3]
+        cost = 500 * casadi.dot((toe_pos[i, 3 * j:3 * j + 3] - pos[:3]), (toe_pos[i, 3 * j:3 * j + 3] - pos[:3]))
         nlp = {'x': q, 'f': cost}
-        S = ca.nlpsol('S', 'ipopt', nlp)
-        r = S(x0=[0.1, 0.8, -1.5], lbx=lb[3 * j:3 * j + 3], ubx=ub[3 * j:3 * j + 3])
+        S = casadi.nlpsol('S', 'ipopt', nlp)
+        r = S(x0=[0.1, 0.8, -1.5], lbx=go2.lb[3 * j:3 * j + 3], ubx=go2.ub[3 * j:3 * j + 3])
         q_opt = r['x']
-        # print(q_opt)
-        # toe_pos_v = (ca.SX(ca.DM(utils.quaternion2rotm(root_rot[i, :])).full()) @
-        #              (go2.transrpy(q_opt, j, [0, 0, 0], [0, 0, 0]) @ go2.toe)[:3])
-        # print(toe_pos_v, toe_pos[i, 3*j:3*j+3])
         dof_pos[i, 3 * j:3 * j + 3] = q_opt.T
 
 # 关节角速度
 for i in range(num_row - 1):
     dof_vel[i, :] = (dof_pos[i + 1, :] - dof_pos[i, :]) * fps
 
-# 组合轨迹
-wave_ref[:, :3] = root_pos[:num_row - 1, :]
-wave_ref[:, 3:7] = root_rot[:num_row - 1, :]
-wave_ref[:, 7:10] = root_lin_vel
-wave_ref[:, 10:13] = root_ang_vel
-wave_ref[:, 13:25] = toe_pos[:num_row - 1, :]
-wave_ref[:, 25:37] = dof_pos[:num_row - 1, :]
-wave_ref[:, 37:49] = dof_vel
 
-# 导出txt
+# 组合轨迹
+# 最终输出的末端位置是在世界系中，末端相对质心的位置
+ref[:, :3] = root_pos[:num_row - 1, :]
+ref[:, 3:7] = root_rot[:num_row - 1, :]
+ref[:, 7:10] = root_lin_vel
+ref[:, 10:13] = root_ang_vel
+ref[:, 13:25] = toe_pos[:num_row - 1, :]
+ref[:, 25:37] = dof_pos[:num_row - 1, :]
+ref[:, 37:49] = dof_vel
+
+
+
+# 导出完整轨迹
 outfile = 'output/wave.txt'
-np.savetxt(outfile, wave_ref, delimiter=',')
+np.savetxt(outfile, ref, delimiter=',')
+
+# 保存json文件
+json_data = {
+    'frame_duration': 1 / fps,
+    'frames': ref.tolist()
+}
+with open('output_json/wave.json', 'w') as f:
+    json.dump(json_data, f, indent=4)

@@ -29,7 +29,7 @@ dof_vel = np.zeros((num_row-1, 12))
 
 
 # 质心轨迹
-root_pos[:, 2] = 0.3
+root_pos[:, 2] = 0.322
 # 质心线速度 默认为0
 
 # 姿态
@@ -118,7 +118,7 @@ swing_ref[:, 25:37] = dof_pos[:num_row-1,:]
 swing_ref[:, 37:49] = dof_vel
 
 # 导出txt
-outfile = 'output/swing_2.txt'
+outfile = 'output/swing.txt'
 np.savetxt(outfile, swing_ref, delimiter=',')
 
 # 保存json文件

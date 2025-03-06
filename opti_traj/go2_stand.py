@@ -29,7 +29,7 @@ dof_vel = np.zeros((num_row - 1, 12))
 
 
 # 质心轨迹
-root_pos[:, 2] = 0.3
+root_pos[:, 2] = 0.322
 # 质心线速度 默认为0
 
 # 姿态
@@ -65,7 +65,7 @@ ref[:, 37:49] = dof_vel
 
 
 # # 导出完整轨迹
-outfile = 'output_panda/panda_stand.txt'
+outfile = 'output/stand.txt'
 np.savetxt(outfile, ref, delimiter=',')
 
 # 保存json文件

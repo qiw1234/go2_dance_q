@@ -3,6 +3,7 @@ import utils
 import casadi as ca
 import CPG
 import matplotlib.pyplot as plt
+import json
 
 # 使用CPG模型设计trot步态，使用hopf振荡器获得周期性的相位信号，根据这个相位信号计算足端轨迹
 
@@ -23,7 +24,7 @@ hopf_signal = np.zeros((num_row,8))
 
 go2 = utils.QuadrupedRobot()
 initPos = np.array([0.5, -0.5, -0.5, 0.5, 0, 0, 0, 0])
-gait = 'pace'
+gait = 'trot'
 cpg = CPG.cpgBuilder(initPos, gait=gait)
 
 # 欧拉法获取振荡信号
@@ -53,7 +54,7 @@ plt.plot(t, phase[:,0], linewidth=6)
 plt.plot(t, phase[:,1], linewidth=6)
 plt.plot(t, phase[:,2], linewidth=2)
 plt.plot(t, phase[:,3], linewidth=2)
-plt.show()
+# plt.show()
 
 # 足端位置
 vx = 1
@@ -72,9 +73,9 @@ for i in range(4):
         toe_pos[j,3*i] = CPG.endEffectorPos_xy(ax,p)
         toe_pos[j,3*i+1] = CPG.endEffectorPos_xy(ay,p)
 
-# plt.figure()
-# plt.plot(toe_pos[:,0], toe_pos[:,2], linewidth=5)
-# plt.show()
+plt.figure()
+plt.plot(toe_pos[:,0], toe_pos[:,2], linewidth=5)
+plt.show()
 # 足端相对质心的坐标
 toe_pos += go2.toe_pos_init
 q = ca.SX.sym('q', 3, 1)
@@ -122,4 +123,10 @@ trot_ref[:, 37:49] = dof_vel
 outfile = 'output/'+gait+'.txt'
 np.savetxt(outfile, trot_ref, delimiter=',')
 # a=1
-
+# 保存json文件
+json_data = {
+    'frame_duration': 1 / fps,
+    'frames': trot_ref.tolist()
+}
+with open('output_json/'+ gait +'.json', 'w') as f:
+    json.dump(json_data, f, indent=4)
