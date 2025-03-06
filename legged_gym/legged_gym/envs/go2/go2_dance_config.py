@@ -59,6 +59,7 @@ class GO2Cfg(LeggedRobotCfg):
             track_dof_vel = 0
             track_toe_pos = 1.
 
+
     class env(LeggedRobotCfg.env):
         # 旋转跳跃参考动作
         motion_files = 'opti_traj/output_json'
@@ -97,6 +98,11 @@ class GO2DanceCfg_swing(GO2Cfg):
             track_dof_pos = 0
             track_dof_vel = 0
             track_toe_pos = 1.
+
+            tracking_yaw = 5.
+            # track_dof_pos = 5
+            # track_dof_vel = 5
+            # track_toe_pos = 10
 
     class env(GO2Cfg.env):
         # 旋转跳跃参考动作
