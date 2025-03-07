@@ -99,7 +99,7 @@ class GO2DanceCfg_swing(GO2Cfg):
             track_dof_vel = 0
             track_toe_pos = 1.
 
-            tracking_yaw = 5.
+            tracking_yaw = 1.
             # track_dof_pos = 5
             # track_dof_vel = 5
             # track_toe_pos = 10
