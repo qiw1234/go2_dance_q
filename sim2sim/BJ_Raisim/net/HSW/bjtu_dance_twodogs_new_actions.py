@@ -16,39 +16,22 @@ import yaml
 import ctypes
 
 # model 0: stand
-
+model_path_test0 = './model/go2/swing_2025-03-12_09-37-50.jit' #
 # model 1: arm leg
-
+model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
 # model 2: wave
-
-# model 3: trot
-
-# model 4: swing
-
-# model 5: turn and jump
-
-# model 6: wave two leg 1
-
-# model 7: wave two leg 2
-
 model_path_test2 = './model/test/wave_0112_1.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度大
-
-model_path_test4 = './model/test/swing_0118_1.jit'  
-
-
-model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit' #关节角度训练噪声0.08，滤波延迟
-
-
-model_path_test3 = './model/test/trot_model_10500.jit'
-
+# model 3: trot
+model_path_test3 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
+# model 4: swing
+model_path_test4 = './model/test/swing_0118_1.jit'
+# model 5: turn and jump
 model_path_test5 = './model/test/turn_and_jump_0114_1.jit' # 跳跃turn_and_jump_0107_1不行
-
-
+# model 6: wave two leg 1
 model_path_test6 = './model/test/wavetwoleg_model_18000.jit'
+# model 7: wave two leg 2
 model_path_test7 = './model/test/wavetwoleg2_model_26000.jit'
 
-
-model_path_test0 = './model/test/stand_model_30000.jit' # 
 
 def s(x):
     return math.sin(x)
