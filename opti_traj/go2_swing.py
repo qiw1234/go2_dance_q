@@ -128,4 +128,5 @@ json_data = {
 }
 with open('output_json/swing.json', 'w') as f:
     json.dump(json_data, f, indent=4)
-
+with open('go2ST/swing.json', 'w') as f:
+    json.dump(json_data, f, indent=4)

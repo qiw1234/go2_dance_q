@@ -103,7 +103,7 @@ for i in range(num_row - 1):
 # 质心位置
 x = vx*t
 root_pos[:,0] = x
-root_pos[:,2] = 0.3
+root_pos[:,2] = 0.3  # 太空步
 # 质心速度
 root_lin_vel[:,0] = vx
 # 机身方向
@@ -129,4 +129,6 @@ json_data = {
     'frames': trot_ref.tolist()
 }
 with open('output_json/'+ gait +'.json', 'w') as f:
+    json.dump(json_data, f, indent=4)
+with open('go2ST/'+ gait +'.json', 'w') as f:
     json.dump(json_data, f, indent=4)

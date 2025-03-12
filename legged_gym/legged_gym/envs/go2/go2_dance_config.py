@@ -287,3 +287,39 @@ class GO2DanceCfg_trotPPO(GO2Cfg_PPO):
         # resume_path = "legged_gym/log/GO2_new/trot/model_1500.pt"
 
 #-----------------------------stand----------------------------------------------------
+class GO2DanceCfg_stand(GO2Cfg):
+    class rewards(GO2Cfg.rewards):
+        soft_dof_pos_limit = 0.9
+        base_height_target = 0.25
+
+        class scales(GO2Cfg.rewards.scales):
+            torques = -0.0002
+            dof_pos_limits = -10.0
+            tracking_lin_vel = 0
+            tracking_ang_vel = 0
+            feet_air_time = 0
+            feet_contact_forces = -1
+            action_rate = -2
+            orientation = -1
+
+            # 模仿奖励
+            tracking_lin_vel = 0
+            tracking_ang_vel = 0
+            track_root_pos = 3
+            track_root_height = 0
+            track_root_rot = 10
+            track_lin_vel_ref = 0
+            track_ang_vel_ref = 0
+            track_dof_pos = 8
+            track_dof_vel = 0
+            track_toe_pos = 10
+
+    class env(GO2Cfg.env):
+        motion_name = 'stand'
+        # 站立参考轨迹
+        motion_files = 'opti_traj/go2ST'
+
+
+class GO2DanceCfg_standPPO(GO2Cfg_PPO):
+    class runner(GO2Cfg_PPO.runner):
+        experiment_name = 'go2_stand'

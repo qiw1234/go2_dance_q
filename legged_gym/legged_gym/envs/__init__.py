@@ -44,6 +44,7 @@ from .go2.go2_dance_config import GO2DanceCfg_turn_and_jump, GO2DanceCfg_turn_an
 from .go2.go2_dance_config import GO2DanceCfg_wave, GO2DanceCfg_wavePPO
 from .go2.go2_dance_config import GO2DanceCfg_pace, GO2DanceCfg_pacePPO
 from .go2.go2_dance_config import GO2DanceCfg_trot, GO2DanceCfg_trotPPO
+from .go2.go2_dance_config import GO2DanceCfg_stand, GO2DanceCfg_standPPO
 from .base.legged_robot_transition import LeggedRobotTrans
 from .go2.go2_dance_trans_config import GO2DanceCfg_trans, GO2DanceCfg_trans_PPO
 from legged_gym.envs.panda7.legged_robot_panda import LeggedRobotPanda
@@ -89,6 +90,7 @@ task_registry.register( "go2_wave", LeggedRobot, GO2DanceCfg_wave(), GO2DanceCfg
 task_registry.register( "go2_pace", LeggedRobot, GO2DanceCfg_pace(), GO2DanceCfg_pacePPO() )
 task_registry.register( "go2_trot", LeggedRobot, GO2DanceCfg_trot(), GO2DanceCfg_trotPPO() )
 task_registry.register("go2_trans", LeggedRobotTrans, GO2DanceCfg_trans(), GO2DanceCfg_trans_PPO())
+task_registry.register("go2_stand", LeggedRobot, GO2DanceCfg_stand(), GO2DanceCfg_standPPO())
 # panda7
 task_registry.register( "panda7_beat", LeggedRobotPanda, panda7BeatCfg(), panda7BeatCfgPPO() )
 task_registry.register( "panda7_trot", LeggedRobotPanda, panda7TrotCfg(), panda7TrotCfgPPO() )

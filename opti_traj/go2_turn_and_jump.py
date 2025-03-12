@@ -14,7 +14,7 @@ import json
 # 机身右转30°，左转60°，右转60°，左转30°
 go2 = utils.QuadrupedRobot()
 num_row = 160
-num_col = 72
+num_col = 49
 fps = 50
 
 ref = np.ones((num_row - 1, num_col))
@@ -219,4 +219,6 @@ json_data = {
     'frames': ref.tolist()
 }
 with open('output_json/turn_and_jump.json', 'w') as f:
+    json.dump(json_data, f, indent=4)
+with open('go2ST/turn_and_jump.json', 'w') as f:
     json.dump(json_data, f, indent=4)

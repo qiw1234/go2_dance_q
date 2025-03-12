@@ -18,7 +18,7 @@ import json
 
 go2 = utils.QuadrupedRobot()
 num_row = 210
-num_col = 72
+num_col = 49
 fps = 50
 
 ref = np.ones((num_row - 1, num_col))
@@ -131,4 +131,6 @@ json_data = {
     'frames': ref.tolist()
 }
 with open('output_json/wave.json', 'w') as f:
+    json.dump(json_data, f, indent=4)
+with open('go2ST/wave.json', 'w') as f:
     json.dump(json_data, f, indent=4)

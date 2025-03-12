@@ -470,7 +470,7 @@ class BJTUDance:
 
             # joint_qd[4,] = 0.8+self.shareinfo_feed_send.ocu_package.x_des_vel
 
-            
+
 
             for i in range(4):
                 for j in range(3):
