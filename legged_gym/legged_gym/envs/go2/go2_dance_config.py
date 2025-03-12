@@ -318,6 +318,7 @@ class GO2DanceCfg_stand(GO2Cfg):
         motion_name = 'stand'
         # 站立参考轨迹
         motion_files = 'opti_traj/go2ST'
+        check_contact = False
 
 
 class GO2DanceCfg_standPPO(GO2Cfg_PPO):
