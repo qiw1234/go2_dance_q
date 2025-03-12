@@ -154,22 +154,17 @@ class BJTUDance:
         # 越大延迟越高
         self.delay_factor = 0.6
 
-        p_gains = [150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 150., 20., 15.,
-                   10., 10., 10.]
-        d_gains = [2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 0.1, 0.1, 0.1, 0.1, 0.1]
+        p_gains = [20] * self.num_acts
+        d_gains = [0.5] * self.num_acts
         self.p_gains = to_torch(p_gains[0:self.num_acts], device=self.device, requires_grad=False)
         self.d_gains = to_torch(d_gains[0:self.num_acts], device=self.device, requires_grad=False)
         self.torques = torch.zeros(self.num_acts, device=self.device, requires_grad=False)
 
-        torque_limits = [160, 180, 572, 160, 180, 572, 160, 180, 572, 160, 180, 572, 100, 100, 100, 100, 100, 100, 100,
-                         100]
+        torque_limits = [23.7, 23.7, 35.55] *4
         self.torque_limits = to_torch(torque_limits[0:self.num_acts], device=self.device, requires_grad=False)
         # print("self.torque_limits: ", self.torque_limits)
 
         self.joint_qd = np.zeros((4, 3))
-
-        self.joint_arm_d = np.zeros((self.num_acts - 12,))
-
 
         self.foot_pos = np.zeros((4, 3))
         self.stand_height = 0.3
@@ -476,30 +471,10 @@ class BJTUDance:
 
             # 剪切 
             clip_actions = self.scale["clip_actions"]/self.scale["action_scale"]
-            clip_arm_actions = self.scale["clip_arm_actions"]/self.scale["action_scale"]
             self.actions[:12] = torch.clip(actions[:12], -clip_actions, clip_actions).to(self.device)
-            self.actions[12:] = torch.clip(actions[12:], -clip_arm_actions, clip_arm_actions).to(self.device)
-
 
             # print("actions: \n", actions)
             # print("self.actions: \n", self.actions)
-
-            # else:
-            # # 剪切 
-            # clip_actions = self.scale["clip_actions"]/self.scale["action_scale"]
-            # clip_arm_actions = self.scale["clip_arm_actions"]/self.scale["action_scale"]
-            # actions[:12] = torch.clip(actions[:12], -clip_actions, clip_actions).to(self.device)
-            # actions[12:] = torch.clip(actions[12:], -clip_arm_actions, clip_arm_actions).to(self.device)
-            # actions2[:12] = torch.clip(actions2[:12], -clip_actions, clip_actions).to(self.device)
-            # actions2[12:] = torch.clip(actions2[12:], -clip_arm_actions, clip_arm_actions).to(self.device)
-            # # 存入history_buf
-            # # print("self.action_history_buf1: \n", self.action_history_buf)
-            # self.action_history_buf = torch.cat([self.action_history_buf[1:], actions[None, :]], dim=0)
-            # self.action_history_buf2 = torch.cat([self.action_history_buf2[1:], actions2[None, :]], dim=0)
-            # # print("self.action_history_buf2: \n", self.action_history_buf)
-
-            # self.actions = self.action_history_buf[-self.delay - 1]
-            # self.actions2 = self.action_history_buf2[-self.delay - 1]
 
             # self.actions = self.last_actions * self.delay_factor + self.actions * (1 - self.delay_factor)
             for i in range(4):
@@ -518,9 +493,6 @@ class BJTUDance:
                 for j in range(3):
                     self.joint_qd[reindex_feet1[i]][j] = joint_qd.tolist()[i * 3 + j]
             # self.joint_qd[0][1] = -0.6
-            for i in range(self.num_acts - 12):
-                self.joint_arm_d[i] = joint_qd.tolist()[12 + i]
-
             self.torques = self._compute_torques(joint_qd).view(self.torques.shape)
 
             # print("torques: ", self.torques)
