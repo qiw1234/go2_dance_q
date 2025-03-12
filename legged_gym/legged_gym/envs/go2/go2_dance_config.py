@@ -108,6 +108,10 @@ class GO2DanceCfg_swing(GO2Cfg):
         # 旋转跳跃参考动作
         motion_name = 'swing'
 
+    class noise(GO2Cfg.noise):
+        class noise_scales(GO2Cfg.noise.noise_scales):
+            dof_pos = 0.08
+
 
 class GO2DanceCfg_swingPPO( GO2Cfg_PPO ):
     class runner( GO2Cfg_PPO.runner ):
@@ -174,7 +178,7 @@ class GO2DanceCfg_turn_and_jump(GO2Cfg):
 class GO2DanceCfg_turn_and_jumpPPO(GO2Cfg_PPO):
     class runner(GO2Cfg_PPO.runner):
         experiment_name = 'go2_dance_turn_and_jump'
-        resume_path = 'legged_gym/log/GO2_new/turn_and_jump/model_550.pt'
+        # resume_path = 'legged_gym/log/GO2_new/turn_and_jump/model_550.pt'
 
 
 
@@ -212,7 +216,7 @@ class GO2DanceCfg_wavePPO(GO2Cfg_PPO):
 
     class runner(GO2Cfg_PPO.runner):
         experiment_name = 'go2_wave'
-        resume_path = "legged_gym/log/GO2_new/wave/model_1500.pt"
+        # resume_path = "legged_gym/log/GO2_new/wave/model_1500.pt"
 
 #-----------------------------pace----------------------------------------------------
 class GO2DanceCfg_pace(GO2Cfg):
@@ -247,7 +251,7 @@ class GO2DanceCfg_pacePPO(GO2Cfg_PPO):
     class runner(GO2Cfg_PPO.runner):
         experiment_name = 'go2_pace'
         # resume_path = 'legged_gym/logs/go2_trot/Nov02_13-32-18_/model_1400.pt'
-        resume_path = "legged_gym/log/GO2_new/pace/model_1500.pt"
+        # resume_path = "legged_gym/log/GO2_new/pace/model_1500.pt"
 
 #-----------------------------trot----------------------------------------------------
 class GO2DanceCfg_trot(GO2Cfg):
@@ -280,6 +284,6 @@ class GO2DanceCfg_trotPPO(GO2Cfg_PPO):
     class runner(GO2Cfg_PPO.runner):
         experiment_name = 'go2_trot'
         # resume_path = 'legged_gym/logs/go2_trot/Nov04_21-29-29_/model_1500.pt'
-        resume_path = "legged_gym/log/GO2_new/trot/model_1500.pt"
+        # resume_path = "legged_gym/log/GO2_new/trot/model_1500.pt"
 
 #-----------------------------stand----------------------------------------------------

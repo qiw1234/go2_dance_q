@@ -245,7 +245,7 @@ class LeggedRobotCfg(BaseConfig):
         add_noise = True
         noise_level = 1.0 # scales other values
         class noise_scales:
-            dof_pos = 0.08  #0.01 0.08swing
+            dof_pos = 0.01  #0.01 0.08swing
             dof_vel = 1.5
             lin_vel = 0.1
             ang_vel = 0.2 #0.2 jump
