@@ -15,62 +15,41 @@ from copy import deepcopy
 import yaml
 import ctypes
 
-model_path_swing = "./model/swing/model_4400.jit"
-model_path_turnjump = "./model/turnjump/model_7450.jit"
-# model_path_test = "./model/test/model_15000.jit"
-# model_path_test = "./model/test/swing.pt"
-# model_path_test = "./model/test/trot.pt"
-# model_path_test = './model/test/policy_1.pt'
-# model_path_test = './model/test/stand.pt'
-# model_path_test = './model/test/wave.pt'
-# model_path_test0 = './model/test/swing_pd_1223_1.pt'  # 铁山靠 input 42
-# model_path_test = './model/test/wave_pd_1223_1.pt'  # input 42
-# model_path_test0 = './model/test/trot_1224_1.pt'  # trot步态会抖腿 input 42
-# model_path_test0 = './model/test/trot_1226_1.pt'  # input 42
-# model_path_test0 = './model/test/trot_1225_1.pt'  # 发抖 input 42
-# model_path_test0 = './model/test/swing_1225_1.pt' # 腿会滑动  input 42
-# model_path_test0 = './model/test/wave_1228_4.pt'  #  input 60
-# model_path_test0 = './model/test/swing_1230_1.pt'  #  input 60 pd150
-# model_path_test1 = './model/test/stand_1229_1.pt'  #  input 60 pd150
-# model_path_test0 = './model/test/wave_1230_1.jit'  #  input 60 pd150 单臂挥舞
-# model_path_test0 = './model/test/wave_0102_1.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度小
+# model 0: stand
+
+# model 1: arm leg
+
+# model 2: wave
+
+# model 3: trot
+
+# model 4: swing
+
+# model 5: turn and jump
+
+# model 6: wave two leg 1
+
+# model 7: wave two leg 2
 
 model_path_test2 = './model/test/wave_0112_1.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度大
-# model_path_test2 = './model/test/wave_0102_2.jit'
 
-# model_path_test2 = './model/test/wave_1231_1.jit'  #  input 60 pd150
-
-# 实物上摇摆用的1230_3,机身位置很低但是抖动比较小
-# model_path_test0 = './model/test/swing_1230_5.jit'  # input 60 摇摆 
-# model_path_test0 = './model/test/swing_0102_2.jit'  # input 60 摇摆 在实物上抖动很厉害
-
-# model_path_test4 = './model/test/swing_0112_1.jit'  # 可以一直左右摇摆
-# model_path_test4 = './model/test/swing_0104_1.jit'  
-# model_path_test4 = './model/test/swing_model_30000.jit'
 model_path_test4 = './model/test/swing_0118_1.jit'  
 
-# model_path_test1 = './model/test/arm_leg_0115_2.jit' #臂足协同
-# model_path_test1 = './model/test/arm_leg_0104_1.jit'  #时间延长训练效果不行
-# model_path_test1 = './model/test/arm_leg_0220_2156.jit' #臂足协同,但是动作不好看，拖腿
-# model_path_test1 = './model/test/arm_leg_2025-02-21_08-37-14.jit' #关节角度训练噪声0.08
-# model_path_test1 = './model/test/arm_leg_2025-02-21_08-43-01.jit' #关节角度训练噪声0.01
-# model_path_test1 = './model/test/arm_leg_2025-02-23_12-56-10.jit' #关节角度训练噪声0.08
-# model_path_test1 = './model/test/arm_leg_2025-02-23_12-59-00.jit' #关节角度训练噪声0.08，无延迟，实物上效果不好
+
 model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit' #关节角度训练噪声0.08，滤波延迟
 
-# model_path_test3 = './model/test/trot_123009.jit'  #  input 60 pd 150
+
 model_path_test3 = './model/test/trot_model_10500.jit'
 
 model_path_test5 = './model/test/turn_and_jump_0114_1.jit' # 跳跃turn_and_jump_0107_1不行
-# model_path_test5 = './model/test/turn_and_jump_0113_2.jit' #脚会打结，容易摔倒
+
 
 model_path_test6 = './model/test/wavetwoleg_model_18000.jit'
 model_path_test7 = './model/test/wavetwoleg2_model_26000.jit'
-# model_path_test7 = './model/test/twolegwave0110_1.jit'
+
 
 model_path_test0 = './model/test/stand_model_30000.jit' # 
-# model_path_test0 = './model/test/stand_0111_4.jit' # 
-# model_path_test0 = './model/test/arm_leg_2025-02-23_12-56-10.jit'
+
 def s(x):
     return math.sin(x)
 
@@ -146,8 +125,8 @@ class BJTUDance:
     # 初始化方法
     def __init__(self):
         self.device = torch.device('cpu')  # cpu cuda
-        self.num_obs = 60  # 60 94 63
-        self.num_acts = 18  # 12
+        self.num_obs = 42  # 60 94 63
+        self.num_acts = 12  # 12
         self.scale = {"lin_vel": 2.0,
                       "ang_vel": 0.25,
                       "dof_pos": 1.0,
@@ -157,10 +136,7 @@ class BJTUDance:
                       "clip_actions": 2.5,
                       "clip_arm_actions": 1.2,
                       "action_scale": 0.25}#0.25
-        default_dof_pos = [0.1, 0.8, -1.5, -0.1, 0.8, -1.5, 0.1, 1., -1.5, -0.1, 1., -1.5, 0, 0, 0, 0, 0, 0, 0,
-                           0]  # LF RF LH RH
-        # default_dof_pos = [0.1, 2.3, -2.4, -0.1, 2.3, -2.4, 0.1, 2.3, -2.4, -0.1, 2.3, -2.4, 0, 0, 0, 0, 0, 0, 0,
-        #                    0]  # LF RF LH RH 站立时的默认关节角度
+        default_dof_pos = [0.1, 0.8, -1.5, -0.1, 0.8, -1.5, 0.1, 0.8, -1.5, -0.1, 0.8, -1.5]  # LF RF LH RH
         self.default_dof_pos = to_torch(default_dof_pos[0:self.num_acts], device=self.device, requires_grad=False)
         self.dof_pos = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
         self.dof_vel = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
@@ -169,8 +145,6 @@ class BJTUDance:
         self.actions = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
         self.last_actions = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
 
-        self.actor_state2 = torch.zeros(size=(self.num_obs,), device=self.device, requires_grad=False)
-        self.actions2 = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
 
         self.delay = 0
         self.action_buf_len = 3
@@ -186,19 +160,19 @@ class BJTUDance:
         self.p_gains = to_torch(p_gains[0:self.num_acts], device=self.device, requires_grad=False)
         self.d_gains = to_torch(d_gains[0:self.num_acts], device=self.device, requires_grad=False)
         self.torques = torch.zeros(self.num_acts, device=self.device, requires_grad=False)
-        self.torques2 = torch.zeros(self.num_acts, device=self.device, requires_grad=False)
+
         torque_limits = [160, 180, 572, 160, 180, 572, 160, 180, 572, 160, 180, 572, 100, 100, 100, 100, 100, 100, 100,
                          100]
         self.torque_limits = to_torch(torque_limits[0:self.num_acts], device=self.device, requires_grad=False)
         # print("self.torque_limits: ", self.torque_limits)
 
         self.joint_qd = np.zeros((4, 3))
-        self.joint_qd2 = np.zeros((4, 3))
+
         self.joint_arm_d = np.zeros((self.num_acts - 12,))
-        self.joint_arm_d2 = np.zeros((self.num_acts - 12,))
+
 
         self.foot_pos = np.zeros((4, 3))
-        self.stand_height = 0.52
+        self.stand_height = 0.3
 
         self.lock = threading.Lock()
         self.shareinfo_tem = 0
@@ -318,7 +292,6 @@ class BJTUDance:
     def PutToDrive(self):
         for i in range(4):
             self.shareinfo_feed_send.servo_package.motor_enable[i] = 1
-            self.shareinfo_feed_send.servo_package2.motor_enable[i] = 1
             for j in range(3):
                 # self.shareinfo_feed_send.servo_package.kp[i][j] = max_effort[j]*0.8 #self.p_gains[i * 3 + j]
                 # self.shareinfo_feed_send.servo_package.kd[i][j] = max_vel[j]*0.1   #self.d_gains[i * 3 + j]
@@ -327,34 +300,8 @@ class BJTUDance:
                 self.shareinfo_feed_send.servo_package.joint_q_d[i][j] = self.joint_qd[i][j]
                 # self.shareinfo_feed_send.servo_package.joint_tau_d[reindex_feet1[i]][j] = self.torques[i * 3 + j]
                 
-
-                self.shareinfo_feed_send.servo_package2.kp[i][j] = self.p_gains[i * 3 + j]
-                self.shareinfo_feed_send.servo_package2.kd[i][j] = self.d_gains[i * 3 + j]
-                self.shareinfo_feed_send.servo_package2.joint_q_d[i][j] = self.joint_qd2[i][j]
         # print(f'action:{self.action_history_buf[-2]}')
         # print(f'des pos:{self.joint_qd}')
-        for k in range(self.num_acts - 12):
-            # self.shareinfo_feed_send.servo_package.joint_arm_d[k] = self.shareinfo_feed.sensor_package.joint_arm[k]
-            self.shareinfo_feed_send.servo_package.joint_arm_d[k] = self.joint_arm_d[k]
-            self.shareinfo_feed_send.servo_package2.joint_arm_d[k] = self.joint_arm_d2[k]
-            # self.shareinfo_feed_send.servo_package.joint_arm_d[k] = 0
-            # self.shareinfo_feed_send.servo_package2.joint_arm_d[k] = 0
-
-            self.shareinfo_feed_send.servo_package.kp_arm[k] = self.p_gains[12 + k]
-            self.shareinfo_feed_send.servo_package2.kp_arm[k] = self.p_gains[12 + k]
-
-            self.shareinfo_feed_send.servo_package.kd_arm[k] = self.d_gains[12 + k]
-            self.shareinfo_feed_send.servo_package2.kd_arm[k] = self.d_gains[12 + k]
-            # print("joint_arm",self.shareinfo_feed.sensor_package2.joint_arm[k])
-        # if self.model_select==1:
-        # print(f'des arm pos:{self.joint_arm_d}')
-        # 夹爪
-        self.shareinfo_feed_send.servo_package.joint_arm_d[6] = 0.0
-        self.shareinfo_feed_send.servo_package.joint_arm_d[7] = 0.0
-        self.shareinfo_feed_send.servo_package.kp_arm[6] = 20
-        self.shareinfo_feed_send.servo_package.kp_arm[7] = 20
-        self.shareinfo_feed_send.servo_package.kd_arm[6] = 1
-        self.shareinfo_feed_send.servo_package.kd_arm[7] = 1
 
         if self.model_select == 8:
             T = time.perf_counter()
@@ -415,10 +362,6 @@ class BJTUDance:
                 self.dof_vel[i * 3 + j] = self.shareinfo_feed.sensor_package.joint_qd[reindex_feet1[i]][j]
         # self.dof_vel[:] = 0  #测试用的
 
-        for i in range(self.num_acts - 12):
-            self.dof_pos[12 + i] = self.shareinfo_feed.sensor_package.joint_arm[i]
-            self.dof_vel[12 + i] = self.shareinfo_feed.sensor_package.joint_arm_dq[i]  # 机械臂的关节角速度
-
         self.actor_state[6: 6 + self.num_acts] = (self.dof_pos - self.default_dof_pos) * self.scale["dof_pos"]
         
         # if self.model_select == 8:
@@ -426,15 +369,8 @@ class BJTUDance:
         #     print(f'count:{self.count}')
         #     print(f'F_dof_pos:{self.F_dof_pos}')
 
-        self.actor_state[18:24] = 0 # 机械臂关节角度
-        if self.num_obs == 60:
-            self.actor_state[6 + self.num_acts: 6 + self.num_acts * 2] = self.dof_vel * self.scale["dof_vel"]
-            # self.actor_state[6 + self.num_acts: 6 + self.num_acts * 2] = 0
-            # self.actor_state[6 + self.num_acts * 2: 6 + self.num_acts * 3] = self.action_history_buf[-1]
-            self.actor_state[6 + self.num_acts * 2: 6 + self.num_acts * 3] = self.actions
-        else:
-            # self.actor_state[6 + self.num_acts * 1: 6 + self.num_acts * 2] = self.action_history_buf[-1]
-            self.actor_state[6 + self.num_acts * 1: 6 + self.num_acts * 2] = self.actions
+        self.actor_state[6 + self.num_acts: 6 + self.num_acts * 2] = self.dof_vel * self.scale["dof_vel"]
+        self.actor_state[6 + self.num_acts * 2: 6 + self.num_acts * 3] = self.actions
         
         self.actor_state = torch.clip(self.actor_state, -self.scale["clip_observations"], 
                                       self.scale["clip_observations"]).to(self.device)
@@ -457,11 +393,6 @@ class BJTUDance:
         # print("actions: ", self.actions)
         # print("actor_state[6+self.num_acts : 6+self.num_acts*2]: ", self.actor_state[6+self.num_acts*2 : 6+self.num_acts*3])
 
-    def PutToNet2(self):
-        x2, y2, z2, w2 = rpy2quaternion(self.shareinfo_feed.sensor_package2.imu_euler[0],
-                                        self.shareinfo_feed.sensor_package2.imu_euler[1],
-                                        self.shareinfo_feed.sensor_package2.imu_euler[2])
-        base_quat2 = to_torch([x2, y2, z2, w2], dtype=torch.float32, device=self.device).unsqueeze(0)
 
     def inference_(self):
         last_vel = 0
@@ -485,12 +416,8 @@ class BJTUDance:
             last_vel = self.shareinfo_feed_send.ocu_package.x_des_vel
             last_yaw = self.shareinfo_feed_send.ocu_package.yaw_turn_dot
 
-            
-
             self.PutToNet()
-            self.PutToNet2()
-            
-            
+                      
             # 将self.actor_state输出成文件
             actor_state.append(self.actor_state.tolist())
             torques.append(self.torques.tolist())
@@ -518,55 +445,41 @@ class BJTUDance:
                 # actions2 = self.model_test(self.actor_state2)
                 if self.model_select == 0:
                     actions = self.model_test0(self.actor_state)
-                    actions2 = self.model_test0(self.actor_state)
                 if self.model_select == 1:
                     actions = self.model_test1(self.actor_state)
-                    actions2 = self.model_test1(self.actor_state)
                 if self.model_select == 2:
                     actions = self.model_test2(self.actor_state)
-                    actions2 = self.model_test2(self.actor_state)
                 if self.model_select == 3:
                     actions = self.model_test3(self.actor_state)
-                    actions2 = self.model_test3(self.actor_state)
                 if self.model_select == 4:
                     actions = self.model_test4(self.actor_state)
-                    actions2 = self.model_test4(self.actor_state)
                 if self.model_select == 5:
                     actions = self.model_test5(self.actor_state)
-                    actions2 = self.model_test5(self.actor_state)
                 if self.model_select == 6:
                     actions = self.model_test6(self.actor_state)
-                    actions2 = self.model_test6(self.actor_state)
                 if self.model_select == 7 or self.model_select == 8:
-                    actions = self.model_test7(self.actor_state)
-                    actions2 = self.model_test7(self.actor_state)  
-            # TODO:切换模型时action_history_buf在这里置为零 cannot just run once
-               
+                    actions = self.model_test7(self.actor_state)  
+  
             # print("actions: \n", actions)
             # print("self.actor_state: ", self.actor_state)
 
 
             actions = actions.to(self.device)
-            actions2 = actions2.to(self.device)
 
             # if self.model_select != 9:
 
             # 存入history_buf
             # print("self.action_history_buf1: \n", self.action_history_buf)
             self.action_history_buf = torch.cat([self.action_history_buf[1:], actions[None, :]], dim=0)
-            self.action_history_buf2 = torch.cat([self.action_history_buf2[1:], actions2[None, :]], dim=0)
-            # print("self.action_history_buf2: \n", self.action_history_buf)
 
             actions = self.action_history_buf[-self.delay - 1]
-            actions2 = self.action_history_buf2[-self.delay - 1]
 
             # 剪切 
             clip_actions = self.scale["clip_actions"]/self.scale["action_scale"]
             clip_arm_actions = self.scale["clip_arm_actions"]/self.scale["action_scale"]
             self.actions[:12] = torch.clip(actions[:12], -clip_actions, clip_actions).to(self.device)
             self.actions[12:] = torch.clip(actions[12:], -clip_arm_actions, clip_arm_actions).to(self.device)
-            self.actions2[:12] = torch.clip(actions2[:12], -clip_actions, clip_actions).to(self.device)
-            self.actions2[12:] = torch.clip(actions2[12:], -clip_arm_actions, clip_arm_actions).to(self.device)
+
 
             # print("actions: \n", actions)
             # print("self.actions: \n", self.actions)
@@ -595,9 +508,7 @@ class BJTUDance:
 
 
             actions_scaled = self.actions * self.scale["action_scale"]
-            actions2_scaled = self.actions2 * self.scale["action_scale"]
             joint_qd = actions_scaled + self.default_dof_pos
-            joint_qd2 = actions2_scaled + self.default_dof_pos
 
             # joint_qd[4,] = 0.8+self.shareinfo_feed_send.ocu_package.x_des_vel
 
@@ -606,14 +517,11 @@ class BJTUDance:
             for i in range(4):
                 for j in range(3):
                     self.joint_qd[reindex_feet1[i]][j] = joint_qd.tolist()[i * 3 + j]
-                    self.joint_qd2[reindex_feet1[i]][j] = joint_qd2.tolist()[i * 3 + j]
             # self.joint_qd[0][1] = -0.6
             for i in range(self.num_acts - 12):
                 self.joint_arm_d[i] = joint_qd.tolist()[12 + i]
-                self.joint_arm_d2[i] = joint_qd2.tolist()[12 + i]
 
             self.torques = self._compute_torques(joint_qd).view(self.torques.shape)
-            self.torques2 = self._compute_torques(joint_qd2).view(self.torques2.shape)
 
             # print("torques: ", self.torques)
             # print("self.actor_state: ", self.actor_state)
