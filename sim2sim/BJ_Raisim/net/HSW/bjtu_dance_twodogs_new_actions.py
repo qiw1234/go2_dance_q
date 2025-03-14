@@ -16,7 +16,7 @@ import yaml
 import ctypes
 
 # model 0: stand
-model_path_test0 = './model/go2/stand_2025-03-14_09-07-41.jit' #
+model_path_test0 = './model/go2/stand_2025-03-14_14-59-06.jit' #
 # model 1: arm leg
 model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
 # model 2: wave
@@ -32,6 +32,7 @@ model_path_test6 = './model/test/wavetwoleg_model_18000.jit'
 # model 7: wave two leg 2
 model_path_test7 = './model/test/wavetwoleg2_model_26000.jit'
 
+TEST = False
 
 def s(x):
     return math.sin(x)
@@ -174,6 +175,25 @@ class BJTUDance:
         self.model_select = 0
 
         self.F_dof_pos = torch.zeros_like(self.actor_state[6:12], device=self.device, requires_grad=False)
+
+        # 测试动作参数
+        self._targetPos_1 = np.array([  [0.0, 1.36, -2.65], [0.0, 1.36, -2.65],
+                                        [-0.2, 1.36, -2.65], [0.2, 1.36, -2.65]])
+        self._targetPos_2 = np.array([  [0.0, 0.67, -1.3], [0.0, 0.67, -1.3],
+                                        [0.0, 0.67, -1.3], [0.0, 0.67, -1.3]])
+        self._targetPos_3 = np.array([  [-0.35, 1.36, -2.65], [0.35, 1.36, -2.65],
+                                        [-0.5, 1.36, -2.65], [0.5, 1.36, -2.65]])
+
+        self.startPos = np.zeros((4, 3))
+        self.duration_1 = 500
+        self.duration_2 = 500
+        self.duration_3 = 1000
+        self.duration_4 = 900
+        self.percent_1 = 0
+        self.percent_2 = 0
+        self.percent_3 = 0
+        self.percent_4 = 0
+        self.firstRun = True
 
         # 加载模型
         self.loadPolicy()
@@ -371,6 +391,42 @@ class BJTUDance:
         # print("actions: ", self.actions)
         # print("actor_state[6+self.num_acts : 6+self.num_acts*2]: ", self.actor_state[6+self.num_acts*2 : 6+self.num_acts*3])
 
+    def test_action(self): 
+        if self.firstRun:
+            for i in range(4):
+                for j in range(3):
+                    self.startPos[i, j] = self.shareinfo_feed.sensor_package.joint_q[i][j]
+            self.firstRun = False
+
+        self.percent_1 += 1.0 / self.duration_1
+        self.percent_1 = min(self.percent_1, 1)
+        if self.percent_1 < 1:
+            for i in range(4):
+                for j in range(3):
+                    self.joint_qd[i, j] = (1 - self.percent_1) * self.startPos[i, j] + self.percent_1 * self._targetPos_1[i, j]
+
+        if (self.percent_1 == 1) and (self.percent_2 <= 1):
+            self.percent_2 += 1.0 / self.duration_2
+            self.percent_2 = min(self.percent_2, 1)
+            for i in range(4):
+                for j in range(3):
+                    self.joint_qd[i, j] = (1 - self.percent_2) * self._targetPos_1[i, j] + self.percent_2 * self._targetPos_2[i, j]
+
+
+        if (self.percent_1 == 1) and (self.percent_2 == 1) and (self.percent_3 < 1):
+            self.percent_3 += 1.0 / self.duration_3
+            self.percent_3 = min(self.percent_3, 1)
+            for i in range(4):
+                for j in range(3):
+                    self.joint_qd[i, j] = self._targetPos_2[i, j] 
+
+        if (self.percent_1 == 1) and (self.percent_2 == 1) and (self.percent_3 == 1) and (self.percent_4 <= 1):
+            self.percent_4 += 1.0 / self.duration_4
+            self.percent_4 = min(self.percent_4, 1)
+            for i in range(4):
+                for j in range(3):
+                    self.joint_qd[i, j] = (1 - self.percent_4) * self._targetPos_2[i, j] + self.percent_4 * self._targetPos_3[i, j]
+
 
     def inference_(self):
         last_vel = 0
@@ -403,7 +459,7 @@ class BJTUDance:
                                self.shareinfo_feed.sensor_package.imu_euler[1],
                                self.shareinfo_feed.sensor_package.imu_euler[2],])
 
-            if counter == 2000:
+            if counter == 3000:
                 np.savetxt('data/actor_state.csv', np.array(actor_state), delimiter=",")
                 np.savetxt('data/torques.csv', np.array(torques), delimiter=",")
                 np.savetxt('data/base_euler.csv', np.array(base_euler), delimiter=",")
@@ -480,8 +536,12 @@ class BJTUDance:
 
             # print("torques: ", self.torques)
             # print("self.actor_state: ", self.actor_state)
-            print("action_scaled: ", actions_scaled)
-            print('actions:',joint_qd)
+            # print("action_scaled: ", actions_scaled)
+            # print('actions:',joint_qd)
+
+            if TEST:
+                self.test_action()
+                print('actions:',self.joint_qd)
 
             self.PutToDrive()
 

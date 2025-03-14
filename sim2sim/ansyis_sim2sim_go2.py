@@ -345,8 +345,8 @@ fig5, axs5 = plt.subplots()
 a = axs5
 a.grid(True)
 if plot_raisim:
-    # a.plot(raism_base_euler[:, 0], label='raisim_base_x', c='r')
-    # a.plot(raism_base_euler[:, 1], label='raisim_base_y', c='g')
+    a.plot(raism_base_euler[:, 0], label='raisim_base_x', c='r')
+    a.plot(raism_base_euler[:, 1], label='raisim_base_y', c='g')
     a.plot(raism_base_euler[:, 2], label='raisim_base_z', c='b')
 if plot_isaacgym:
     a.plot(isaacgym_base_euler[:, 0], label='isaacgym_base_x', linestyle='--', c='r')
