@@ -303,16 +303,14 @@ class GO2DanceCfg_stand(GO2Cfg):
             orientation = -1
 
             # 模仿奖励
-            tracking_lin_vel = 0
-            tracking_ang_vel = 0
-            track_root_pos = 3
-            track_root_height = 0
-            track_root_rot = 10
+            track_root_pos = 5
+            track_root_height = 3
+            track_root_rot = 3
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 8
+            track_dof_pos = 3
             track_dof_vel = 0
-            track_toe_pos = 10
+            track_toe_pos = 3
 
     class env(GO2Cfg.env):
         motion_name = 'stand'

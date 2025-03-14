@@ -16,15 +16,15 @@ import yaml
 import ctypes
 
 # model 0: stand
-model_path_test0 = './model/go2/swing_2025-03-12_09-37-50.jit' #
+model_path_test0 = './model/go2/stand_2025-03-14_09-07-41.jit' #
 # model 1: arm leg
 model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
 # model 2: wave
 model_path_test2 = './model/test/wave_0112_1.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度大
 # model 3: trot
-model_path_test3 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
+model_path_test3 = './model/go2/trot_2025-03-12_09-40-11.jit'
 # model 4: swing
-model_path_test4 = './model/test/swing_0118_1.jit'
+model_path_test4 = './model/go2/swing_2025-03-12_09-37-50.jit'
 # model 5: turn and jump
 model_path_test5 = './model/test/turn_and_jump_0114_1.jit' # 跳跃turn_and_jump_0107_1不行
 # model 6: wave two leg 1
@@ -135,7 +135,7 @@ class BJTUDance:
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
                                                dtype=torch.float)
         # 越大延迟越高
-        self.delay_factor = 0.6
+        self.delay_factor = 0.3
 
         p_gains = [20] * self.num_acts
         d_gains = [0.5] * self.num_acts
@@ -226,7 +226,7 @@ class BJTUDance:
                 self.delay_factor +=0.1
             if self.key_pressed == 'l':
                 self.delay_factor -=0.1
-            print(f'delay factor:{self.delay_factor}')
+            # print(f'delay factor:{self.delay_factor}')
                 # self.count = 0
             # if self.key_pressed in range(9):
             #     self.actions[:12] = 0
@@ -350,8 +350,8 @@ class BJTUDance:
         self.actor_state[6 + self.num_acts: 6 + self.num_acts * 2] = self.dof_vel * self.scale["dof_vel"]
         self.actor_state[6 + self.num_acts * 2: 6 + self.num_acts * 3] = self.actions
         
-        self.actor_state = torch.clip(self.actor_state, -self.scale["clip_observations"], 
-                                      self.scale["clip_observations"]).to(self.device)
+        # self.actor_state = torch.clip(self.actor_state, -self.scale["clip_observations"], 
+        #                               self.scale["clip_observations"]).to(self.device)
         # 机械臂速度设置为0
         # self.actor_state[6 + self.num_acts + 12: 6 + self.num_acts * 2] = 0
         # 测试，手动添加噪声
@@ -480,7 +480,8 @@ class BJTUDance:
 
             # print("torques: ", self.torques)
             # print("self.actor_state: ", self.actor_state)
-            # print('actions:',joint_qd)
+            print("action_scaled: ", actions_scaled)
+            print('actions:',joint_qd)
 
             self.PutToDrive()
 
