@@ -97,9 +97,9 @@ class GO2DanceCfg_swing(GO2Cfg):
             track_ang_vel_ref = 0
             track_dof_pos = 0
             track_dof_vel = 0
-            track_toe_pos = 1.
+            track_toe_pos = 5.
 
-            tracking_yaw = 1.
+            tracking_yaw = 5.
             # track_dof_pos = 5
             # track_dof_vel = 5
             # track_toe_pos = 10
@@ -110,7 +110,7 @@ class GO2DanceCfg_swing(GO2Cfg):
 
     class noise(GO2Cfg.noise):
         class noise_scales(GO2Cfg.noise.noise_scales):
-            dof_pos = 0.08
+            dof_pos = 0.01
 
 
 class GO2DanceCfg_swingPPO( GO2Cfg_PPO ):
@@ -309,8 +309,8 @@ class GO2DanceCfg_stand(GO2Cfg):
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
             track_dof_pos = 0
-            track_dof_vel = 0
-            track_toe_pos = 5
+            track_dof_vel = 5
+            track_toe_pos = 10
 
     class env(GO2Cfg.env):
         motion_name = 'stand'
