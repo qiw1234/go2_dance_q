@@ -16,7 +16,7 @@ import yaml
 import ctypes
 
 # model 0: stand
-model_path_test0 = './model/go2/stand_2025-03-14_14-59-06.jit' #
+model_path_test0 = './model/go2/stand_2025-03-14_09-07-41.jit' #
 # model 1: arm leg
 model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
 # model 2: wave
@@ -60,7 +60,6 @@ max_pos = [[0.87, 3.00, -0.45 - 0.262],
            [0.87, 3.00, -0.45 - 0.262],
            [0.69, 3.00, -0.45 - 0.262]]
 
-reindex_feet1 = [1, 0, 3, 2]
 max_effort = [160, 180, 572]
 max_vel = [19.3, 21.6, 12.8]
 joint_up_limit = [0.69, 3.92, -0.52]
@@ -296,7 +295,7 @@ class BJTUDance:
                 self.shareinfo_feed_send.servo_package.kp[i][j] = self.p_gains[i * 3 + j]
                 self.shareinfo_feed_send.servo_package.kd[i][j] = self.d_gains[i * 3 + j]
                 self.shareinfo_feed_send.servo_package.joint_q_d[i][j] = self.joint_qd[i][j]
-                # self.shareinfo_feed_send.servo_package.joint_tau_d[reindex_feet1[i]][j] = self.torques[i * 3 + j]
+                # self.shareinfo_feed_send.servo_package.joint_tau_d[i][j] = self.torques[i * 3 + j]
                 
         # print(f'action:{self.action_history_buf[-2]}')
         # print(f'des pos:{self.joint_qd}')
@@ -354,10 +353,10 @@ class BJTUDance:
         # print("projected_gravity: ", projected_gravity)
         # print("actor_state[0:6]: ", self.actor_state[0:6])
 
-        for i in range(4):  # LF RF LH RH <-- RF LF RH LH  reindex_feet1 = [1, 0, 3, 2]
+        for i in range(4):  # LF RF LH RH
             for j in range(3):
-                self.dof_pos[i * 3 + j] = self.shareinfo_feed.sensor_package.joint_q[reindex_feet1[i]][j]
-                self.dof_vel[i * 3 + j] = self.shareinfo_feed.sensor_package.joint_qd[reindex_feet1[i]][j]
+                self.dof_pos[i * 3 + j] = self.shareinfo_feed.sensor_package.joint_q[i][j]
+                self.dof_vel[i * 3 + j] = self.shareinfo_feed.sensor_package.joint_qd[i][j]
         # self.dof_vel[:] = 0  #测试用的
 
         self.actor_state[6: 6 + self.num_acts] = (self.dof_pos - self.default_dof_pos) * self.scale["dof_pos"]
@@ -530,14 +529,14 @@ class BJTUDance:
 
             for i in range(4):
                 for j in range(3):
-                    self.joint_qd[reindex_feet1[i]][j] = joint_qd.tolist()[i * 3 + j]
+                    self.joint_qd[i][j] = joint_qd.tolist()[i * 3 + j]
             # self.joint_qd[0][1] = -0.6
             self.torques = self._compute_torques(joint_qd).view(self.torques.shape)
 
             # print("torques: ", self.torques)
             # print("self.actor_state: ", self.actor_state)
             # print("action_scaled: ", actions_scaled)
-            # print('actions:',joint_qd)
+            # print('des pos:',self.joint_qd) #RF LF RH LH
 
             if TEST:
                 self.test_action()
