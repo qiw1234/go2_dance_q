@@ -323,6 +323,7 @@ class LeggedRobot(BaseTask):
         self.episode_length_buf[env_ids] = 0
         self.reset_buf[env_ids] = 1
         self.action_history_buf[env_ids, :, :] = 0.
+        self.actions[env_ids] = 0.
 
         # fill extras
         self.extras["episode"] = {}
