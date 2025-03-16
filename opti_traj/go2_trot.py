@@ -57,7 +57,7 @@ plt.plot(t, phase[:,3], linewidth=2)
 # plt.show()
 
 # 足端位置
-vx = 0.8
+vx = 1
 ax = vx*cpg.T*cpg.beta
 ay = 0
 az = 0.08

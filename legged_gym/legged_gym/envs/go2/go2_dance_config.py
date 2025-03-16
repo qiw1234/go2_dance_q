@@ -92,17 +92,14 @@ class GO2DanceCfg_swing(GO2Cfg):
             feet_air_time = 0
             track_root_pos = 0.
             track_root_height = 0.5
-            track_root_rot = 1.
+            track_root_rot = 0
+            orientation = -0.1
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 0
-            track_dof_vel = 0
-            track_toe_pos = 5.
-
-            tracking_yaw = 5.
-            # track_dof_pos = 5
-            # track_dof_vel = 5
-            # track_toe_pos = 10
+            track_dof_pos = 5
+            track_dof_vel = 5
+            track_toe_pos = 10.
+            tracking_yaw = 10.
 
     class env(GO2Cfg.env):
         # 旋转跳跃参考动作
@@ -267,13 +264,13 @@ class GO2DanceCfg_trot(GO2Cfg):
             feet_air_time = 0
 
             lin_vel_z = -0
-            track_root_pos = 0.
-            track_root_rot = 0
-            track_lin_vel_ref = 0
-            track_ang_vel_ref = 0
-            track_dof_pos = 3
-            track_dof_vel = 3
-            track_toe_pos = 8
+            track_root_pos = 1.
+            track_root_rot = 1
+            track_lin_vel_ref = 1
+            track_ang_vel_ref = 1
+            track_dof_pos = 5
+            track_dof_vel = 1
+            track_toe_pos = 5
             termination = -1.0
 
     class env(GO2Cfg.env):
@@ -303,13 +300,13 @@ class GO2DanceCfg_stand(GO2Cfg):
             orientation = -1
 
             # 模仿奖励
-            track_root_pos = 5
-            track_root_height = 3
-            track_root_rot = 3
+            track_root_pos = 3
+            track_root_height = 0
+            track_root_rot = 10
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 0
-            track_dof_vel = 5
+            track_dof_pos = 8
+            track_dof_vel = 0
             track_toe_pos = 10
 
     class env(GO2Cfg.env):

@@ -154,10 +154,10 @@ class LeggedRobotCfg(BaseConfig):
         randomize_joint_armature_each_joint = False
         joint_armature_factor = [0.8, 1.2]
 
-        randomize_motor = False  # PD部分的随机化 等价于PD的随机化 也是所有力矩部分随机化的总开关
+        randomize_motor = True  # PD部分的随机化 等价于PD的随机化 也是所有力矩部分随机化的总开关
         motor_strength_range = [0.8, 1.2]  # [0.8, 1.2]
 
-        randomize_torque = False  # 力矩整体的随机化
+        randomize_torque = True  # 力矩整体的随机化
         torque_multiplier_range = [0.8, 1.2]
 
         randomize_motor_offset = False  # 位置偏差随机化
@@ -172,7 +172,7 @@ class LeggedRobotCfg(BaseConfig):
         joint_viscous_range = [0.1, 0.9]
 
         randomize_base_mass = True
-        added_mass_range = [-1., 1.] # [-1., 5.]
+        added_mass_range = [-1., 5.] # [-1., 5.]
 
         randomize_base_com = True
         added_com_range = [-0.2, 0.2]
@@ -245,7 +245,7 @@ class LeggedRobotCfg(BaseConfig):
         add_noise = True
         noise_level = 1.0 # scales other values
         class noise_scales:
-            dof_pos = 0.01  #0.01 0.08swing
+            dof_pos = 0.04  #0.01 0.08swing
             dof_vel = 1.5
             lin_vel = 0.1
             ang_vel = 0.2 #0.2 jump
