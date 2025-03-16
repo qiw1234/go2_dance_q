@@ -7,9 +7,9 @@ import json
 
 # 使用CPG模型设计trot步态，使用hopf振荡器获得周期性的相位信号，根据这个相位信号计算足端轨迹
 
-num_row = 500
+num_row = 100
 num_col = 49
-fps = 100
+fps = 50
 
 trot_ref = np.ones((num_row-1, num_col))
 root_pos = np.zeros((num_row, 3))
@@ -23,7 +23,7 @@ dof_vel = np.zeros((num_row-1, 12))
 hopf_signal = np.zeros((num_row,8))
 
 go2 = utils.QuadrupedRobot()
-initPos = np.array([0.5, -0.5, -0.5, 0.5, 0, 0, 0, 0])
+initPos = np.array([-0.5, 0.5, 0.5, -0.5, 0, 0, 0, 0])
 gait = 'trot'
 cpg = CPG.cpgBuilder(initPos, gait=gait)
 
@@ -48,7 +48,7 @@ phase = np.arctan2(hopf_signal[:,4:8], hopf_signal[:,0:4])
 # plt.plot(t, hopf_signal[:,3], linewidth=3)
 #
 # plt.show()
-
+plt.rcParams['toolbar'] = 'none'
 plt.figure()
 plt.plot(t, phase[:,0], linewidth=6)
 plt.plot(t, phase[:,1], linewidth=6)
@@ -57,7 +57,7 @@ plt.plot(t, phase[:,3], linewidth=2)
 # plt.show()
 
 # 足端位置
-vx = 1
+vx = 0.8
 ax = vx*cpg.T*cpg.beta
 ay = 0
 az = 0.08
@@ -103,7 +103,8 @@ for i in range(num_row - 1):
 # 质心位置
 x = vx*t
 root_pos[:,0] = x
-root_pos[:,2] = 0.3  # 太空步
+# root_pos[:,2] = 0.3  # 太空步
+root_pos[:,2] = 0.28
 # 质心速度
 root_lin_vel[:,0] = vx
 # 机身方向

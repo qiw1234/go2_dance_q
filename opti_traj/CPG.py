@@ -37,7 +37,7 @@ class cpgBuilder:
     def getGait(self):
         if self.gait == 'trot':
             self.beta = 0.5
-            self.T = 0.5
+            self.T = 0.7
             self.phase = [0, np.pi, np.pi, 0]
         if self.gait == 'spacetrot':
             self.beta = 0.5
