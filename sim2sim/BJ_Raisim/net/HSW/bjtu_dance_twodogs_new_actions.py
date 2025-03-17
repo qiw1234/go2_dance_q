@@ -16,15 +16,15 @@ import yaml
 import ctypes
 
 # model 0: stand
-model_path_test0 = './model/go2/stand_2025-03-16_21-04-51.jit' #
+model_path_test0 = './model/go2/stand_2025-03-17_08-46-33.jit' #
 # model 1: arm leg
 model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
 # model 2: wave
 model_path_test2 = './model/test/wave_0112_1.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度大
 # model 3: trot
-model_path_test3 = './model/go2/trot_2025-03-12_09-40-11.jit'
+model_path_test3 = './model/go2/swing_2025-03-17_08-49-23.jit'
 # model 4: swing
-model_path_test4 = './model/go2/swing_2025-03-16_21-34-04.jit'
+model_path_test4 = './model/go2/swing_2025-03-17_08-49-23.jit'
 # model 5: turn and jump
 model_path_test5 = './model/test/turn_and_jump_0114_1.jit' # 跳跃turn_and_jump_0107_1不行
 # model 6: wave two leg 1
