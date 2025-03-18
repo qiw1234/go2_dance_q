@@ -9,4 +9,6 @@ __pycache__/
 
 **/sim2sim/BJ_Raisim/dog_arm/third_party
 
+**/sim2sim/BJ_Raisim/dog_arm/user/DogSimRaisim2/rsc
+
 **/sim2sim/BJ_Raisim/.vscode
