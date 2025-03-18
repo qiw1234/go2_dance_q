@@ -175,7 +175,7 @@ class LeggedRobotCfg(BaseConfig):
         added_mass_range = [-1., 5.] # [-1., 5.]
 
         randomize_base_com = True
-        added_com_range = [-0.2, 0.2]
+        added_com_range = [-0.05, 0.05]
 
         randomize_link_mass = True
         added_link_mass_range = [0.0, 0.2]
@@ -309,7 +309,7 @@ class LeggedRobotCfgPPO(BaseConfig):
         policy_class_name = 'ActorCritic'
         algorithm_class_name = 'PPO'
         num_steps_per_env = 24 # per iteration
-        max_iterations = 30000 # number of policy updates
+        max_iterations = 10000 # number of policy updates
 
         # logging
         save_interval = 500 # check for potential saves every this many iterations
