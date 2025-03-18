@@ -16,7 +16,7 @@ import yaml
 import ctypes
 
 # model 0: stand
-model_path_test0 = './model/go2/stand_2025-03-17_08-46-33.jit' #
+model_path_test0 = './model/go2/stand_2025-03-18_19-19-44.jit' #
 # model 1: arm leg
 model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
 # model 2: wave

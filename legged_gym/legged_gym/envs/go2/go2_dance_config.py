@@ -305,9 +305,9 @@ class GO2DanceCfg_stand(GO2Cfg):
             track_root_rot = 5
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 1
+            track_dof_pos = 5
             track_dof_vel = 0
-            track_toe_pos = 1
+            track_toe_pos = 5
 
     class env(GO2Cfg.env):
         motion_name = 'stand'
