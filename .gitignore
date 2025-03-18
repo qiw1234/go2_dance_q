@@ -5,6 +5,8 @@ __pycache__/
 
 **/sim2sim/BJ_Raisim/build
 
-**/sim2sim/BJ_Raisim/dog_arm
+**/sim2sim/BJ_Raisim/dog_arm/build-debug
+
+**/sim2sim/BJ_Raisim/dog_arm/third_party
 
 **/sim2sim/BJ_Raisim/.vscode
