@@ -35,7 +35,7 @@ class GO2Cfg(LeggedRobotCfg):
         name = "go2"
         foot_name = "foot"
         penalize_contacts_on = ["thigh", "calf"]
-        terminate_after_contacts_on = ["base"]
+        terminate_after_contacts_on = ["base", "hip"]
         self_collisions = 0  # 1 to disable, 0 to enable...bitwise filter
 
     class rewards(LeggedRobotCfg.rewards):
@@ -313,7 +313,7 @@ class GO2DanceCfg_stand(GO2Cfg):
         motion_name = 'stand'
         # 站立参考轨迹
         motion_files = 'opti_traj/go2ST'
-        check_contact = False
+        # check_contact = False
 
 
 class GO2DanceCfg_standPPO(GO2Cfg_PPO):
