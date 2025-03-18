@@ -189,21 +189,19 @@ class GO2DanceCfg_wave(GO2Cfg):
         class scales(GO2Cfg.rewards.scales):
             torques = -0.0002
             dof_pos_limits = -10.0
+            action_rate = -1
+            # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            feet_air_time = 0
-
-            lin_vel_z = -0
-            track_root_pos = 0.
-            track_root_height = 1.
-            track_root_rot = 1.2
+            track_root_pos = 0
+            track_root_height = 0.
+            track_root_rot = 5
+            orientation = 0
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
-            track_dof_pos = 0
-            track_dof_vel = 0
-            track_toe_pos = 8
-            orientation = -0.0
-            termination = -1.0
+            track_dof_pos = 10
+            track_dof_vel = 10
+            track_toe_pos = 5 #20
 
     class env(GO2Cfg.env):
         motion_name = 'wave'
