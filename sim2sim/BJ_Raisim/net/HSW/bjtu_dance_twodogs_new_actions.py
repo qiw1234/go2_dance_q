@@ -24,7 +24,7 @@ model_path_test2 = './model/test/wave_0112_1.jit'  #  input 60 pd150 单臂挥�
 # model 3: trot
 model_path_test3 = './model/go2/swing_2025-03-17_08-49-23.jit'
 # model 4: swing
-model_path_test4 = './model/go2/swing_2025-03-17_08-49-23.jit'
+model_path_test4 = './model/go2/swing_2025-03-18_09-59-44.jit'
 # model 5: turn and jump
 model_path_test5 = './model/test/turn_and_jump_0114_1.jit' # 跳跃turn_and_jump_0107_1不行
 # model 6: wave two leg 1
