@@ -36,7 +36,7 @@ def h_1(t):
 
 
 # 质心轨迹
-body_height = 0.33
+body_height = 0.3
 for i in range(20):
     root_pos[i, 2] = h_1(i / 50) + body_height
 for i in range(20,40):
@@ -120,10 +120,10 @@ toe_pos_world[:] = go2.toe_pos_init
 
 # 世界系下足端轨迹 一点一点规划
 def get_toepos(angle):
-    toepos_rf = casadi.DM(go2.transrpy([-0.1, 0.8, -1.5], 0, [0, 0, angle], [0, 0, 0.55]) @ go2.toe).full().T
-    toepos_lf = casadi.DM(go2.transrpy([0.1, 0.8, -1.5], 1, [0, 0, angle], [0, 0, 0.55]) @ go2.toe).full().T
-    toepos_rh = casadi.DM(go2.transrpy([-0.1, 0.8, -1.5], 2, [0, 0, angle], [0, 0, 0.55]) @ go2.toe).full().T
-    toepos_lh = casadi.DM(go2.transrpy([0.1, 0.8, -1.5], 3, [0, 0, angle], [0, 0, 0.55]) @ go2.toe).full().T
+    toepos_rf = casadi.DM(go2.transrpy([-0.1, 0.8, -1.5], 0, [0, 0, angle], [0, 0, body_height]) @ go2.toe).full().T
+    toepos_lf = casadi.DM(go2.transrpy([0.1, 0.8, -1.5], 1, [0, 0, angle], [0, 0, body_height]) @ go2.toe).full().T
+    toepos_rh = casadi.DM(go2.transrpy([-0.1, 0.8, -1.5], 2, [0, 0, angle], [0, 0, body_height]) @ go2.toe).full().T
+    toepos_lh = casadi.DM(go2.transrpy([0.1, 0.8, -1.5], 3, [0, 0, angle], [0, 0, body_height]) @ go2.toe).full().T
     return np.hstack(
         (toepos_rf.flatten()[:3], toepos_lf.flatten()[:3], toepos_rh.flatten()[:3], toepos_lh.flatten()[:3]))
 
