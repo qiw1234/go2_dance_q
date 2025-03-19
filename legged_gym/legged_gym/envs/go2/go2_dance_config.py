@@ -301,11 +301,15 @@ class GO2DanceCfg_stand(GO2Cfg):
             tracking_lin_vel = 0
             tracking_ang_vel = 0
             feet_air_time = 0
-            feet_contact_forces = -3
             action_rate = -10
-            orientation = -1
+
+            orientation = -2.
+            dof_vel = -0.001  # -0.01太大  -0.0001还行  -0.001可以 -0.002太大机械臂起不来
+            dof_acc = -3e-5  # -2.5e-5太大起不来 -5e-7 -5e-6还行 -5e-5起不来 -1e-5还可以 -2e-5可以 -4e-5起不来
+            feet_contact_forces = -0.01
 
             # 模仿奖励
+            track_root_rollandpitch = 10.
             track_root_pos = 5
             track_root_height = 0
             track_root_rot = 5

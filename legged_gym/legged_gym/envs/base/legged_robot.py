@@ -1643,6 +1643,10 @@ class LeggedRobot(BaseTask):
         # print("mask", mask)
         return mask
 
+    def _reward_track_root_rollandpitch(self):
+        base_euler_error = get_euler_xyz_tensor(self.frames[:, 3:7])[:, 0:2] - self.base_euler[:, 0:2]
+        return torch.exp(-300 * torch.sum(torch.square(base_euler_error), dim=1))
+
     #------------------------arm imitation rewards---------------------------------------
     def _reward_track_arm_dof_pos(self):
         return torch.exp(-20 * torch.sum(torch.square(self.frames[:, self.motion_loader.ARM_JOINT_POS_START_IDX:
