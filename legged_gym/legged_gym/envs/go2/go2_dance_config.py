@@ -150,22 +150,30 @@ class GO2DanceCfg_turn_and_jump(GO2Cfg):
         base_height_jump = 0.496
 
         class scales(GO2Cfg.rewards.scales):
-            torques = -0.0002
-            dof_pos_limits = -10.0
+            lin_vel_z = -0
+            survival = 1
+            feet_air_time = 1
+            feet_contact_time = 0
+            feet_contact_forces = -0.05
+            action_rate = -0.3
+            # arm_dof_error = -2.
+            orientation = -10.
+            # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            feet_air_time = 0
-
-            lin_vel_z = -0
-            track_root_pos = 1.
-            track_root_height = 0
-            track_root_rot = 1.2
+            track_root_pos = 0
+            track_root_height = 5
+            track_root_rot = 12
             track_lin_vel_ref = 0
             track_ang_vel_ref = 0
             track_dof_pos = 0
             track_dof_vel = 0
-            track_toe_pos = 1.5
-            jump = 1
+            track_toe_pos = 0
+            track_toe_height = 5
+            track_toe_x = 5
+            track_toe_y = 5
+            # jump reward
+            jump = 20.
 
     class env(GO2Cfg.env):
         motion_name = 'turn_and_jump'
