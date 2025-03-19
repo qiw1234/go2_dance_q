@@ -209,7 +209,7 @@ class GO2DanceCfg_wave(GO2Cfg):
             track_ang_vel_ref = 0
             track_dof_pos = 10
             track_dof_vel = 10
-            track_toe_pos = 5 #20
+            track_toe_pos = 20 #20 5
 
     class env(GO2Cfg.env):
         motion_name = 'wave'
