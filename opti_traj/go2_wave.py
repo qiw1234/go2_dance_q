@@ -32,7 +32,7 @@ dof_pos = np.zeros((num_row, 12))
 dof_vel = np.zeros((num_row - 1, 12))
 
 # 质心轨迹
-root_pos[:, 2] = 0.322
+root_pos[:, 2] = 0.3
 # 质心线速度 默认为0
 
 # 姿态
