@@ -201,7 +201,7 @@ class GO2DanceCfg_wave(GO2Cfg):
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            track_root_pos = 0
+            track_root_pos = 5
             track_root_height = 0.
             track_root_rot = 5
             orientation = 0
