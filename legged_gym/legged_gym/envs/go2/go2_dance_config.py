@@ -161,7 +161,7 @@ class GO2DanceCfg_turn_and_jump(GO2Cfg):
             # 模仿奖励
             tracking_lin_vel = 0
             tracking_ang_vel = 0
-            track_root_pos = 0
+            track_root_pos = 5
             track_root_height = 5
             track_root_rot = 12
             track_lin_vel_ref = 0
