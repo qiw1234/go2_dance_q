@@ -135,7 +135,7 @@ class BJTUDance:
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
                                                dtype=torch.float)
         # 越大延迟越高
-        self.delay_factor = 0.3
+        self.delay_factor = 0.75
 
         p_gains = [20] * self.num_acts
         d_gains = [0.5] * self.num_acts
