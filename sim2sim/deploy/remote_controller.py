@@ -65,7 +65,4 @@ class unitreeRemoteController:
         self.parse_key(remoteData)
         self.parse_botton(remoteData[2], remoteData[3])
 
-    def LowStateMessageHandler(self, msg: LowState_):
-        self.low_state = msg
-        wireless_remote_data = self.low_state.wireless_remote
-        self.parse(wireless_remote_data)
+

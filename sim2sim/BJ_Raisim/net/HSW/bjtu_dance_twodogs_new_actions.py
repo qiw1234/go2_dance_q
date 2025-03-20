@@ -51,19 +51,12 @@ def limit(a, min_, max_):
     return value
 
 
-min_pos = [[-0.69, -0.78, -2.6 - 0.262],
-           [-0.87, -0.78, -2.6 - 0.262],
-           [-0.69, -0.78, -2.6 - 0.262],
-           [-0.87, -0.78, -2.6 - 0.262]]
-max_pos = [[0.87, 3.00, -0.45 - 0.262],
-           [0.69, 3.00, -0.45 - 0.262],
-           [0.87, 3.00, -0.45 - 0.262],
-           [0.69, 3.00, -0.45 - 0.262]]
+
 
 max_effort = [160, 180, 572]
 max_vel = [19.3, 21.6, 12.8]
-joint_up_limit = [0.69, 3.92, -0.52]
-joint_low_limit = [-0.87, -1.46, -2.61]
+joint_up_limit = torch.tensor([0.8378, 3.4907, -0.83776, 0.8378, 3.4907, -0.83776, 0.8378, 4.5379, -0.83776, 0.8378, 4.5379, -0.83776])
+joint_low_limit = torch.tensor([-0.8378, -1.5708, -2.7227, -0.8378, -1.5708, -2.7227, -0.8378, -0.5236, -2.7227, -0.8378, -0.5236, -2.7227])
 
 
 def quat_rotate_inverse(q, v):  # 获取基座z轴在惯性系下的投影矢量，q是IMU的四元数，v是z轴向量 (0,0,-1)
@@ -135,7 +128,7 @@ class BJTUDance:
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
                                                dtype=torch.float)
         # 越大延迟越高
-        self.delay_factor = 0.75
+        self.delay_factor = 0.3
 
         p_gains = [20] * self.num_acts
         d_gains = [0.5] * self.num_acts
@@ -515,8 +508,6 @@ class BJTUDance:
             # print("self.actions: \n", self.actions)
 
             # self.actions = self.last_actions * self.delay_factor + self.actions * (1 - self.delay_factor)
-            for i in range(4):
-                self.actions[3*i] = self.last_actions[3*i] * self.delay_factor + self.actions[3*i] * (1 - self.delay_factor)
             self.last_actions = self.actions.clone()
 
 
@@ -525,7 +516,7 @@ class BJTUDance:
 
             # joint_qd[4,] = 0.8+self.shareinfo_feed_send.ocu_package.x_des_vel
 
-
+            joint_qd = torch.clip(joint_qd, joint_low_limit, joint_up_limit)
 
             for i in range(4):
                 for j in range(3):
