@@ -32,19 +32,6 @@ class Controller:
         self.cmd = np.array([0.0, 0, 0])
         self.counter = 0
 
-        if config.msg_type == "hg":
-            # g1 and h1_2 use the hg msg type
-            self.low_cmd = unitree_hg_msg_dds__LowCmd_()
-            self.low_state = unitree_hg_msg_dds__LowState_()
-            self.mode_pr_ = MotorMode.PR
-            self.mode_machine_ = 0
-
-            self.lowcmd_publisher_ = ChannelPublisher(config.lowcmd_topic, LowCmdHG)
-            self.lowcmd_publisher_.Init()
-
-            self.lowstate_subscriber = ChannelSubscriber(config.lowstate_topic, LowStateHG)
-            self.lowstate_subscriber.Init(self.LowStateHgHandler, 10)
-
         elif config.msg_type == "go":
             # h1 uses the go msg type
             self.low_cmd = unitree_go_msg_dds__LowCmd_()
