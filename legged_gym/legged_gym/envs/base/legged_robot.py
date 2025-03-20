@@ -133,26 +133,27 @@ class LeggedRobot(BaseTask):
         """
 
         actions.to(self.device)
-        # self.action_history_buf = torch.cat([self.action_history_buf[:, 1:].clone(), actions[:, None, :].clone()],
-        #                                     dim=1)
-        # if self.cfg.domain_rand.action_delay:
-        #     if self.global_counter % self.cfg.domain_rand.delay_update_global_steps == 0:
-        #         if len(self.cfg.domain_rand.action_curr_step) != 0:
-        #             self.delay = torch.tensor(self.cfg.domain_rand.action_curr_step.pop(0), device=self.device,
-        #                                       dtype=torch.float)
-        #     if self.viewer:
-        #         self.delay = torch.tensor(self.cfg.domain_rand.action_delay_view, device=self.device, dtype=torch.float)
-        #     indices = -self.delay - 1  # print("indices: ", indices)  # -2
-        #     actions = self.action_history_buf[:, indices.long()]  # delay for 1/50=20ms  对小数部分进行截断转换为long
-        #
-        # self.global_counter += 1
-
-        # 一阶滤波延迟
+        self.action_history_buf = torch.cat([self.action_history_buf[:, 1:].clone(), actions[:, None, :].clone()],
+                                            dim=1)
         if self.cfg.domain_rand.action_delay:
-            delay = self.delay
-        else:
-            delay = torch.zeros(self.num_envs, 1, device=self.device)
-        actions = (1 - delay) * actions + delay * self.actions
+            if self.global_counter % self.cfg.domain_rand.delay_update_global_steps == 0:
+                if len(self.cfg.domain_rand.action_curr_step) != 0:
+                    self.delay = torch.tensor(self.cfg.domain_rand.action_curr_step.pop(0), device=self.device,
+                                              dtype=torch.float)
+            if self.viewer:
+                self.delay = torch.tensor(self.cfg.domain_rand.action_delay_view, device=self.device, dtype=torch.float)
+            indices = -self.delay - 1  
+            # print("indices: ", indices)  # -2
+            actions = self.action_history_buf[:, indices.long()]  # delay for 1/50=20ms  对小数部分进行截断转换为long
+        
+        self.global_counter += 1
+
+        # # 一阶滤波延迟
+        # if self.cfg.domain_rand.action_delay:
+        #     delay = self.delay
+        # else:
+        #     delay = torch.zeros(self.num_envs, 1, device=self.device)
+        # actions = (1 - delay) * actions + delay * self.actions
 
         clip_actions = self.cfg.normalization.clip_actions / self.cfg.control.action_scale
         self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
