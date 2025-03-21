@@ -326,7 +326,7 @@ class GO2DanceCfg_stand(GO2Cfg):
         # check_contact = False
     
     class domain_rand(GO2Cfg.domain_rand):
-        action_curr_step = [5]
+        action_delay_range = [0, 5]
 
 
 class GO2DanceCfg_standPPO(GO2Cfg_PPO):

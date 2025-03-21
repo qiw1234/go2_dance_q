@@ -136,17 +136,10 @@ class LeggedRobot(BaseTask):
         self.action_history_buf = torch.cat([self.action_history_buf[:, 1:].clone(), actions[:, None, :].clone()],
                                             dim=1)
         if self.cfg.domain_rand.action_delay:
-            if self.global_counter % self.cfg.domain_rand.delay_update_global_steps == 0:
-                if len(self.cfg.domain_rand.action_curr_step) != 0:
-                    self.delay = torch.tensor(self.cfg.domain_rand.action_curr_step.pop(0), device=self.device,
-                                              dtype=torch.float)
-            if self.viewer:
-                self.delay = torch.tensor(self.cfg.domain_rand.action_delay_view, device=self.device, dtype=torch.float)
             indices = -self.delay - 1  
             # print("indices: ", indices)  # -2
-            actions = self.action_history_buf[:, indices.long()]  # delay for 1/50=20ms  对小数部分进行截断转换为long
+            actions = self.action_history_buf[torch.arange(self.num_envs),indices]  # delay for 1/50=20ms  对小数部分进行截断转换为long
         
-        self.global_counter += 1
 
         # # 一阶滤波延迟
         # if self.cfg.domain_rand.action_delay:
@@ -1072,8 +1065,11 @@ class LeggedRobot(BaseTask):
         self.toe_pos_body = torch.zeros((self.num_envs, 12), device=self.device)
 
         action_delay_range = self.cfg.domain_rand.action_delay_range
-        self.delay = torch_rand_float(action_delay_range[0], action_delay_range[1], (self.num_envs, 1),
-                                 device=self.device)
+        # 滤波延迟
+        # self.delay = torch_rand_float(action_delay_range[0], action_delay_range[1], (self.num_envs, 1),
+        #                          device=self.device)
+        # 倍数延迟
+        self.delay = torch.randint(action_delay_range[0], action_delay_range[1], (self.num_envs,), device=self.device)
 
     def _prepare_reward_function(self):
         """ Prepares a list of reward functions, whcih will be called to compute the total reward.
