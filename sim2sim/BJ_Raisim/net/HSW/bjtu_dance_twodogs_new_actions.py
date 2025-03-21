@@ -16,7 +16,8 @@ import yaml
 import ctypes
 
 # model 0: stand
-model_path_test0 = './model/go2/stand_2025-03-19_08-50-11.jit' #
+# model_path_test0 = './model/go2/stand_2025-03-19_08-50-11.jit' #
+model_path_test0 = './model/go2/stand_2025-03-21_15-37-08.jit' #120ms延迟站立
 # model 1: arm leg
 model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
 # model 2: wave

@@ -29,7 +29,7 @@ class unitreeRemoteController:
         self.F1 = 0
         self.F3 = 0
         self.Start = 0
-        self.time = datetime.datetime.now()
+        # self.time = datetime.datetime.now()
 
     def parse_botton(self, data1, data2):
         self.R1 = (data1 >> 0) & 1

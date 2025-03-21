@@ -6,7 +6,7 @@ class STATES:
 
 class stateMachine:
     def __init__(self):
-        self.state = STATES.defualt
+        self.state = STATES.ctrl
 
     def Stop(self):
         self.state = STATES.damp

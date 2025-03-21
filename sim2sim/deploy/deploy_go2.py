@@ -16,6 +16,7 @@ from unitree_sdk2py.comm.motion_switcher.motion_switcher_client import MotionSwi
 
 from remote_controller import unitreeRemoteController
 from state_machine import stateMachine, STATES
+from test_user_ctrl import userController
 
 PosStopF = 2.146e9
 VelStopF = 16000.0
@@ -24,7 +25,7 @@ VelStopF = 16000.0
 class robotController:
     def __init__(self):
         # 用户控制器
-        self.userController = uerController  #todo
+        self.userController = userController()
         # 遥控器
         self.remote_controller = unitreeRemoteController()
         # 状态机
@@ -44,6 +45,9 @@ class robotController:
         self.low_cmd = unitree_go_msg_dds__LowCmd_()
         self.low_state = unitree_go_msg_dds__LowState_()
 
+        # Initialize the command msg
+        self.init_cmd()
+
         self.lowcmd_publisher_ = ChannelPublisher('rt/lowcmd', LowCmd_)
         self.lowcmd_publisher_.Init()
 
@@ -53,8 +57,7 @@ class robotController:
         # wait for the subscriber to receive data
         self.wait_for_low_state()
 
-        # Initialize the command msg
-        self.init_cmd()
+
 
         # 关闭自带的运动服务
         self.sc = SportClient()
@@ -87,10 +90,21 @@ class robotController:
 
     def LowStateGo2Handler(self, msg: LowState_):
         self.low_state = msg
+        # print('###########################state####################################')
+        # print(f'RF HIP:{self.low_state.motor_state[0].q}')
         self.remote_controller.parse(self.low_state.wireless_remote)
+        # pos and vel
+        for i in range(12):
+            self.userController.qj[i] = self.low_state.motor_state[i].q
+            self.userController.dqj[i] = self.low_state.motor_state[i].dq
+        # imu_state quaternion: w, x, y, z
+        self.userController.quat = self.low_state.imu_state.quaternion
+        self.userController.ang_vel = np.array([self.low_state.imu_state.gyroscope], dtype=np.float32)
 
     def send_cmd(self, cmd: LowCmd_):
         cmd.crc = CRC().Crc(cmd)
+        # print('###########################cmd####################################')
+        # print(f'RF cmd :{cmd.motor_cmd[0].q}')
         self.lowcmd_publisher_.Write(cmd)
 
     def wait_for_low_state(self):
@@ -110,7 +124,7 @@ class robotController:
         size = len(cmd.motor_cmd)
         for i in range(size):
             cmd.motor_cmd[i].q = 0
-            cmd.motor_cmd[i].qd = 0
+            cmd.motor_cmd[i].dq = 0
             cmd.motor_cmd[i].kp = 0
             cmd.motor_cmd[i].kd = 0
             cmd.motor_cmd[i].tau = 0
@@ -119,9 +133,9 @@ class robotController:
         size = len(cmd.motor_cmd)
         for i in range(size):
             cmd.motor_cmd[i].q = 0
-            cmd.motor_cmd[i].qd = 0
+            cmd.motor_cmd[i].dq = 0
             cmd.motor_cmd[i].kp = 0
-            cmd.motor_cmd[i].kd = 2
+            cmd.motor_cmd[i].kd = 8
             cmd.motor_cmd[i].tau = 0
 
     def move_to_default_pos(self):
@@ -134,28 +148,31 @@ class robotController:
         init_dof_pos = np.zeros(12, dtype=np.float32)
         for i in range(12):
             init_dof_pos[i] = self.low_state.motor_state[i].q
-
+        print(f'init dof pos :{init_dof_pos}')
         # move to default pos
         for i in range(num_step):
             alpha = i / num_step
             for j in range(12):
                 self.low_cmd.motor_cmd[j].q = init_dof_pos[j] * (1 - alpha) + self.startPos[j] * alpha
-                self.low_cmd.motor_cmd[j].qd = 0
-                self.low_cmd.motor_cmd[j].kp = 60
-                self.low_cmd.motor_cmd[j].kd = 5
+                self.low_cmd.motor_cmd[j].dq = 0
+                self.low_cmd.motor_cmd[j].kp = self.userController.p_gains
+                self.low_cmd.motor_cmd[j].kd = self.userController.d_gains
                 self.low_cmd.motor_cmd[j].tau = 0
+            # print(f'RF HIP:{self.low_state.motor_state[0].q}')
+            # print(f'RF cmd :{self.low_cmd.motor_cmd[0].q}')
+            # print(f'RF hip error: {self.low_state.motor_state[0].q - self.low_cmd.motor_cmd[0].q}')
             self.send_cmd(self.low_cmd)
             time.sleep(self.control_dt)
 
-    def default_pos_state(self, kp=60, kd=5):
+    def default_pos_state(self, kp=20, kd=0.5):
         print("Enter default pos state.")
         print("Waiting for the Button A signal...")
         while self.remote_controller.A != 1:
             for j in range(12):
                 self.low_cmd.motor_cmd[j].q = self.startPos[j]
-                self.low_cmd.motor_cmd[j].qd = 0
-                self.low_cmd.motor_cmd[j].kp = kp
-                self.low_cmd.motor_cmd[j].kd = kd
+                self.low_cmd.motor_cmd[j].dq = 0
+                self.low_cmd.motor_cmd[j].kp = self.userController.p_gains
+                self.low_cmd.motor_cmd[j].kd = self.userController.d_gains
                 self.low_cmd.motor_cmd[j].tau = 0
             self.send_cmd(self.low_cmd)
             time.sleep(self.control_dt)
@@ -172,6 +189,7 @@ class robotController:
                 print('crtl!!')
 
     def run(self):
+        start_RL_Time = time.perf_counter()
         self.update_state_machine()
         if self.stateMachine.state == STATES.defualt:
             self.move_to_default_pos()
@@ -181,29 +199,22 @@ class robotController:
             self.send_cmd(self.low_cmd)
             time.sleep(self.control_dt)
         if self.stateMachine.state == STATES.ctrl:
-            self.update_low_state()
             self.userController.inference()
             self.update_low_cmd()
             # send the command
             self.send_cmd(self.low_cmd)
-            time.sleep(self.control_dt) #todo:改成保证50Hz
-
-    def update_low_state(self):
-        # pos and vel
-        for i in range(12):
-            self.userController.qj[i] = self.low_state.motor_state[i].q
-            self.userController.dqj[i] = self.low_state.motor_state[i].dq
-        # imu_state quaternion: w, x, y, z
-        self.userController.quat = self.low_state.imu_state.quaternion
-        self.userController.ang_vel = np.array([self.low_state.imu_state.gyroscope], dtype=np.float32)
-
+            last_time = time.perf_counter() - start_RL_Time
+            # if last_time > self.control_dt:
+            #     print("time over:", time.perf_counter() - start_RL_Time)
+            if last_time < self.control_dt:
+                time.sleep(self.control_dt - last_time)  # 保证50Hz频率
 
     def update_low_cmd(self):
         for i in range(12):
-            self.low_cmd.motor_cmd[i].q = self.userController.joint_qd[i]
-            self.low_cmd.motor_cmd[i].qd = 0
-            self.low_cmd.motor_cmd[i].kp = self.userController.kp
-            self.low_cmd.motor_cmd[i].kd = self.userController.kd
+            self.low_cmd.motor_cmd[i].q = self.userController.des_joint_pos[i]
+            self.low_cmd.motor_cmd[i].dq = 0
+            self.low_cmd.motor_cmd[i].kp = self.userController.p_gains
+            self.low_cmd.motor_cmd[i].kd = self.userController.d_gains
             self.low_cmd.motor_cmd[i].tau = 0
 
 if __name__ == "__main__":
@@ -224,6 +235,7 @@ if __name__ == "__main__":
     # Enter the default position state, press the A key to continue executing
     controller.default_pos_state()
 
+    print("start ctrl loop")
     while True:
         try:
             controller.run()
