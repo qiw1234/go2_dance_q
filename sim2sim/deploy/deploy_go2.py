@@ -99,7 +99,8 @@ class robotController:
             self.userController.dqj[i] = self.low_state.motor_state[i].dq
         # imu_state quaternion: w, x, y, z
         self.userController.quat = self.low_state.imu_state.quaternion
-        self.userController.ang_vel = np.array([self.low_state.imu_state.gyroscope], dtype=np.float32)
+        self.userController.rpy = self.low_state.imu_state.rpy
+        self.userController.ang_vel = self.low_state.imu_state.gyroscope
 
     def send_cmd(self, cmd: LowCmd_):
         cmd.crc = CRC().Crc(cmd)
@@ -138,7 +139,7 @@ class robotController:
             cmd.motor_cmd[i].kd = 8
             cmd.motor_cmd[i].tau = 0
 
-    def move_to_default_pos(self):
+    def move_to_default_pos(self, kp=60, kd=5):
         print("Moving to default pos.")
         # move time 2s
         total_time = 2
@@ -155,8 +156,8 @@ class robotController:
             for j in range(12):
                 self.low_cmd.motor_cmd[j].q = init_dof_pos[j] * (1 - alpha) + self.startPos[j] * alpha
                 self.low_cmd.motor_cmd[j].dq = 0
-                self.low_cmd.motor_cmd[j].kp = self.userController.p_gains
-                self.low_cmd.motor_cmd[j].kd = self.userController.d_gains
+                self.low_cmd.motor_cmd[j].kp = kp
+                self.low_cmd.motor_cmd[j].kd = kd
                 self.low_cmd.motor_cmd[j].tau = 0
             # print(f'RF HIP:{self.low_state.motor_state[0].q}')
             # print(f'RF cmd :{self.low_cmd.motor_cmd[0].q}')
@@ -164,15 +165,15 @@ class robotController:
             self.send_cmd(self.low_cmd)
             time.sleep(self.control_dt)
 
-    def default_pos_state(self, kp=20, kd=0.5):
+    def default_pos_state(self, kp=60, kd=5):
         print("Enter default pos state.")
         print("Waiting for the Button A signal...")
         while self.remote_controller.A != 1:
             for j in range(12):
                 self.low_cmd.motor_cmd[j].q = self.startPos[j]
                 self.low_cmd.motor_cmd[j].dq = 0
-                self.low_cmd.motor_cmd[j].kp = self.userController.p_gains
-                self.low_cmd.motor_cmd[j].kd = self.userController.d_gains
+                self.low_cmd.motor_cmd[j].kp = kp
+                self.low_cmd.motor_cmd[j].kd = kd
                 self.low_cmd.motor_cmd[j].tau = 0
             self.send_cmd(self.low_cmd)
             time.sleep(self.control_dt)
