@@ -2,21 +2,19 @@ import numpy as np
 import torch
 
 # model 0: stand
-model_path_test0 = './model/go2/stand_2025-03-21_15-37-08.jit'  #120ms延迟站立
-# model 1: arm leg
-model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
-# model 2: wave
-model_path_test2 = './model/test/wave_0112_1.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度大
-# model 3: trot
-model_path_test3 = './model/go2/trot_2025-03-19_08-53-03.jit'
-# model 4: swing
-model_path_test4 = './model/go2/swing_2025-03-18_15-40-36.jit'
-# model 5: turn and jump
-model_path_test5 = './model/test/turn_and_jump_0114_1.jit'  # 跳跃turn_and_jump_0107_1不行
-# model 6: wave two leg 1
-model_path_test6 = './model/test/wavetwoleg_model_18000.jit'
-# model 7: wave two leg 2
-model_path_test7 = './model/test/wavetwoleg2_model_26000.jit'
+model_path_test0 = './model/go2/stand_2025-03-21_15-37-08.jit'  # 120ms延迟站立
+# model 1: wave
+model_path_test1 = './model/go2/wave_2025-03-24_09-39-30.jit'  #
+# model 2: trot
+model_path_test2 = './model/go2/stand_2025-03-21_15-37-08.jit'
+# model 3: swing
+model_path_test3 = './model/go2/swing_2025-03-24_08-54-00.jit'
+# model 4: turn and jump
+model_path_test4 = './model/go2/stand_2025-03-21_15-37-08.jit'  #
+# model 5: wave two leg 1
+model_path_test5 = './model/go2/stand_2025-03-21_15-37-08.jit'
+# model 6: wave two leg 2
+model_path_test6 = './model/go2/stand_2025-03-21_15-37-08.jit'
 
 # 关节上下限，两前腿一致，两后腿一致
 joint_up_limit = torch.tensor(
@@ -103,8 +101,6 @@ class userController:
         self.model_test5.eval()
         self.model_test6 = torch.jit.load(model_path_test6).to(self.device)
         self.model_test6.eval()
-        self.model_test7 = torch.jit.load(model_path_test7).to(self.device)
-        self.model_test7.eval()
 
     def PutToNet(self):
         x, y, z, w = self.quat[1], self.quat[2],self.quat[3], self.quat[0]
@@ -124,8 +120,8 @@ class userController:
                 self.dof_pos[i * 3 + j] = self.qj[reindex_feet[i] * 3 + j]
                 self.dof_vel[i * 3 + j] = self.dqj[reindex_feet[i] * 3 + j]
 
-        self.actor_state[6: 6 + self.num_actions] = (self.dof_pos - self.default_dof_pos) * self.scale["dof_pos"]
-        self.actor_state[6 + self.num_actions: 6 + self.num_actions * 2] = self.dof_vel * self.scale["dof_vel"]
+        self.actor_state[6: 6 + self.num_actions] = torch.from_numpy(self.dof_pos - self.default_dof_pos) * self.scale["dof_pos"]
+        self.actor_state[6 + self.num_actions: 6 + self.num_actions * 2] = torch.from_numpy(self.dof_vel) * self.scale["dof_vel"]
         self.actor_state[6 + self.num_actions * 2: 6 + self.num_actions * 3] = self.actions
 
         self.actor_state = torch.clip(self.actor_state, -self.scale["clip_observations"],
@@ -160,8 +156,7 @@ class userController:
                 self.actions = self.model_test5(self.actor_state)
             if self.model_select == 6:
                 self.actions = self.model_test6(self.actor_state)
-            if self.model_select == 7 or self.model_select == 8:
-                self.actions = self.model_test7(self.actor_state)
+
 
         # 剪切
         clip_actions = self.scale["clip_actions"] / self.scale["action_scale"]

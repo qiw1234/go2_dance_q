@@ -16,7 +16,8 @@ from unitree_sdk2py.comm.motion_switcher.motion_switcher_client import MotionSwi
 
 from remote_controller import unitreeRemoteController
 from state_machine import stateMachine, STATES
-from test_user_ctrl import userController
+# from test_user_ctrl import userController
+from user_ctrl import userController
 
 PosStopF = 2.146e9
 VelStopF = 16000.0
@@ -98,9 +99,9 @@ class robotController:
             self.userController.qj[i] = self.low_state.motor_state[i].q
             self.userController.dqj[i] = self.low_state.motor_state[i].dq
         # imu_state quaternion: w, x, y, z
-        self.userController.quat = self.low_state.imu_state.quaternion
-        self.userController.rpy = self.low_state.imu_state.rpy
-        self.userController.ang_vel = self.low_state.imu_state.gyroscope
+        self.userController.quat = np.array(self.low_state.imu_state.quaternion)
+        self.userController.rpy = np.array(self.low_state.imu_state.rpy)
+        self.userController.ang_vel = np.array(self.low_state.imu_state.gyroscope)
 
     def send_cmd(self, cmd: LowCmd_):
         cmd.crc = CRC().Crc(cmd)
@@ -188,6 +189,14 @@ class robotController:
         if self.remote_controller.Y == 1:
             if self.stateMachine.Ctrl():
                 print('crtl!!')
+        if self.remote_controller.Up == 1:
+            self.userController.model_select = 0
+        if self.remote_controller.Down == 1:
+            self.userController.model_select = 1
+        if self.remote_controller.Left == 1:
+            self.userController.model_select = 2
+        if self.remote_controller.Right == 1:
+            self.userController.model_select = 3
 
     def run(self):
         start_RL_Time = time.perf_counter()
