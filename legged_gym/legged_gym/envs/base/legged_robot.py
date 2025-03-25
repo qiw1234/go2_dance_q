@@ -1572,7 +1572,7 @@ class LeggedRobot(BaseTask):
         # rb_states里面装的是绝对坐标
         # 使用quat_rotate_inverse将世界系下的末端相对足端位置转换为body系下的相对位置
         # rb_states里的数据滞后于base_pos,还没弄清楚：post_physics_step中一进去就会更新函数()，保证数据最新
-        temp = torch.exp(-50 * torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos_body), dim=1))
+        temp = torch.exp(-100 * torch.sum(torch.square(self.frames[:, 13:25] - self.toe_pos_body), dim=1))
         # print(f'ref toe pos {self.frames[:, 13:25]}')
         # print(f'toe pos {self.toe_pos_body}')
         # print(50*'*')

@@ -58,7 +58,7 @@ for i in range(num_row-1):
 # 这是默认的足端位置，坐标系是固定在root处的世界系
 # 右前腿的动作通过关节角度规划
 toe_pos[:] = go2.toe_pos_init
-q_FR_0 = [-0.1, 0.8, -1.5]  # 初始位置
+q_FR_0 = [-0.0905, 0.844, -1.107]  # 初始位置
 q_FR_1 = [-0.1, -0.8, -1.5]  # 抬手中间位置
 q_FR_2 = [-0.1, -0.8, -1]  # 抬手下方
 q_FR_3 = [-0.1, -0.8, -2.5]  # 抬手上方
@@ -86,22 +86,30 @@ dof_pos[20:, 3:6] = q_FL_1
 
 # 计算足端位置在质心坐标系的坐标
 for i in range(toe_pos.shape[0]):
-    toe_pos[i, :3] = np.transpose(casadi.DM(go2.transrpy(dof_pos[i, :3], 0, [0, 0, 0], [0, 0, 0]) @ go2.toe).full()[:3])
+    if i < 20:
+        toe_pos[i, :3] = np.transpose(utils.quaternion2rotm(root_rot[i, :])) @ go2.toe_pos_init[:3]
+    else:
+        toe_pos[i, :3] = np.transpose(casadi.DM(go2.transrpy(dof_pos[i, :3], 0, [0, 0, 0], [0, 0, 0]) @ go2.toe).full()[:3])
     toe_pos[i, 3:6] = np.transpose(casadi.DM(go2.transrpy(dof_pos[i, 3:6], 1, [0, 0, 0], [0, 0, 0]) @ go2.toe).full()[:3])
     toe_pos[i, 6:9] = np.transpose(utils.quaternion2rotm(root_rot[i,:])) @ toe_pos[i, 6:9]
     toe_pos[i, 9:12] = np.transpose(utils.quaternion2rotm(root_rot[i,:])) @ toe_pos[i, 9:12]
 
 # go2的关节上下限
 q = SX.sym('q', 3, 1)
-for j in range(1, 4):
+last_q = [0,0,0]
+for j in range(4):
     for i in range(num_row):
         # 这里的toe_pos是世界系足端轨迹，需要考虑质心姿态，因此左乘一个质心姿态
         pos = (go2.transrpy(q, j, [0, 0, 0], [0, 0, 0]) @ go2.toe)[:3]
-        cost = 500 * casadi.dot((toe_pos[i, 3 * j:3 * j + 3] - pos[:3]), (toe_pos[i, 3 * j:3 * j + 3] - pos[:3]))
+        cost = 500 * casadi.dot((toe_pos[i, 3 * j:3 * j + 3] - pos[:3]), (toe_pos[i, 3 * j:3 * j + 3] - pos[:3]))\
+                + casadi.dot((q - last_q), (q - last_q))
         nlp = {'x': q, 'f': cost}
         S = casadi.nlpsol('S', 'ipopt', nlp)
         r = S(x0=[0.1, 0.8, -1.5], lbx=go2.lb[3 * j:3 * j + 3], ubx=go2.ub[3 * j:3 * j + 3])
         q_opt = r['x']
+        last_q = q_opt
+        # toe_pos_v = go2.transrpy(q_opt, j, [0, 0, 0], [0, 0, 0]) @ go2.toe
+        # print(toe_pos_v, toe_pos[i, :3])
         dof_pos[i, 3 * j:3 * j + 3] = q_opt.T
 
 # 关节角速度
@@ -133,4 +141,6 @@ json_data = {
 with open('output_json/wave.json', 'w') as f:
     json.dump(json_data, f, indent=4)
 with open('go2ST/wave.json', 'w') as f:
+    json.dump(json_data, f, indent=4)
+with open('/home/pcpc/webots_project/GO2/controllers/dog_supervisor/wave.json', 'w') as f:
     json.dump(json_data, f, indent=4)
