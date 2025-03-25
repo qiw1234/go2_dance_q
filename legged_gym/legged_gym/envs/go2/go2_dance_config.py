@@ -268,6 +268,7 @@ class GO2DanceCfg_trot(GO2Cfg):
             tracking_lin_vel = 0
             tracking_ang_vel = 0
             feet_air_time = 0
+            feet_slip = -1
 
             lin_vel_z = -0
             track_root_pos = 1.

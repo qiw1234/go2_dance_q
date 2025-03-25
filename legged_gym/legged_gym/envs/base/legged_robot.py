@@ -244,6 +244,7 @@ class LeggedRobot(BaseTask):
         self.last_dof_vel[:] = self.dof_vel[:]
         self.last_torques[:] = self.torques[:]
         self.last_root_vel[:] = self.root_states[:, 7:13]
+        self.last_toe_pos_world[:] = self.toe_pos_world[:]
 
         if self.viewer and self.enable_viewer_sync and self.debug_viz:
             self._draw_debug_vis()
@@ -318,6 +319,7 @@ class LeggedRobot(BaseTask):
         self.reset_buf[env_ids] = 1
         self.action_history_buf[env_ids, :, :] = 0.
         self.actions[env_ids] = 0.
+        self.last_toe_pos_world[env_ids] = 0
 
         # fill extras
         self.extras["episode"] = {}
@@ -1071,6 +1073,11 @@ class LeggedRobot(BaseTask):
         # 倍数延迟
         self.delay = torch.randint(action_delay_range[0], action_delay_range[1], (self.num_envs,), device=self.device)
 
+        self.toe_pos_world = torch.zeros(self.num_envs, self.cfg.env.num_leg * 3, dtype=torch.float,
+                                              device=self.device, requires_grad=False)
+        self.last_toe_pos_world = torch.zeros(self.num_envs, self.cfg.env.num_leg*3, dtype=torch.float, device=self.device,
+                                         requires_grad=False)
+
     def _prepare_reward_function(self):
         """ Prepares a list of reward functions, whcih will be called to compute the total reward.
             Looks for self._reward_<REWARD_NAME>, where <REWARD_NAME> are names of all non zero reward scales in the cfg.
@@ -1537,6 +1544,17 @@ class LeggedRobot(BaseTask):
         return torch.sum(torch.square(self.torques - self.last_torques), dim=1)
 
 
+    def _reward_feet_slip(self):
+        # 接触判断 [num_envs, 4]
+        contact = self.contact_forces[:, self.feet_indices, 2] > 5.
+        # 将脚的位置转换为 [num_envs, 4, 3] 的形状
+        current_feet = self.toe_pos_world.view(-1, 4, 3)
+        last_feet = self.last_toe_pos_world.view(-1, 4, 3)
+        # 计算所有脚的滑动
+        slip = torch.norm(current_feet - last_feet, dim=-1) > 0.1
+        # 对接触中的脚施加滑动惩罚（向量化点乘并求和）
+        rew = (slip * contact).sum(dim=1)
+        return rew
 
     #-----------------------leg imitation rewards-----------------------------------------------
     def _reward_track_root_pos(self):
