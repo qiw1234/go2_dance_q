@@ -32,8 +32,8 @@ class robotController:
         # 状态机
         self.stateMachine = stateMachine()
         # 移动参数
-        self.startPos = [0.0, 1.36, -2.65, 0.0, 1.36, -2.65,
-                         -0.2, 1.36, -2.65, 0.2, 1.36, -2.65]
+        self.startPos = [-0.03170794,  1.3318926,  -2.7798176,   0.03267688,  1.3222644,  -2.7878265,
+                        -0.27484167,  1.3498114,  -2.8058195,   0.2809577,   1.3450881,  -2.8097687 ]
 
         num_actions = self.userController.num_actions
         # Initializing process variables
@@ -58,7 +58,11 @@ class robotController:
         # wait for the subscriber to receive data
         self.wait_for_low_state()
 
-
+        # 保存数据变量
+        self.savedT = []
+        self.savedActorState = []
+        self.savedCmd = []
+        self.startTime = time.perf_counter()
 
         # 关闭自带的运动服务
         self.sc = SportClient()
@@ -150,7 +154,7 @@ class robotController:
         init_dof_pos = np.zeros(12, dtype=np.float32)
         for i in range(12):
             init_dof_pos[i] = self.low_state.motor_state[i].q
-        print(f'init dof pos :{init_dof_pos}')
+        # print(f'init dof pos :{init_dof_pos}')
         # move to default pos
         for i in range(num_step):
             alpha = i / num_step
@@ -213,11 +217,16 @@ class robotController:
             self.update_low_cmd()
             # send the command
             self.send_cmd(self.low_cmd)
+            # 记录数据
+            self.savedT.append(time.perf_counter() - self.startTime)
+            self.savedActorState.append(self.userController.actor_state.tolist())
+            self.savedCmd.append([self.low_cmd.motor_cmd[i].q for i in range(12)])
+            # 保证50Hz频率
             last_time = time.perf_counter() - start_RL_Time
             # if last_time > self.control_dt:
             #     print("time over:", time.perf_counter() - start_RL_Time)
             if last_time < self.control_dt:
-                time.sleep(self.control_dt - last_time)  # 保证50Hz频率
+                time.sleep(self.control_dt - last_time)
 
     def update_low_cmd(self):
         for i in range(12):
@@ -253,8 +262,15 @@ if __name__ == "__main__":
             if controller.remote_controller.Select == 1:
                 break
         except KeyboardInterrupt:
-            break
-    # Enter the damping state
-    controller.create_damping_cmd(controller.low_cmd)
-    controller.send_cmd(controller.low_cmd)
+            break  # Enter the damping state
+    # 保存数据
+    T = np.array(controller.savedT)
+    actorState = np.array(controller.savedActorState)
+    cmd = np.array(controller.savedCmd)
+    np.savetxt('data/T.csv', T, delimiter=",")
+    np.savetxt('data/actorState.csv', actorState, delimiter=",")
+    np.savetxt('data/cmd.csv', cmd, delimiter=",")
+    print("data has been saved!")
+
+    controller.move_to_default_pos()
     print("Exit")

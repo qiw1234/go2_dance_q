@@ -16,12 +16,12 @@ import yaml
 import ctypes
 
 # model 0: stand
-# model_path_test0 = './model/go2/stand_2025-03-19_08-50-11.jit' #
 model_path_test0 = './model/go2/stand_2025-03-21_15-37-08.jit' #120ms延迟站立
+# model_path_test0 = './model/go2/stand_2025-03-25_17-14-31.jit' #0~120ms延迟站立
 # model 1: arm leg
 model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
 # model 2: wave
-model_path_test2 = './model/go2/wave_2025-03-24_09-39-30.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度大
+model_path_test2 = './model/go2/wave_2025-03-25_08-37-13.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度大
 # model 3: trot
 model_path_test3 = './model/go2/trot_2025-03-19_08-53-03.jit'
 # model 4: swing
@@ -123,8 +123,8 @@ class BJTUDance:
         self.last_actions = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
 
 
-        self.delay = 0
-        self.action_buf_len = 3
+        self.delay = 1
+        self.action_buf_len = 6
         self.action_history_buf = torch.zeros(self.action_buf_len, self.num_acts, device=self.device, dtype=torch.float)
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
                                                dtype=torch.float)
@@ -239,7 +239,7 @@ class BJTUDance:
                 self.delay_factor +=0.1
             if self.key_pressed == 'l':
                 self.delay_factor -=0.1
-            print(f'delay factor:{self.delay_factor}')
+            # print(f'delay factor:{self.delay_factor}')
                 # self.count = 0
             # if self.key_pressed in range(9):
             #     self.actions[:12] = 0

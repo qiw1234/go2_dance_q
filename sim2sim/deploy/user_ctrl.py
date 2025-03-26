@@ -2,9 +2,11 @@ import numpy as np
 import torch
 
 # model 0: stand
-model_path_test0 = './model/go2/stand_2025-03-21_15-37-08.jit'  # 120ms延迟站立
+model_path_test0 = './model/go2/stand_2025-03-21_15-37-08.jit'  # 固定120ms延迟站立
+# model_path_test0 = './model/go2/stand_2025-03-25_17-14-31.jit' # 0~120ms延迟
 # model 1: wave
-model_path_test1 = './model/go2/wave_2025-03-24_09-39-30.jit'  #
+# model_path_test1 = './model/go2/wave_2025-03-24_09-39-30.jit'  # 挥手挥一半
+model_path_test1 = './model/go2/wave_2025-03-25_08-37-13.jit'  # 可以握手
 # model 2: trot
 model_path_test2 = './model/go2/stand_2025-03-21_15-37-08.jit'
 # model 3: swing
@@ -165,7 +167,7 @@ class userController:
         actions_scaled = self.actions * self.scale["action_scale"]
         des_joint_pos = actions_scaled + self.default_dof_pos
 
-        des_joint_pos = torch.clip(des_joint_pos, joint_low_limit, joint_up_limit)
+        # des_joint_pos = torch.clip(des_joint_pos, joint_low_limit, joint_up_limit)
 
         for i in range(4):   # RF LF RH LH  <- LF RF LH RH
             for j in range(3):
