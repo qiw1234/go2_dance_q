@@ -1071,7 +1071,8 @@ class LeggedRobot(BaseTask):
         # self.delay = torch_rand_float(action_delay_range[0], action_delay_range[1], (self.num_envs, 1),
         #                          device=self.device)
         # 倍数延迟
-        self.delay = torch.randint(action_delay_range[0], action_delay_range[1], (self.num_envs,), device=self.device)
+        # self.delay = torch.randint(action_delay_range[0], action_delay_range[1], (self.num_envs,), device=self.device)
+        self.delay = action_delay_range[-1]
 
         self.toe_pos_world = torch.zeros(self.num_envs, self.cfg.env.num_leg * 3, dtype=torch.float,
                                               device=self.device, requires_grad=False)

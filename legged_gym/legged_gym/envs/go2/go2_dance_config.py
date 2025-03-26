@@ -277,7 +277,7 @@ class GO2DanceCfg_trot(GO2Cfg):
             track_ang_vel_ref = 1
             track_dof_pos = 5
             track_dof_vel = 1
-            track_toe_pos = 5
+            track_toe_pos = 10
             termination = -1.0
 
     class env(GO2Cfg.env):
