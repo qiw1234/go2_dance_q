@@ -85,7 +85,7 @@ def play(args):
     # env_cfg.domain_rand.RSI = False
     # env_cfg.domain_rand.randomize_joint_armature = False
     # env_cfg.domain_rand.randomize_motor = False
-    env_cfg.domain_rand.action_delay = False
+    # env_cfg.domain_rand.action_delay = False
 
     # env_cfg.domain_rand.use_default_friction = False
     # env_cfg.domain_rand.use_default_damping = False

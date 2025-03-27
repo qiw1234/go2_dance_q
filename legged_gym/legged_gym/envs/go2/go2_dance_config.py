@@ -325,9 +325,7 @@ class GO2DanceCfg_stand(GO2Cfg):
         # 站立参考轨迹
         motion_files = 'opti_traj/go2ST'
         # check_contact = False
-    
-    class domain_rand(GO2Cfg.domain_rand):
-        action_delay_range = [0, 5]
+
 
 
 class GO2DanceCfg_standPPO(GO2Cfg_PPO):

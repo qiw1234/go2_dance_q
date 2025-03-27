@@ -6,14 +6,19 @@ default_dof_pos = np.array([0.1, 0.8, -1.5, -0.1, 0.8, -1.5, 0.1, 0.8, -1.5, -0.
 # 更换腿部顺序
 reindex_feet = [1, 0, 3, 2]
 # task = '0~100msstand'
-task = 'wave'
-real_obs_path = 'deploy/data/real/' + task + '/actorState.csv'
-real_cmd_path = 'deploy/data/real/' + task + '/cmd.csv'
-real_time_path = 'deploy/data/real/' + task + '/T.csv'
-
+# task = 'trot'
+task = None
+if task is not None:
+    real_obs_path = 'deploy/data/real/' + task + '/actorState.csv'
+    real_cmd_path = 'deploy/data/real/' + task + '/cmd.csv'
+    real_time_path = 'deploy/data/real/' + task + '/T.csv'
+else:
+    real_obs_path = 'deploy/data/actorState.csv'
+    real_cmd_path = 'deploy/data/cmd.csv'
+    real_time_path = 'deploy/data/T.csv'
 # ------------------raisim---------------------------------
-raisim_obs_path = 'BJ_Raisim/net/HSW/data/' + task + '/actor_state.csv'
-raisim_obs = np.loadtxt(raisim_obs_path, delimiter=",")
+# raisim_obs_path = 'BJ_Raisim/net/HSW/data/' + task + '/actor_state.csv'
+# raisim_obs = np.loadtxt(raisim_obs_path, delimiter=",")
 
 # ---------------------real------------------------------
 # real_obs_path = 'deploy/data/robot_data.csv'
@@ -37,7 +42,7 @@ for i in range(nb_rows):
     for j in range(nb_cols):
         a = axs1[i,j]
         a.grid(True)
-        a.plot(raisim_obs[start:end, nb_cols*i+j], c='r')
+        # a.plot(raisim_obs[start:end, nb_cols*i+j], c='r')
         a.plot(real_obs[start:end, nb_cols*i+j], c='g')
         a.set(title=f'OBS_{nb_cols*i+j}')
 

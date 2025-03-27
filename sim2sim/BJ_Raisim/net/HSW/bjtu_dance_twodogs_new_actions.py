@@ -16,16 +16,18 @@ import yaml
 import ctypes
 
 # model 0: stand
-model_path_test0 = './model/go2/stand_2025-03-21_15-37-08.jit' #120ms延迟站立
+# model_path_test0 = './model/go2/stand_2025-03-21_15-37-08.jit' #120ms延迟站立
+model_path_test0 = './model/go2/stand_2025-03-27_09-53-28.jit' #120ms延迟站立
 # model_path_test0 = './model/go2/stand_2025-03-25_17-14-31.jit' #0~120ms延迟站立
 # model 1: arm leg
 model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
 # model 2: wave
 model_path_test2 = './model/go2/wave_2025-03-25_08-37-13.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度大
 # model 3: trot
-model_path_test3 = './model/go2/trot_2025-03-19_08-53-03.jit'
+model_path_test3 = './model/go2/trot_2025-03-27_09-08-56.jit'
 # model 4: swing
-model_path_test4 = './model/go2/swing_2025-03-24_08-54-00.jit'
+# model_path_test4 = './model/go2/swing_2025-03-24_08-54-00.jit'
+model_path_test4 = './model/go2/swing_2025-03-27_09-51-43.jit'
 # model 5: turn and jump
 model_path_test5 = './model/test/turn_and_jump_0114_1.jit' # 跳跃turn_and_jump_0107_1不行
 # model 6: wave two leg 1
@@ -123,7 +125,7 @@ class BJTUDance:
         self.last_actions = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
 
 
-        self.delay = 1
+        self.delay = 2
         self.action_buf_len = 6
         self.action_history_buf = torch.zeros(self.action_buf_len, self.num_acts, device=self.device, dtype=torch.float)
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,

@@ -194,13 +194,13 @@ class robotController:
             if self.stateMachine.Ctrl():
                 print('crtl!!')
         if self.remote_controller.Up == 1:
-            self.userController.model_select = 0
+            self.userController.model_select = 0  # stand
         if self.remote_controller.Down == 1:
-            self.userController.model_select = 1
+            self.userController.model_select = 1  # wave
         if self.remote_controller.Left == 1:
-            self.userController.model_select = 2
+            self.userController.model_select = 2  # trot
         if self.remote_controller.Right == 1:
-            self.userController.model_select = 3
+            self.userController.model_select = 3  # swing
 
     def run(self):
         start_RL_Time = time.perf_counter()
