@@ -125,7 +125,7 @@ class BJTUDance:
         self.last_actions = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
 
 
-        self.delay = 2
+        self.delay = 5
         self.action_buf_len = 6
         self.action_history_buf = torch.zeros(self.action_buf_len, self.num_acts, device=self.device, dtype=torch.float)
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
