@@ -256,6 +256,7 @@ if __name__ == "__main__":
 
     print("start ctrl loop")
     while True:
+
         try:
             controller.run()
             # Press the select key to exit

@@ -1,24 +1,29 @@
 import numpy as np
 import torch
 
-# model 0: stand
+# model 0: stan
 # model_path_test0 = './model/go2/stand_2025-03-21_15-37-08.jit'  # 固定120ms延迟站立
 # model_path_test0 = './model/go2/stand_2025-03-25_17-14-31.jit' # 0~120ms延迟
 model_path_test0 = './model/go2/stand_2025-03-27_09-53-28.jit'  # 固定120ms延迟站立
 # model 1: wave
-# model_path_test1 = './model/go2/wave_2025-03-24_09-39-30.jit'  # 挥手挥一半
+# model_path_test1 = './model/go2/wave_2025-03-24_09-39-30jit'  # 挥手挥一半
 # model_path_test1 = './model/go2/wave_2025-03-25_08-37-13.jit'  # 可以握手
-model_path_test1 = './model/go2/wave_2025-03-27_10-28-49.jit'  # 可以握手
+# model_path_test1 = './model/go2/policy_2025-03-31_22-25-08.jit'  # 随机延迟，仿真会抖动  挥手  实物效果好
+# model_path_test1 = './model/go2/wave40_2025-04-03_21-14-14.jit'  # 挥手  40ms  挥手快
+model_path_test1 = './model/go2/wave20_2025-04-07_08-49-47.jit'  # 挥手  20ms
 # model 2: trot
 # model_path_test2 = './model/go2/stand_2025-03-21_15-37-08.jit'
-model_path_test2 = './model/go2/trot_2025-03-27_09-08-56.jit'
+# model_path_test2 = './model/go2/jump_2025-04-03_09-35-23.jit'  # 固定60ms延迟
+# model_path_test2 = './model/go2/jump40_2025-04-03_21-11-02.jit'  # 跳跃  40ms延迟  效果不
+model_path_test2 = './model/go2/jump20_2025-04-07_08-47-05.jit'  # 跳跃  20ms延迟
 # model 3: swing
+
 # model_path_test3 = './model/go2/swing_2025-03-24_08-54-00.jit'
-model_path_test3 = './model/go2/swing_2025-03-27_09-51-43.jit'
+model_path_test3 = './model/go2/jump_2025-03-31_22-27-05.jit'  # 效果比较好的跳跃  0-60ms随机延迟
 # model 4: turn and jump
-model_path_test4 = './model/go2/stand_2025-03-21_15-37-08.jit'  #
+model_path_test4 = './model/go2/jump_2025-04-03_09-34-24.jit'  #
 # model 5: wave two leg 1
-model_path_test5 = './model/go2/stand_2025-03-21_15-37-08.jit'
+model_path_test5 = './model/go2/jump_2025-04-03_09-35-23.jit'
 # model 6: wave two leg 2
 model_path_test6 = './model/go2/stand_2025-03-21_15-37-08.jit'
 
