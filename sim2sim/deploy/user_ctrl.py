@@ -15,11 +15,14 @@ model_path_test1 = './model/go2/wave20_2025-04-07_08-49-47.jit'  # 挥手  20ms
 # model_path_test2 = './model/go2/stand_2025-03-21_15-37-08.jit'
 # model_path_test2 = './model/go2/jump_2025-04-03_09-35-23.jit'  # 固定60ms延迟
 # model_path_test2 = './model/go2/jump40_2025-04-03_21-11-02.jit'  # 跳跃  40ms延迟  效果不
-model_path_test2 = './model/go2/jump20_2025-04-07_08-47-05.jit'  # 跳跃  20ms延迟
+# model_path_test2 = './model/go2/jump20_2025-04-07_08-47-05.jit'  # 跳跃  20ms延迟
+model_path_test2 = './model/go2/wave0_2025-04-07_20-05-18.jit'  # 挥手，没有延迟
 # model 3: swing
 
 # model_path_test3 = './model/go2/swing_2025-03-24_08-54-00.jit'
-model_path_test3 = './model/go2/jump_2025-03-31_22-27-05.jit'  # 效果比较好的跳跃  0-60ms随机延迟
+# model_path_test3 = './model/go2/jump_2025-03-31_22-27-05.jit'  # 效果比较好的跳跃  0-60ms随机延迟
+# model_path_test3 = './model/go2/jump0_2025-04-08_21-36-08.jit'  # 0延迟，效果好  腿有点抖
+model_path_test3 = './model/go2/jump20_2025-04-07_08-47-05.jit'
 # model 4: turn and jump
 model_path_test4 = './model/go2/jump_2025-04-03_09-34-24.jit'  #
 # model 5: wave two leg 1
