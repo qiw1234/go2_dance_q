@@ -198,7 +198,7 @@ class robotController:
         if self.remote_controller.Down == 1:
             self.userController.model_select = 1  # wave
         if self.remote_controller.Left == 1:
-            self.userController.model_select = 2  # trot
+            self.userController.model_select = 6  # trot
         if self.remote_controller.Right == 1:
             self.userController.model_select = 3  # swing
 
@@ -256,6 +256,7 @@ if __name__ == "__main__":
 
     print("start ctrl loop")
     while True:
+
         try:
             controller.run()
             # Press the select key to exit

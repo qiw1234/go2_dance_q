@@ -56,10 +56,10 @@ real_obs_path = 'deploy/data/robot_data.csv'
 # plan
 swing_traj_path = '/home/pcpc/robot_dance/opti_traj/output_panda_fixed_gripper/panda_swing.txt'
 
-plot_raisim = False
+plot_raisim = True
 plot_isaacgym = False
 plot_plan = False
-plot_real = True
+plot_real = False
 
 start = 0
 end = 1200

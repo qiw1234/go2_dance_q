@@ -287,9 +287,8 @@ class GO2DanceCfg_trot(GO2Cfg):
 class GO2DanceCfg_trotPPO(GO2Cfg_PPO):
     class runner(GO2Cfg_PPO.runner):
         experiment_name = 'go2_trot'
-        # resume_path = 'legged_gym/logs/go2_trot/Nov04_21-29-29_/model_1500.pt'
-        # resume_path = "legged_gym/log/GO2_new/trot/model_1500.pt"
-
+        resume_path = 'legged_gym/logs/go2_trot/Apr09_11-59-28_/model_122500.pt'
+        # resume_path = "legged_gym/logs/go2_trot/Mar28_09-26-58_/model_75500.pt"
 #-----------------------------stand----------------------------------------------------
 class GO2DanceCfg_stand(GO2Cfg):
     class rewards(GO2Cfg.rewards):
