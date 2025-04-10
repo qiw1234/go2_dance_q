@@ -28,7 +28,7 @@ model_path_test4 = './model/go2/jump_2025-04-03_09-34-24.jit'  #
 # model 5: wave two leg 1
 model_path_test5 = './model/go2/jump_2025-04-03_09-35-23.jit'
 # model 6: trot
-model_path_test6 = './model/go2/trot_2025-04-09_09-58-33.jit'
+model_path_test6 = '/home/pcpc/robot_dance/sim2sim/BJ_Raisim/net/HSW/model/go2/trot_2025-04-10_11-38-25.jit'
 
 # 关节上下限，两前腿一致，两后腿一致
 joint_up_limit = torch.tensor(

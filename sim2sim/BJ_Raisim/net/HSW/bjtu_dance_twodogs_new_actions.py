@@ -24,7 +24,7 @@ model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
 # model 2: wave
 model_path_test2 = './model/go2/wave_2025-03-25_08-37-13.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度大
 # model 3: trot
-model_path_test3 = './model/go2/trot_2025-04-09_20-50-29.jit'
+model_path_test3 = './model/go2/trot_2025-04-10_11-38-25.jit'
 # model 4: swing
 # model_path_test4 = './model/go2/swing_2025-03-24_08-54-00.jit'
 model_path_test4 = './model/go2/swing_2025-03-27_09-51-43.jit'
@@ -131,7 +131,7 @@ class BJTUDance:
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
                                                dtype=torch.float)
         # 越大延迟越高
-        self.delay_factor = 0.5
+        self.delay_factor = 0.
 
         p_gains = [20] * self.num_acts
         d_gains = [0.5] * self.num_acts
