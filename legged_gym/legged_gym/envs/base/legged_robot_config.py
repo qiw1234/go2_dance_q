@@ -125,7 +125,7 @@ class LeggedRobotCfg(BaseConfig):
 
     class domain_rand:
         randomize_friction = True
-        friction_range = [0.4, 1.0] #[0.4, 2.0]
+        friction_range = [0.2, 2.0] #[0.4, 2.0]
 
         randomize_restitution = True  # True
         restitution_range = [0.0, 0.4]
@@ -194,7 +194,7 @@ class LeggedRobotCfg(BaseConfig):
         action_curr_step = [0, 1]  # [1, 1] [1, 2]
         action_delay_view = 1  # 有viewer时(打开渲染)的delay
         action_buf_len = 8
-        action_delay_range = [0, 3] #[0, 0.75]
+        action_delay_range = [0.5, 0.5] #[0, 0.75]
 
         RSI = True
         RSI_rand = False   # 参考轨迹基础上添加随机化

@@ -57,7 +57,7 @@ plt.plot(t, phase[:,3], linewidth=2)
 # plt.show()
 
 # 足端位置
-vx = 0.8 #频率变慢了，前进的速度需要改一改
+vx = 0.5 #频率变慢了，前进的速度需要改一改
 ax = vx*cpg.T*cpg.beta
 ay = 0
 az = 0.08

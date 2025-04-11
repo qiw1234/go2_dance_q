@@ -133,47 +133,8 @@ class LeggedRobot(BaseTask):
         """
 
         actions.to(self.device)
-        self.action_history_buf = torch.cat([self.action_history_buf[:, 1:].clone(), actions[:, None, :].clone()],
-                                            dim=1)
-        if self.cfg.domain_rand.action_delay:
-            indices = -self.delay - 1  
-            # print("indices: ", indices)  # -2
-            actions = self.action_history_buf[torch.arange(self.num_envs),indices]  # delay for 1/50=20ms  对小数部分进行截断转换为long
-        
-
-        # # 一阶滤波延迟
-        # if self.cfg.domain_rand.action_delay:
-        #     delay = self.delay
-        # else:
-        #     delay = torch.zeros(self.num_envs, 1, device=self.device)
-        # actions = (1 - delay) * actions + delay * self.actions
-
         clip_actions = self.cfg.normalization.clip_actions / self.cfg.control.action_scale
-        self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
-        clip_arm_actions = self.cfg.normalization.clip_arm_actions / self.cfg.control.action_scale
-        self.actions[:, 12:] = torch.clip(self.actions[:, 12:], -clip_arm_actions, clip_arm_actions).to(self.device)
-
-        # # 目前只给站立动作使用
-        # actions.to(self.device)
-        #
-        # clip_actions = self.cfg.normalization.clip_actions / self.cfg.control.action_scale
-        # self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
-        # clip_arm_actions = self.cfg.normalization.clip_arm_actions / self.cfg.control.action_scale
-        # self.actions[:, 12:] = torch.clip(self.actions[:, 12:], -clip_arm_actions, clip_arm_actions).to(self.device)
-        #
-        # self.action_history_buf = torch.cat([self.action_history_buf[:, 1:].clone(), self.actions[:, None, :].clone()],
-        #                                     dim=1)
-        # if self.cfg.domain_rand.action_delay:
-        #     if self.global_counter % self.cfg.domain_rand.delay_update_global_steps == 0:
-        #         if len(self.cfg.domain_rand.action_curr_step) != 0:
-        #             self.delay = torch.tensor(self.cfg.domain_rand.action_curr_step.pop(0), device=self.device,
-        #                                       dtype=torch.float)
-        #     if self.viewer:
-        #         self.delay = torch.tensor(self.cfg.domain_rand.action_delay_view, device=self.device, dtype=torch.float)
-        #     indices = -self.delay - 1  # print("indices: ", indices)  # -2
-        #     self.actions = self.action_history_buf[:, indices.long()]  # delay for 1/50=20ms  对小数部分进行截断转换为long
-        #
-        # self.global_counter += 1
+        actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
 
         # step physics and render each frame
         self.render()
@@ -182,6 +143,7 @@ class LeggedRobot(BaseTask):
 
         for i in range(self.cfg.control.decimation):
             # if i == 0|2:
+            self.actions[self.delay_steps == i] = actions[self.delay_steps == i]
             self.torques = self._compute_torques(self.actions).view(self.torques.shape)
             self.gym.set_dof_actuation_force_tensor(self.sim, gymtorch.unwrap_tensor(self.torques))
             self.gym.simulate(self.sim)
@@ -320,6 +282,7 @@ class LeggedRobot(BaseTask):
         self.action_history_buf[env_ids, :, :] = 0.
         self.actions[env_ids] = 0.
         self.last_toe_pos_world[env_ids] = 0
+        self.delay_steps[env_ids] = torch.randint(0, self.cfg.control.decimation, (len(env_ids),), device=self.device)
 
         # fill extras
         self.extras["episode"] = {}
@@ -1067,12 +1030,8 @@ class LeggedRobot(BaseTask):
         self.toe_pos_body = torch.zeros((self.num_envs, 12), device=self.device)
 
         action_delay_range = self.cfg.domain_rand.action_delay_range
-        # 滤波延迟
-        # self.delay = torch_rand_float(action_delay_range[0], action_delay_range[1], (self.num_envs, 1),
-        #                          device=self.device)
-        # 倍数延迟
-        # self.delay = torch.randint(action_delay_range[0], action_delay_range[1], (self.num_envs,), device=self.device)
-        self.delay = action_delay_range[-1]
+        # 延迟
+        self.delay_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
 
         self.toe_pos_world = torch.zeros(self.num_envs, self.cfg.env.num_leg * 3, dtype=torch.float,
                                               device=self.device, requires_grad=False)

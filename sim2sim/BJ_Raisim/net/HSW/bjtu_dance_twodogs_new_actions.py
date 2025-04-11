@@ -24,7 +24,7 @@ model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
 # model 2: wave
 model_path_test2 = './model/go2/wave_2025-03-25_08-37-13.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度大
 # model 3: trot
-model_path_test3 = './model/go2/trot_2025-03-27_09-08-56.jit'
+model_path_test3 = './model/go2/trot_2025-04-10_11-38-25.jit'
 # model 4: swing
 # model_path_test4 = './model/go2/swing_2025-03-24_08-54-00.jit'
 model_path_test4 = './model/go2/swing_2025-03-27_09-51-43.jit'
@@ -125,7 +125,7 @@ class BJTUDance:
         self.last_actions = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
 
 
-        self.delay = 5
+        self.delay = 0
         self.action_buf_len = 6
         self.action_history_buf = torch.zeros(self.action_buf_len, self.num_acts, device=self.device, dtype=torch.float)
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
@@ -510,7 +510,7 @@ class BJTUDance:
             # print("actions: \n", actions)
             # print("self.actions: \n", self.actions)
 
-            # self.actions = self.last_actions * self.delay_factor + self.actions * (1 - self.delay_factor)
+            self.actions = self.last_actions * self.delay_factor + self.actions * (1 - self.delay_factor)
             self.last_actions = self.actions.clone()
 
 
