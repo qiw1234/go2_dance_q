@@ -265,8 +265,9 @@ class Tsinghua:
 
             # 将self.actor_state输出成文件
             actor_state.append(self.actor_state.tolist())
-            if counter == 3000:
+            if counter == 2000:
                 np.savetxt('../HSW/data/actor_state_TsingHua.csv', np.array(actor_state), delimiter=",")
+                print("actor_state saved")
             counter += 1
 
             with torch.no_grad():
