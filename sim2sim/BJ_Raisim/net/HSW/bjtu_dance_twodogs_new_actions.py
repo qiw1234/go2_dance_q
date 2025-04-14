@@ -17,8 +17,9 @@ import ctypes
 
 # model 0: stand
 # model_path_test0 = './model/go2/stand_2025-03-21_15-37-08.jit' #120ms延迟站立
-model_path_test0 = './model/go2/stand_2025-03-27_09-53-28.jit' #120ms延迟站立
+# model_path_test0 = './model/go2/stand_2025-03-27_09-53-28.jit' #120ms延迟站立
 # model_path_test0 = './model/go2/stand_2025-03-25_17-14-31.jit' #0~120ms延迟站立
+model_path_test0 = './model/go2/stand_2025-04-14_19-19-01.jit'
 # model 1: arm leg
 model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
 # model 2: wave
