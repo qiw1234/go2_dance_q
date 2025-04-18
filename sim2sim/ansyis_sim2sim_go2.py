@@ -62,7 +62,7 @@ plot_plan = False
 plot_real = False
 
 start = 0
-end = 1200
+end = 3000
 
 default_dof_pos = [0.1, 0.8, -1.5, -0.1, 0.8, -1.5, 0.1, 0.8, -1.5, -0.1, 0.8, -1.5]
 
