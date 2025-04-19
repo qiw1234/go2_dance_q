@@ -330,4 +330,4 @@ class GO2DanceCfg_stand(GO2Cfg):
 class GO2DanceCfg_standPPO(GO2Cfg_PPO):
     class runner(GO2Cfg_PPO.runner):
         experiment_name = 'go2_stand'
-        resume_path = 'legged_gym/logs/go2_stand/Apr10_11-47-43_/model_28500.pt'
+        resume_path = 'legged_gym/logs/go2_stand/Apr17_16-51-53_/model_60000.pt'
