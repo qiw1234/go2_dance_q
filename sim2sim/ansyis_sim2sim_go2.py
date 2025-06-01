@@ -45,7 +45,7 @@ raisim_torque_path = 'BJ_Raisim/net/HSW/data/torques.csv'
 raisim_base_euler_path = 'BJ_Raisim/net/HSW/data/base_euler.csv'
 
 # isaac gym
-pose = 'swing'
+pose = 'stand'
 isaacgym_obs_path = 'BJ_Raisim/net/HSW/data/'+pose+'_obs.csv'
 isaacgym_torque_path = 'BJ_Raisim/net/HSW/data/'+pose+'_torque.csv'
 isaacgym_base_euler_path = 'BJ_Raisim/net/HSW/data/'+pose+'_base_euler.csv'
@@ -57,7 +57,7 @@ real_obs_path = 'deploy/data/robot_data.csv'
 swing_traj_path = '/home/pcpc/robot_dance/opti_traj/output_panda_fixed_gripper/panda_swing.txt'
 
 plot_raisim = True
-plot_isaacgym = False
+plot_isaacgym = True
 plot_plan = False
 plot_real = False
 
@@ -538,6 +538,14 @@ if plot_real:
     a.plot(real_command[:, 9], label='real_RH_hip', c='r', linestyle='--')
     a.plot(real_command[:, 10], label='real_RH_thigh', c='g', linestyle='--')
     a.plot(real_command[:, 11], label='real_RH_calf', c='b', linestyle='--')
+if plot_isaacgym:
+    a.plot(isaacgym_dof_pos[:, 9], label='isaacgym_LH_hip', c='y')
+    a.plot(isaacgym_dof_pos[:, 10], label='isaacgym_LH_thigh', c='c')
+    a.plot(isaacgym_dof_pos[:, 11], label='isaacgym_LH_calf', c='m')
+
+    a.plot(isaacgym_actions[:, 9], label='isaacgym_RH_hip', c='y', linestyle='--')
+    a.plot(isaacgym_actions[:, 10], label='isaacgym_RH_thigh', c='c', linestyle='--')
+    a.plot(isaacgym_actions[:, 11], label='isaacgym_RH_calf', c='m', linestyle='--')
 plt.rcParams['xtick.labelsize'] = 20
 a.set(title='dof pos')
 # a.legend()

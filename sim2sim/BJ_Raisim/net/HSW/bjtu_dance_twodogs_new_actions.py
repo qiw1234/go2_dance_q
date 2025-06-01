@@ -20,7 +20,8 @@ import ctypes
 # model_path_test0 = './model/go2/stand_2025-03-27_09-53-28.jit' #120ms延迟站立
 # model_path_test0 = './model/go2/stand_2025-03-25_17-14-31.jit' #0~120ms延迟站立
 # model_path_test0 = './model/go2/stand_2025-04-14_19-19-01.jit'
-model_path_test0 = './model/go2/stand_2025-04-18_17-28-31.jit'
+model_path_test0 = './model/go2/stand_2025-04-21_08-49-06.jit' #可以从双腿切换四腿站立
+# model_path_test0 = './model/go2/stand_2025-04-21_19-45-25.jit'
 # model 1: arm leg
 model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
 # model 2: wave
@@ -447,6 +448,8 @@ class BJTUDance:
             last_vel = self.shareinfo_feed_send.ocu_package.x_des_vel
             last_yaw = self.shareinfo_feed_send.ocu_package.yaw_turn_dot
 
+            if counter ==600:
+                self.model_select = 6
             if counter == 1000:
                 self.model_select = 0
             self.PutToNet()
@@ -514,8 +517,8 @@ class BJTUDance:
             # print("actions: \n", actions)
             # print("self.actions: \n", self.actions)
 
-            self.actions = self.last_actions * self.delay_factor + self.actions * (1 - self.delay_factor)
-            self.last_actions = self.actions.clone()
+            # self.actions = self.last_actions * self.delay_factor + self.actions * (1 - self.delay_factor)
+            # self.last_actions = self.actions.clone()
 
 
             actions_scaled = self.actions * self.scale["action_scale"]

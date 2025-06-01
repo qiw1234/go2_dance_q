@@ -198,9 +198,9 @@ class robotController:
         if self.remote_controller.Down == 1:
             self.userController.model_select = 1  # wave
         if self.remote_controller.Left == 1:
-            self.userController.model_select = 6  # trot
+            self.userController.model_select = 2  # trot
         if self.remote_controller.Right == 1:
-            self.userController.model_select = 3  # swing
+            self.userController.model_select = 5  # swing
 
     def run(self):
         start_RL_Time = time.perf_counter()

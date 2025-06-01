@@ -4,7 +4,9 @@ import torch
 # model 0: stan
 # model_path_test0 = './model/go2/stand_2025-03-21_15-37-08.jit'  # 固定120ms延迟站立
 # model_path_test0 = './model/go2/stand_2025-03-25_17-14-31.jit' # 0~120ms延迟
-model_path_test0 = './model/go2/stand_2025-03-27_09-53-28.jit'  # 固定120ms延迟站立
+# model_path_test0 = './model/go2/stand_2025-03-27_09-53-28.jit'  # 固定120ms延迟站立
+# model_path_test0 = '/home/pcpc/robot_dance/sim2sim/BJ_Raisim/net/HSW/model/go2/stand_2025-04-21_19-45-25.jit'
+model_path_test0 = '/home/pcpc/robot_dance/sim2sim/BJ_Raisim/net/HSW/model/go2/stand_2025-04-21_08-49-06.jit'
 # model 1: wave
 # model_path_test1 = './model/go2/wave_2025-03-24_09-39-30jit'  # 挥手挥一半
 # model_path_test1 = './model/go2/wave_2025-03-25_08-37-13.jit'  # 可以握手
@@ -26,7 +28,9 @@ model_path_test3 = './model/go2/jump20_2025-04-07_08-47-05.jit'
 # model 4: turn and jump
 model_path_test4 = './model/go2/jump_2025-04-03_09-34-24.jit'  #
 # model 5: wave two leg 1
-model_path_test5 = './model/go2/jump_2025-04-03_09-35-23.jit'
+model_path_test5 = '/home/pcpc/robot_dance/sim2sim/BJ_Raisim/net/HSW/model/go2/twolegwave_2025-04-14_09-24-11.jit'
+# model_path_test5 = '/home/pcpc/robot_dance/sim2sim/BJ_Raisim/net/HSW/model/go2/twolegwave_2025-04-19_12-58-56.jit'
+
 # model 6: wave two leg 2
 model_path_test6 = './model/go2/stand_2025-03-21_15-37-08.jit'
 
