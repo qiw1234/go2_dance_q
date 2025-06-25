@@ -1,0 +1,2 @@
+/usr/bin/ar qc libxp_common_lib.a  CMakeFiles/xp_common_lib.dir/src/utilities/PeriodicTask.cpp.o CMakeFiles/xp_common_lib.dir/src/utilities/xp_id.cpp.o CMakeFiles/xp_common_lib.dir/src/comm/xp_udp_client.cpp.o CMakeFiles/xp_common_lib.dir/src/comm/xp_udp_server.cpp.o
+/usr/bin/ranlib libxp_common_lib.a

@@ -3,17 +3,9 @@
 
 __pycache__/
 
-**/sim2sim/BJ_Raisim
+build
 
-**/sim2sim/BJ_Raisim/build
-
-**/sim2sim/BJ_Raisim/dog_arm/build-debug
-
-**/sim2sim/BJ_Raisim/dog_arm/third_party
-
-**/sim2sim/BJ_Raisim/dog_arm/user/DogSimRaisim2/rsc
-
-**/sim2sim/BJ_Raisim/.vscode
+.vscode
 
 legged_gym/log
 

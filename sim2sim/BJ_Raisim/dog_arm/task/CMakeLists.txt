@@ -1,0 +1,36 @@
+# Source/Include files
+include_directories(${CMAKE_BINARY_DIR})
+include_directories(${PROJECT_SOURCE_DIR})
+include_directories(".")
+include_directories("include/" )                 # common includes
+include_directories("${PROJECT_SOURCE_DIR}/common/include/")
+include_directories("${PROJECT_SOURCE_DIR}/api_sdk/include/")
+file(GLOB_RECURSE libsources "${PROJECT_SOURCE_DIR}/api_sdk/lib/*.so")
+include_directories("${PROJECT_SOURCE_DIR}/lower_level/include/")
+include_directories("${PROJECT_SOURCE_DIR}/mid_level/include/")
+include_directories("${PROJECT_SOURCE_DIR}/upper_level/include/")
+include_directories("${PROJECT_SOURCE_DIR}/third_party/qpOASES/include/")
+include_directories("${PROJECT_SOURCE_DIR}/third_party/ParamYaml/")
+include_directories("${PROJECT_SOURCE_DIR}/third_party/EphCan/include")
+include_directories("${PROJECT_SOURCE_DIR}/third_party/ParamYaml/dynacore_yaml-cpp/")
+include_directories("${PROJECT_SOURCE_DIR}/sim/include/comm_sim")
+
+if(USING_RAISIM_ENABLE)
+    include_directories("${PROJECT_SOURCE_DIR}/sim/include/Raisim/")
+    include_directories("${PROJECT_SOURCE_DIR}/third_party/train_include")
+    include_directories("${PROJECT_SOURCE_DIR}/third_party/rmARM/include")
+    file(GLOB_RECURSE libsources_arm "${PROJECT_SOURCE_DIR}/third_party/rmARM/lib/*.so")
+else(USING_RAISIM_ENABLE)
+    include_directories("${PROJECT_SOURCE_DIR}/sim/include/comm_sim/")
+endif(USING_RAISIM_ENABLE)
+
+file(GLOB_RECURSE sources "src/*.cpp")                   # common library cpp files
+
+aux_source_directory(. sources)
+ADD_LIBRARY ( xp_task_lib SHARED ${sources})
+target_link_libraries(xp_task_lib xp_common_lib  xp_sim_lib)
+target_link_libraries(xp_task_lib  pthread rt qpOASES inih)
+target_link_libraries(xp_task_lib ${libsources})
+if(USING_RAISIM_ENABLE)
+target_link_libraries(xp_task_lib ${libsources_arm})
+endif(USING_RAISIM_ENABLE)

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libxp_task_lib.a  CMakeFiles/xp_task_lib.dir/src/robot_controller_task.cpp.o CMakeFiles/xp_task_lib.dir/src/robot_drive_task.cpp.o
+/usr/bin/ranlib libxp_task_lib.a

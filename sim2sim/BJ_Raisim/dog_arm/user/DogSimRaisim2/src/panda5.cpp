@@ -1,7 +1,7 @@
 // This file is part of RaiSim. You must obtain a valid license from RaiSim Tech
 // Inc. prior to usage.
 #include <fstream>
-#include<stdio.h>
+#include <stdio.h>
 #include "raisim/RaisimServer.hpp"
 #include "raisim/World.hpp"
 #include "raisim/object/ArticulatedSystem/ArticulatedSystem.hpp"

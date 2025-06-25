@@ -1,0 +1,6 @@
+add_subdirectory(ParamYaml)
+add_subdirectory(qpOASES)
+add_subdirectory(Goldfarb_Optimizer)
+add_subdirectory(inih)
+#add_subdirectory(ParamHandler)
+#add_subdirectory(EphCan)
