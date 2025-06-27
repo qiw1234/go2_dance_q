@@ -98,7 +98,8 @@
    - 如果训练了新的网络，只需要添加对应的`user_ctrl_new`，代替原来的`user_ctrl`文件
    - 遥控器按键功能由`deploy_go2`中的`update_state_machine`方法以及`user_ctrl`中的`model_select`变量共同决定
    - 遥控器的对应变量可以查看宇树go2开发文档：https://support.unitree.com/home/zh/developer/Get_remote_control_status
-   - 如果在go2上的机载电脑上运行，可以将`depoly`文件夹中的程序下载到狗上，在base环境中运行程序即可。程序一旦开始运行就不需要外部干预，可以拔掉hdmi等工具线。
+   - 宇树go2教育版机载电脑可以用拓展坞连接显示器、鼠标、键盘，密码123，可以当做正常电脑使用
+   - 如果希望在go2上的机载电脑上运行，不在自己电脑上运行，可以将`depoly`文件夹中的程序下载到狗上，在base环境中运行程序即可。程序一旦开始运行就不需要外部干预，可以拔掉hdmi等工具线。
    - 如果希望自启动，需要设置自启动脚本，在机载电脑开机后运行
       ```bash
       sudo nano /etc/systemd/system/service_name.service #myscript改成自己想要的名字
@@ -142,7 +143,7 @@
       sudo systemctl disable myscript
       ```
 
-   - 自动运行的脚本文件（.sh）可以按照如下方式，需要根据自己的功能做本地化修改
+   - 自动运行的脚本文件（.sh）可以按照如下方式，需要根据自己的功能做本地化修改（go2上有对应的文件，在主目录下`deploy_go2.sh`）
       ```
       #!/bin/bash
 
