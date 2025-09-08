@@ -339,33 +339,28 @@ class GO2DanceCfg_sidestep(GO2Cfg):
         base_height_target = 0.25
 
         class scales(GO2Cfg.rewards.scales):
-            # 基础惩罚
+            # 参考 trot 的奖励结构 + 保留足端碰撞/接触惩罚
+            # 基础惩罚（与 trot 对齐）
             torques = -0.0002
             dof_pos_limits = -10.0
+            feet_slip = -1
+            termination = -1.0
             tracking_lin_vel = 0
             tracking_ang_vel = 0
             feet_air_time = 0
-            feet_slip = -1
-            termination = -1.0
-            
-            # 足端碰撞和接触惩罚
-            collision = -5.0        # 足端碰撞惩罚
-            feet_contact_forces = -0.02  # 足端接触力惩罚
-            stumble = -2.0          # 足端绊倒惩罚
-            
-            # 动作平滑性
-            action_rate = -0.5      # 惩罚动作变化率
-            dof_vel = -0.0001       # 惩罚关节速度
-            dof_acc = -2.5e-6       # 惩罚关节加速度
+            track_root_pos = 0.
 
-            # 模仿学习奖励
-            track_root_pos = 2.     # 侧向迈步需要跟踪质心位置
-            track_root_rot = 1      # 跟踪机身姿态
-            track_lin_vel_ref = 2   # 重要：跟踪侧向速度
-            track_ang_vel_ref = 1   # 跟踪角速度参考
-            track_dof_pos = 3       # 关节位置跟踪
-            track_dof_vel = 1       # 关节速度跟踪
-            track_toe_pos = 8       # 足端位置跟踪
+            # 保留：足端碰撞/接触惩罚
+            collision = -5.0            # 碰撞惩罚
+            feet_contact_forces = -0.02 # 接触力过大惩罚
+
+            # 模仿/跟踪（以 trot 为基线，强化侧向速度）
+            track_root_rot = 1
+            track_lin_vel_ref = 2       # 侧移任务，略强于 trot 的线速度跟踪
+            track_ang_vel_ref = 1
+            track_dof_pos = 5
+            track_dof_vel = 1
+            track_toe_pos = 10
 
     class env(GO2Cfg.env):
         motion_name = 'sidestep_truncated'
