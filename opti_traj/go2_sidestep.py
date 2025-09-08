@@ -47,9 +47,38 @@ for i in range(num_row):
 phase = np.arctan2(hopf_signal[:, 4:8], hopf_signal[:, 0:4])
 
 # 设计侧向迈步轨迹
-# 分为三个阶段：
-# 1. 前半程：向右侧迈步 (0 -> num_row//2)
-# 2. 后半程：回到原位 (num_row//2 -> num_row)
+# 分为两个阶段：
+# 1. 前80帧：向右侧迈步 (0 -> 80)
+# 2. 后80帧：回到原位 (80 -> 160)
+# 总共160帧，避免99帧和100帧之间的不连续
+
+first_phase_frames = 80
+second_phase_frames = 80
+total_frames = first_phase_frames + second_phase_frames
+
+# 重新设置总帧数
+num_row = total_frames
+sidestep_ref = np.ones((num_row-1, num_col))
+root_pos = np.zeros((num_row, 3))
+root_rot = np.zeros((num_row, 4))
+root_lin_vel = np.zeros((num_row-1, 3))
+root_ang_vel = np.zeros((num_row-1, 3))
+toe_pos = np.zeros((num_row, 12))
+dof_pos = np.zeros((num_row, 12))
+dof_vel = np.zeros((num_row-1, 12))
+hopf_signal = np.zeros((num_row, 8))
+
+# 重新生成振荡信号
+t = np.linspace(0, num_row/fps, num_row)
+temp = cpg.initPos.reshape(8, -1)
+
+for i in range(num_row):
+    v = cpg.hopf_osci(temp)
+    temp += v/fps
+    hopf_signal[i] = temp.flatten()
+
+# 重新计算相位
+phase = np.arctan2(hopf_signal[:, 4:8], hopf_signal[:, 0:4])
 
 vx = 0.0  # x方向不移动
 vy_max = 0.4  # 最大侧向速度
@@ -57,18 +86,18 @@ az = 0.08  # 抬腿高度
 
 # 计算每个时刻的侧向速度和位移
 for i in range(num_row):
-    progress = i / (num_row - 1)
-    
-    if progress <= 0.5:
-        # 前半程：向右侧迈步
-        # 使用正弦函数实现平滑加速和减速
+    if i < first_phase_frames:
+        # 前80帧：向右侧迈步
+        progress = i / (first_phase_frames - 1)
         vy_current = vy_max * np.sin(2 * np.pi * progress)
-        root_lin_vel[min(i, num_row-2), 1] = vy_current
+        if i < num_row - 1:
+            root_lin_vel[i, 1] = vy_current
     else:
-        # 后半程：回到原位
-        # 使用负正弦函数回到原位
-        vy_current = -vy_max * np.sin(2 * np.pi * (progress - 0.5))
-        root_lin_vel[min(i, num_row-2), 1] = vy_current
+        # 后80帧：回到原位
+        progress = (i - first_phase_frames) / (second_phase_frames - 1)
+        vy_current = -vy_max * np.sin(2 * np.pi * progress)
+        if i < num_row - 1:
+            root_lin_vel[i, 1] = vy_current
 
 # 计算质心的y方向位移
 y_pos = 0.0
@@ -93,12 +122,11 @@ for i in range(4):
         toe_pos[j, 3*i] = 0
         
         # y方向的足端轨迹：根据步态阶段调整
-        progress = j / (num_row - 1)
-        if progress <= 0.5:
-            # 前半程：向右侧迈步
+        if j < first_phase_frames:
+            # 前80帧：向右侧迈步
             toe_pos[j, 3*i+1] = CPG.endEffectorPos_xy(ay_amplitude, p)
         else:
-            # 后半程：回到原位，足端轨迹反向
+            # 后80帧：回到原位，足端轨迹反向
             toe_pos[j, 3*i+1] = -CPG.endEffectorPos_xy(ay_amplitude, p)
 
 # 足端相对质心的坐标
@@ -142,7 +170,7 @@ sidestep_ref[:, 25:37] = dof_pos[:num_row-1, :]
 sidestep_ref[:, 37:49] = dof_vel
 
 # 导出txt文件
-outfile = 'output/sidestep.txt'
+outfile = 'opti_traj/output/sidestep.txt'
 np.savetxt(outfile, sidestep_ref, delimiter=',')
 
 # 保存json文件
@@ -151,12 +179,12 @@ json_data = {
     'frames': sidestep_ref.tolist()
 }
 
-with open('output_json/sidestep.json', 'w') as f:
+with open('opti_traj/output_json/sidestep.json', 'w') as f:
     json.dump(json_data, f, indent=4)
 
 print(f"侧向pace步态轨迹已生成并保存到:")
 print(f"- {outfile}")
-print(f"- output_json/sidestep.json")
+print(f"- opti_traj/output_json/sidestep.json")
 print(f"总帧数: {num_row-1}, 持续时间: {(num_row-1)/fps:.2f}秒")
 print(f"最大侧向位移: {np.max(np.abs(root_pos[:, 1])):.3f}米")
 
