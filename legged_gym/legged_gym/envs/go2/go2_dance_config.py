@@ -331,3 +331,46 @@ class GO2DanceCfg_standPPO(GO2Cfg_PPO):
     class runner(GO2Cfg_PPO.runner):
         experiment_name = 'go2_stand'
         resume_path = 'legged_gym/logs/go2_stand/Apr17_16-51-53_/model_60000.pt'
+
+#-----------------------------sidestep----------------------------------------------------
+class GO2DanceCfg_sidestep(GO2Cfg):
+    class rewards(GO2Cfg.rewards):
+        soft_dof_pos_limit = 0.9
+        base_height_target = 0.25
+
+        class scales(GO2Cfg.rewards.scales):
+            # 基础惩罚
+            torques = -0.0002
+            dof_pos_limits = -10.0
+            tracking_lin_vel = 0
+            tracking_ang_vel = 0
+            feet_air_time = 0
+            feet_slip = -1
+            termination = -1.0
+            
+            # 足端碰撞和接触惩罚
+            collision = -5.0        # 足端碰撞惩罚
+            feet_contact_forces = -0.02  # 足端接触力惩罚
+            stumble = -2.0          # 足端绊倒惩罚
+            
+            # 动作平滑性
+            action_rate = -0.5      # 惩罚动作变化率
+            dof_vel = -0.0001       # 惩罚关节速度
+            dof_acc = -2.5e-6       # 惩罚关节加速度
+
+            # 模仿学习奖励
+            track_root_pos = 2.     # 侧向迈步需要跟踪质心位置
+            track_root_rot = 1      # 跟踪机身姿态
+            track_lin_vel_ref = 2   # 重要：跟踪侧向速度
+            track_ang_vel_ref = 1   # 跟踪角速度参考
+            track_dof_pos = 3       # 关节位置跟踪
+            track_dof_vel = 1       # 关节速度跟踪
+            track_toe_pos = 8       # 足端位置跟踪
+
+    class env(GO2Cfg.env):
+        motion_name = 'sidestep_truncated'
+
+class GO2DanceCfg_sidestepPPO(GO2Cfg_PPO):
+    class runner(GO2Cfg_PPO.runner):
+        experiment_name = 'go2_sidestep'
+        # resume_path = None  # 可以在训练后设置
