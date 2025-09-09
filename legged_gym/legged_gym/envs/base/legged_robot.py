@@ -246,7 +246,7 @@ class LeggedRobot(BaseTask):
             self._reset_root_states(env_ids)
             self._reset_dofs(env_ids)
         else:
-            # 用于初始化
+            # 用于初始化 
             # traj_idxs = self.motion_loader.weighted_traj_idx_sample_batch(len(env_ids))
             # 这里计算出来的时间都是结束的时间，不合理
             # init_times = self.episode_length_buf[env_ids].cpu().numpy() / self.max_episode_length * self.max_episode_length_s
