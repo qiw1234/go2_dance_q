@@ -4,7 +4,7 @@
 #==
 # Dependencies
 #==
-set(raisim_DIR /home/pcpc/raisim/raisim_build/lib/cmake/raisim)
+set(raisim_DIR /home/ubuntu/raisim_build/lib/cmake/raisim)
 find_package(raisim CONFIG REQUIRED)
 find_package(Eigen3 REQUIRED HINTS ${Eigen3_HINT})
 

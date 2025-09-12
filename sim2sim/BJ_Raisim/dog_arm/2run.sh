@@ -1,20 +1,25 @@
 #!/bin/bash
-gnome-terminal --title="raisim" -- bash -c "cd ~/raisim/raisim_workspace/raisimLib-1.1.7/raisimUnity/linux;./raisimUnity.x86_64"
-#sleep 5s
-#./dog_sim
+
+# 设置库路径
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ubuntu/raisim_build/lib:/home/ubuntu/raisim_workspace/raisimLib/raisim/linux/lib:/home/ubuntu/robot_dance/sim2sim/BJ_Raisim/dog_arm/build/task:/home/ubuntu/robot_dance/sim2sim/BJ_Raisim/dog_arm/build/common
+
+# 启动 raisim 可视化环境
+gnome-terminal --title="raisim" -- bash -c "cd ~/raisim_workspace/raisimLib/raisimUnity/linux && export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ubuntu/raisim_build/lib:/home/ubuntu/raisim_workspace/raisimLib/raisim/linux/lib && ./raisimUnity.x86_64; exec bash"
+
+# 等待一下让 raisim 启动
+sleep 3
+
+# 启动机器人仿真
 {
-gnome-terminal -t "dog_sim" -- bash -c "./dog_sim2;exec bash"
+gnome-terminal -t "dog_sim" -- bash -c "cd /home/ubuntu/robot_dance/sim2sim/BJ_Raisim/dog_arm && export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ubuntu/raisim_build/lib:/home/ubuntu/raisim_workspace/raisimLib/raisim/linux/lib:/home/ubuntu/robot_dance/sim2sim/BJ_Raisim/dog_arm/build/task:/home/ubuntu/robot_dance/sim2sim/BJ_Raisim/dog_arm/build/common && ./dog_sim2; exec bash"
 }&
 
-# #./dog_sim_arm_6dof
-# {
-# gnome-terminal -t "dog_sim_arm_6dof" -- bash -c "./dog_sim_arm_6dof;exec bash"
-# }&
+# 等待一下让仿真启动
+sleep 2
 
-sleep 2s
-#./dog_actuator
+# 启动执行器
 {
-gnome-terminal -t "dog_actuator" -- bash -c "./dog_actuator;exec bash"
+gnome-terminal -t "dog_actuator" -- bash -c "cd /home/ubuntu/robot_dance/sim2sim/BJ_Raisim/dog_arm && export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ubuntu/raisim_build/lib:/home/ubuntu/raisim_workspace/raisimLib/raisim/linux/lib:/home/ubuntu/robot_dance/sim2sim/BJ_Raisim/dog_arm/build/task:/home/ubuntu/robot_dance/sim2sim/BJ_Raisim/dog_arm/build/common && ./dog_actuator; exec bash"
 }&
 
 

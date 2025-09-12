@@ -31,6 +31,7 @@ class cpgBuilder:
                     i + 4]
                 dydt[i + 4] += np.sin(self.phase[i] - self.phase[j]) * y[j] + np.cos(self.phase[i] - self.phase[j]) * y[
                     i + 4]
+                #四振子耦合
 
         return dydt
 

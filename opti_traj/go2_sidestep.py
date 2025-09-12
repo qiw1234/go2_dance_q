@@ -11,7 +11,7 @@ except ImportError:
     MATPLOTLIB_AVAILABLE = False
     print("警告：matplotlib未安装，将跳过可视化部分")
 
-# 使用CPG模型设计侧向pace步态，机器人侧向迈步并回到原位
+# 使用CPG模型设计侧向pace步态，机器人侧向迈步（仅去不回）
 # pace步态：同侧腿同时抬起，相位差为[0, π, 0, π]
 
 num_row = 200  # 增加帧数以容纳完整的侧向迈步动作
@@ -46,15 +46,14 @@ for i in range(num_row):
 # 相位
 phase = np.arctan2(hopf_signal[:, 4:8], hopf_signal[:, 0:4])
 
-# 设计侧向迈步轨迹
-# 分为两个阶段：
-# 1. 前80帧：向右侧迈步 (0 -> 80)
-# 2. 后80帧：回到原位 (80 -> 160)
-# 总共160帧，避免99帧和100帧之间的不连续
+"""
+设计侧向迈步轨迹（单程，不返回）
+使用半个正弦速度廓形完成从静止到侧向位移并再次静止，
+保证开始和结束速度为0，避免不连续。
+"""
 
-first_phase_frames = 80
-second_phase_frames = 80
-total_frames = first_phase_frames + second_phase_frames
+first_phase_frames = 80  # 单程时长
+total_frames = first_phase_frames
 
 # 重新设置总帧数
 num_row = total_frames
@@ -84,20 +83,13 @@ vx = 0.0  # x方向不移动
 vy_max = 0.4  # 最大侧向速度
 az = 0.08  # 抬腿高度
 
-# 计算每个时刻的侧向速度和位移
+# 计算每个时刻的侧向速度（半正弦，加速-减速，净位移>0）
 for i in range(num_row):
-    if i < first_phase_frames:
-        # 前80帧：向右侧迈步
-        progress = i / (first_phase_frames - 1)
-        vy_current = vy_max * np.sin(2 * np.pi * progress)
-        if i < num_row - 1:
-            root_lin_vel[i, 1] = vy_current
-    else:
-        # 后80帧：回到原位
-        progress = (i - first_phase_frames) / (second_phase_frames - 1)
-        vy_current = -vy_max * np.sin(2 * np.pi * progress)
-        if i < num_row - 1:
-            root_lin_vel[i, 1] = vy_current
+    progress = i / (first_phase_frames - 1)
+    # 半正弦速度：起止速度为0，方向为正侧向（右）
+    vy_current = vy_max * np.sin(np.pi * progress)
+    if i < num_row - 1:
+        root_lin_vel[i, 1] = vy_current
 
 # 计算质心的y方向位移
 y_pos = 0.0
@@ -121,13 +113,8 @@ for i in range(4):
         # x方向保持不变
         toe_pos[j, 3*i] = 0
         
-        # y方向的足端轨迹：根据步态阶段调整
-        if j < first_phase_frames:
-            # 前80帧：向右侧迈步
-            toe_pos[j, 3*i+1] = CPG.endEffectorPos_xy(ay_amplitude, p)
-        else:
-            # 后80帧：回到原位，足端轨迹反向
-            toe_pos[j, 3*i+1] = -CPG.endEffectorPos_xy(ay_amplitude, p)
+        # y方向的足端轨迹：仅向一侧摆动（不反向）
+        toe_pos[j, 3*i+1] = CPG.endEffectorPos_xy(ay_amplitude, p)
 
 # 足端相对质心的坐标
 toe_pos += go2.toe_pos_init
@@ -182,7 +169,7 @@ json_data = {
 with open('opti_traj/output_json/sidestep.json', 'w') as f:
     json.dump(json_data, f, indent=4)
 
-print(f"侧向pace步态轨迹已生成并保存到:")
+print(f"单程侧向pace步态轨迹已生成并保存到:")
 print(f"- {outfile}")
 print(f"- opti_traj/output_json/sidestep.json")
 print(f"总帧数: {num_row-1}, 持续时间: {(num_row-1)/fps:.2f}秒")
@@ -192,42 +179,42 @@ print(f"最大侧向位移: {np.max(np.abs(root_pos[:, 1])):.3f}米")
 if MATPLOTLIB_AVAILABLE:
     plt.figure(figsize=(12, 8))
 
-    # 子图1：质心y方向位移
+    # Subplot 1: COM lateral displacement质心侧向位移
     plt.subplot(2, 2, 1)
-    plt.plot(t, root_pos[:, 1], 'b-', linewidth=2, label='质心Y位移')
-    plt.xlabel('时间 (s)')
-    plt.ylabel('Y位移 (m)')
-    plt.title('质心侧向位移轨迹')
+    plt.plot(t, root_pos[:, 1], 'b-', linewidth=2, label='COM Y Displacement')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Y Displacement (m)')
+    plt.title('COM Lateral Displacement')
     plt.grid(True)
     plt.legend()
 
-    # 子图2：质心y方向速度
+    # Subplot 2: COM lateral velocity质心侧向速度
     plt.subplot(2, 2, 2)
-    plt.plot(t[:-1], root_lin_vel[:, 1], 'r-', linewidth=2, label='质心Y速度')
-    plt.xlabel('时间 (s)')
-    plt.ylabel('Y速度 (m/s)')
-    plt.title('质心侧向速度')
+    plt.plot(t[:-1], root_lin_vel[:, 1], 'r-', linewidth=2, label='COM Y Velocity')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Y Velocity (m/s)')
+    plt.title('COM Lateral Velocity')
     plt.grid(True)
     plt.legend()
 
-    # 子图3：相位信号
+    # Subplot 3: Phase signals相位
     plt.subplot(2, 2, 3)
-    plt.plot(t, phase[:, 0], linewidth=2, label='FR腿相位')
-    plt.plot(t, phase[:, 1], linewidth=2, label='FL腿相位')
-    plt.plot(t, phase[:, 2], linewidth=2, label='HR腿相位')
-    plt.plot(t, phase[:, 3], linewidth=2, label='HL腿相位')
-    plt.xlabel('时间 (s)')
-    plt.ylabel('相位 (rad)')
-    plt.title('Pace步态相位信号')
+    plt.plot(t, phase[:, 0], linewidth=2, label='FR Phase')
+    plt.plot(t, phase[:, 1], linewidth=2, label='FL Phase')
+    plt.plot(t, phase[:, 2], linewidth=2, label='HR Phase')
+    plt.plot(t, phase[:, 3], linewidth=2, label='HL Phase')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Phase (rad)')
+    plt.title('Pace Gait Phases')
     plt.grid(True)
     plt.legend()
 
-    # 子图4：足端轨迹示例（FR腿）
+    # Subplot 4: Foot trajectory example (FR)足端轨迹示例（FR）
     plt.subplot(2, 2, 4)
-    plt.plot(toe_pos[:, 1], toe_pos[:, 2], 'g-', linewidth=2, label='FR腿足端轨迹')
-    plt.xlabel('Y位置 (m)')
-    plt.ylabel('Z位置 (m)')
-    plt.title('前右腿足端轨迹')
+    plt.plot(toe_pos[:, 1], toe_pos[:, 2], 'g-', linewidth=2, label='FR Foot Trajectory')
+    plt.xlabel('Y Position (m)')
+    plt.ylabel('Z Position (m)')
+    plt.title('Front-Right Foot Path')
     plt.grid(True)
     plt.legend()
     plt.axis('equal')

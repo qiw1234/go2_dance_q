@@ -23,7 +23,7 @@ import ctypes
 model_path_test0 = './model/go2/stand_2025-04-21_08-49-06.jit' #可以从双腿切换四腿站立
 # model_path_test0 = './model/go2/stand_2025-04-21_19-45-25.jit'
 # model 1: arm leg
-model_path_test1 = './model/test/arm_leg_2025-02-27_21-05-49.jit'
+model_path_test1 = './model/test/arm_leg_0115_1.jit'
 # model 2: wave
 model_path_test2 = './model/go2/wave_2025-03-25_08-37-13.jit'  #  input 60 pd150 单臂挥舞 挥舞幅度大
 # model 3: trot
@@ -37,6 +37,8 @@ model_path_test5 = './model/test/turn_and_jump_0114_1.jit' # 跳跃turn_and_jump
 model_path_test6 = './model/go2/twolegwave_2025-04-14_09-25-48.jit'
 # model 7: wave two leg 2
 model_path_test7 = './model/go2/twolegwave_2025-04-14_09-24-11.jit'
+# model 8: sidestep
+#model_path_test8 = './model/go2/go2_sidestep_2025-09-11_23-02-45.jit'
 
 TEST = False
 
@@ -279,6 +281,8 @@ class BJTUDance:
         self.model_test6.eval()
         self.model_test7 = torch.jit.load(model_path_test7).to(self.device)
         self.model_test7.eval()
+#        self.model_test8 = torch.jit.load(model_path_test8).to(self.device)
+#        self.model_test8.eval()
 
     def _compute_torques(self, joint_qd):
         # PD controller
@@ -482,7 +486,9 @@ class BJTUDance:
                 if self.model_select == 0:
                     actions = self.model_test0(self.actor_state)
                 if self.model_select == 1:
-                    actions = self.model_test1(self.actor_state)
+                    # arm_leg模型有问题，暂时使用stand模型作为替代
+                    print("Warning: arm_leg model has compatibility issues, using stand model instead")
+                    actions = self.model_test0(self.actor_state)
                 if self.model_select == 2:
                     actions = self.model_test2(self.actor_state)
                 if self.model_select == 3:
@@ -501,6 +507,8 @@ class BJTUDance:
 
 
             actions = actions.to(self.device)
+
+            # arm_leg模型已替换为stand模型，不需要移除batch维度
 
             # if self.model_select != 9:
 
