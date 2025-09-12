@@ -21,10 +21,10 @@ class GO2Cfg(LeggedRobotCfg):
         }
 
     class control(LeggedRobotCfg.control):
-        # PD Drive parameters:
+        # PD Drive parameters: 调整为更接近真实硬件的参数
         control_type = 'P'
-        stiffness = {'joint': 20.}  # [N*m/rad]
-        damping = {'joint': 0.5}  # [N*m*s/rad]
+        stiffness = {'joint': 15.}  # 从20降低到15，更接近真实电机
+        damping = {'joint': 0.3}    # 从0.5降低到0.3，减少阻尼
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.25
         # decimation: Number of control action updates @ sim DT per policy DT
@@ -334,6 +334,46 @@ class GO2DanceCfg_standPPO(GO2Cfg_PPO):
 
 #-----------------------------sidestep----------------------------------------------------
 class GO2DanceCfg_sidestep(GO2Cfg):
+    class control(GO2Cfg.control):
+        # 为sidestep任务调整PD参数，使其更接近真实硬件
+        stiffness = {'joint': 12.}  # 进一步降低刚度
+        damping = {'joint': 0.2}    # 进一步降低阻尼
+
+    class domain_rand(GO2Cfg.domain_rand):
+        # 增强域随机化以提高鲁棒性
+        randomize_friction = True
+        friction_range = [0.1, 2.5]  # 扩大摩擦力范围
+
+        randomize_motor = True
+        motor_strength_range = [0.7, 1.3]  # 扩大电机强度范围
+
+        randomize_torque = True
+        torque_multiplier_range = [0.7, 1.3]  # 扩大力矩范围
+
+        randomize_base_mass = True
+        added_mass_range = [-2., 8.]  # 扩大质量随机化范围
+
+        randomize_base_com = True
+        added_com_range = [-0.08, 0.08]  # 扩大质心随机化范围
+
+        push_robots = True
+        push_interval_s = 10  # 更频繁的推力
+        max_push_vel_xy = 1.5  # 更大的推力
+
+        # 启用动作延迟
+        action_delay = True
+        action_curr_step = [1, 3]  # 更大的延迟范围
+        action_delay_range = [0.02, 0.08]  # 20-80ms延迟，与50Hz控制频率匹配
+
+    class noise(GO2Cfg.noise):
+        # 增强观测噪声
+        class noise_scales(GO2Cfg.noise.noise_scales):
+            dof_pos = 0.06  # 增加关节位置噪声
+            dof_vel = 2.0   # 增加关节速度噪声
+            lin_vel = 0.15  # 增加线速度噪声
+            ang_vel = 0.3   # 增加角速度噪声
+            gravity = 0.08  # 增加重力噪声
+
     class rewards(GO2Cfg.rewards):
         soft_dof_pos_limit = 0.9
         base_height_target = 0.25
@@ -369,3 +409,32 @@ class GO2DanceCfg_sidestepPPO(GO2Cfg_PPO):
     class runner(GO2Cfg_PPO.runner):
         experiment_name = 'go2_sidestep'
         # resume_path = None  # 可以在训练后设置
+
+# 训练脚本示例 (可以保存为单独的train_sidestep.py文件):
+"""
+训练sidestep模型的示例脚本:
+
+from legged_gym import LEGGED_GYM_ROOT_DIR
+import os
+
+import isaacgym
+from legged_gym.envs import *
+from legged_gym.utils import get_args, export_policy_as_jit, task_registry, Logger
+
+import numpy as np
+import torch
+
+def train(args):
+    env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
+    # 创建环境
+    env = task_registry.make_env(name=args.task, args=args, env_cfg=env_cfg)
+    # 创建PPO训练器
+    ppo_runner = task_registry.make_alg_runner(env=env, name=args.task, args=args, train_cfg=train_cfg)
+    # 开始训练
+    ppo_runner.learn(num_learning_iterations=train_cfg.runner.max_iterations, init_at_random_ep_len=True)
+
+if __name__ == '__main__':
+    args = get_args()
+    args.task = 'go2_dance_sidestep'  # 使用新的sidestep配置
+    train(args)
+"""

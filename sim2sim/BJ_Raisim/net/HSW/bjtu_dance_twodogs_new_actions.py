@@ -38,7 +38,7 @@ model_path_test6 = './model/go2/twolegwave_2025-04-14_09-25-48.jit'
 # model 7: wave two leg 2
 model_path_test7 = './model/go2/twolegwave_2025-04-14_09-24-11.jit'
 # model 8: sidestep
-#model_path_test8 = './model/go2/go2_sidestep_2025-09-11_23-02-45.jit'
+##model_path_test8 = './model/go2/go2_sidestep_2025-09-11_23-02-45.jit'
 
 TEST = False
 
@@ -130,7 +130,7 @@ class BJTUDance:
         self.last_actions = torch.zeros(size=(self.num_acts,), device=self.device, requires_grad=False)
 
 
-        self.delay = 0
+        self.delay = 2  # 设置初始延迟为2帧 (100ms @ 50Hz)，可以根据需要调整
         self.action_buf_len = 6
         self.action_history_buf = torch.zeros(self.action_buf_len, self.num_acts, device=self.device, dtype=torch.float)
         self.action_history_buf2 = torch.zeros(self.action_buf_len, self.num_acts, device=self.device,
