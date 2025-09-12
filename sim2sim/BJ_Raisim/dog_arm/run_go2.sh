@@ -1,5 +1,23 @@
 #!/bin/bash
 # 启动 raisim 可视化环境
+#!/usr/bin/env bash
+set -e
+
+# 1) kill old sim
+pkill -f go2_sim 2>/dev/null || true
+pkill -f RaisimServer 2>/dev/null || true
+pkill -f DogSimRaisim2 2>/dev/null || true
+
+# 2) clean SysV IPC (owned by当前用户)
+for id in $(ipcs -m | awk 'NR>3 {print $2}'); do ipcrm -m "$id" 2>/dev/null || true; done
+for id in $(ipcs -s | awk 'NR>3 {print $2}'); do ipcrm -s "$id" 2>/dev/null || true; done
+
+# 3) optional: logs
+rm -f sim2sim/BJ_Raisim/net/HSW/data/*.csv 2>/dev/null || true
+
+# 4) run your sim (原来的启动命令)！！！！！注意要先运行环境再运行推理脚本
+# ./go2_sim 或 ./build/xxx
+
 gnome-terminal --title="raisim" -- bash -c "cd ~/raisim_workspace/raisimLib/raisimUnity/linux && export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ubuntu/raisim_build/lib:/home/ubuntu/raisim_workspace/raisimLib/raisim/linux/lib && ./raisimUnity.x86_64; exec bash"
 
 #sleep 5s

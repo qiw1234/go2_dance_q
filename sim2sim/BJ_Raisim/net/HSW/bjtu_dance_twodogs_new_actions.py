@@ -452,10 +452,10 @@ class BJTUDance:
             last_vel = self.shareinfo_feed_send.ocu_package.x_des_vel
             last_yaw = self.shareinfo_feed_send.ocu_package.yaw_turn_dot
 
-            if counter ==600:
-                self.model_select = 6
-            if counter == 1000:
-                self.model_select = 0
+            #if counter ==600:
+            #    self.model_select = 6
+            #if counter == 1000:
+            #    self.model_select = 0
             self.PutToNet()
                       
             # 将self.actor_state输出成文件
